@@ -92,6 +92,99 @@ Pour travailler sur le projet :
    docker compose exec php composer require <nom-du-package>
    ```
 
+## Déploiement en production
+
+Le projet inclut une configuration Docker optimisée pour la production. Cette configuration offre une meilleure sécurité, des performances optimisées et une stabilité accrue grâce à des versions spécifiques des services.
+
+### Prérequis pour la production
+
+- Serveur Linux avec Docker et Docker Compose installés
+- Accès SSH au serveur
+- Certificats SSL pour HTTPS (recommandé)
+
+### Configuration de l'environnement de production
+
+1. Copiez le fichier d'exemple des variables d'environnement de production :
+   ```bash
+   cp .env.prod.sample .env.prod
+   ```
+
+2. Éditez le fichier `.env.prod` avec vos valeurs de production :
+   ```bash
+   # Modifiez ces valeurs avec des secrets forts
+   APP_SECRET=votre_secret_securise
+   POSTGRES_DB=app
+   POSTGRES_USER=utilisateur_production
+   POSTGRES_PASSWORD=mot_de_passe_securise
+   ```
+
+3. Pour les certificats SSL, placez-les dans `docker/nginx/ssl/` :
+   - `certificate.crt` : votre certificat
+   - `private.key` : votre clé privée
+
+### Déploiement en production
+
+1. Construisez les images Docker pour la production :
+   ```bash
+   docker compose -f docker-compose.prod.yml build
+   ```
+
+2. Démarrez les services en mode production :
+   ```bash
+   docker compose -f docker-compose.prod.yml up -d
+   ```
+
+3. Exécutez les migrations de base de données :
+   ```bash
+   docker compose -f docker-compose.prod.yml exec php bin/console doctrine:migrations:migrate --no-interaction --env=prod
+   ```
+
+4. Réchauffez le cache :
+   ```bash
+   docker compose -f docker-compose.prod.yml exec php bin/console cache:warmup --env=prod
+   ```
+
+### Spécificités de la configuration de production
+
+La configuration de production inclut plusieurs optimisations :
+
+1. **Sécurité** :
+   - Versions spécifiques et stables de PHP (8.3-fpm-alpine), Nginx (1.24-alpine) et PostgreSQL (16-alpine)
+   - Suppression des outils de développement (pgAdmin, etc.)
+   - Protection contre l'accès aux fichiers sensibles via Nginx
+   - Utilisation d'un utilisateur non-root pour PHP
+
+2. **Performance** :
+   - Configuration PHP optimisée avec opcache
+   - Cache Nginx pour les assets statiques
+   - Réduction de la taille des images Docker
+
+3. **Fiabilité** :
+   - Healthchecks pour tous les services
+   - Politique de redémarrage automatique (restart: unless-stopped)
+   - Volumes persistants sécurisés
+
+### Maintenance en production
+
+Pour mettre à jour l'application en production :
+
+```bash
+# Récupérer les dernières modifications
+git pull
+
+# Reconstruire si nécessaire
+docker compose -f docker-compose.prod.yml build
+
+# Redémarrer les services
+docker compose -f docker-compose.prod.yml up -d
+
+# Exécuter les migrations si nécessaire
+docker compose -f docker-compose.prod.yml exec php bin/console doctrine:migrations:migrate --no-interaction --env=prod
+
+# Vider le cache
+docker compose -f docker-compose.prod.yml exec php bin/console cache:clear --env=prod
+```
+
 ## Commandes disponibles
 
 Voici quelques commandes utiles pour le développement :
@@ -145,7 +238,9 @@ PoliTricks/
 │   ├── nginx/           # Configuration Nginx
 │   └── php/             # Dockerfile pour PHP
 ├── .env                 # Variables d'environnement pour Docker
-├── docker-compose.yml   # Configuration Docker Compose
+├── .env.prod.sample     # Exemple de variables d'environnement pour la production
+├── docker-compose.yml   # Configuration Docker Compose (développement)
+├── docker-compose.prod.yml # Configuration Docker Compose (production)
 └── README.md            # Ce fichier
 ```
 

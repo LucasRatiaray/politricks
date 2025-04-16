@@ -1,0 +1,62 @@
+FROM php:8.3-fpm-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    acl \
+    fcgi \
+    file \
+    gettext \
+    postgresql-dev \
+    icu-dev \
+    libzip-dev
+
+# Install PHP extensions
+RUN set -eux; \
+    docker-php-ext-install -j$(nproc) \
+        intl \
+        opcache \
+        pdo_pgsql \
+        zip; \
+    docker-php-ext-enable opcache
+
+# Install Composer
+COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
+
+# Configure PHP for production
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+# Adjust PHP settings for production
+RUN echo 'memory_limit = 256M' >> "$PHP_INI_DIR/php.ini" \
+    && echo 'max_execution_time = 60' >> "$PHP_INI_DIR/php.ini" \
+    && echo 'upload_max_filesize = 16M' >> "$PHP_INI_DIR/php.ini" \
+    && echo 'post_max_size = 16M' >> "$PHP_INI_DIR/php.ini"
+
+# Optimize opcache for production
+RUN { \
+    echo 'opcache.memory_consumption=128'; \
+    echo 'opcache.interned_strings_buffer=8'; \
+    echo 'opcache.max_accelerated_files=4000'; \
+    echo 'opcache.revalidate_freq=0'; \
+    echo 'opcache.fast_shutdown=1'; \
+    echo 'opcache.enable_cli=1'; \
+    } > /usr/local/etc/php/conf.d/opcache-recommended.ini
+
+WORKDIR /var/www/symfony
+
+# Copy application code
+COPY --chown=www-data:www-data . .
+
+# Create a non-root user
+RUN addgroup -g 1000 symfony && adduser -u 1000 -G symfony -D symfony
+
+# Switch to non-root user
+USER symfony
+
+# Run composer install without development dependencies
+RUN composer install --prefer-dist --no-dev --no-scripts --no-progress
+
+# Expose PHP-FPM socket
+CMD ["php-fpm", "-R"]
+
+EXPOSE 9000
+
