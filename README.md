@@ -4,7 +4,7 @@ Application Symfony dockerisée avec PHP 8.3 et PostgreSQL.
 
 ## Description du projet
 
-PoliTricks est une application web développée avec Symfony 6.4 LTS, qui utilise une base de données PostgreSQL et s'exécute dans un environnement Docker. Ce projet est configuré avec un environnement de développement léger et optimal.
+PoliTricks est une application web développée avec Symfony 7 LTS, qui utilise une base de données PostgreSQL et s'exécute dans un environnement Docker. Ce projet est configuré avec un environnement de développement léger et optimal.
 
 ## Prérequis
 
