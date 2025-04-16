@@ -20,7 +20,10 @@ Suivez ces étapes pour installer et exécuter l'application :
 
 1. Clonez le dépôt :
    ```bash
-   git clone <url-du-dépôt>
+   git clone https://github.com/Nasraoui1/Projet-S1-Symfony.git Politricks
+   ````
+   
+   ```bash
    cd PoliTricks
    ```
 
