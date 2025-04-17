@@ -25,11 +25,11 @@ class Delit
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $date_delit = null;
 
-    #[ORM\ManyToOne(inversedBy: 'utilisateur_id')]
+    #[ORM\ManyToOne(inversedBy: 'user_id')]
     private ?lieu $lieu_id = null;
 
     #[ORM\ManyToOne(inversedBy: 'delits')]
-    private ?Utilisateur $utilisateur_id = null;
+    private ?Utilisateur $user_id = null;
 
     /**
      * @var Collection<int, Preuve>
@@ -102,14 +102,14 @@ class Delit
         return $this;
     }
 
-    public function getUtilisateurId(): ?Utilisateur
+    public function getUserId(): ?Utilisateur
     {
-        return $this->utilisateur_id;
+        return $this->user_id;
     }
 
-    public function setUtilisateurId(?Utilisateur $utilisateur_id): static
+    public function setUserId(?Utilisateur $user_id): static
     {
-        $this->utilisateur_id = $utilisateur_id;
+        $this->user_id = $user_id;
 
         return $this;
     }

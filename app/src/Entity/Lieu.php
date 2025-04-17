@@ -65,27 +65,27 @@ class Lieu
     /**
      * @return Collection<int, Delit>
      */
-    public function getUtilisateurId(): Collection
+    public function getUserId(): Collection
     {
-        return $this->utilisateur_id;
+        return $this->user_id;
     }
 
-    public function addUtilisateurId(Delit $utilisateur_id): static
+    public function addUserId(Delit $user_id): static
     {
-        if (!$this->utilisateur_id->contains($utilisateur_id)) {
-            $this->utilisateur_id->add($utilisateur_id);
-            $utilisateur_id->setLieuId($this);
+        if (!$this->user_id->contains($user_id)) {
+            $this->user_id->add($user_id);
+            $user_id->setLieuId($this);
         }
 
         return $this;
     }
 
-    public function removeUtilisateurId(Delit $utilisateur_id): static
+    public function removeUserId(Delit $user_id): static
     {
-        if ($this->utilisateur_id->removeElement($utilisateur_id)) {
+        if ($this->user_id->removeElement($user_id)) {
             // set the owning side to null (unless already changed)
-            if ($utilisateur_id->getLieuId() === $this) {
-                $utilisateur_id->setLieuId(null);
+            if ($user_id->getLieuId() === $this) {
+                $user_id->setLieuId(null);
             }
         }
 
