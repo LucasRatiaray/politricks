@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\DelitRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -23,11 +25,29 @@ class Delit
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $date_delit = null;
 
-    #[ORM\ManyToOne(inversedBy: 'politicien_id')]
+    #[ORM\ManyToOne(inversedBy: 'utilisateur_id')]
     private ?lieu $lieu_id = null;
 
     #[ORM\ManyToOne(inversedBy: 'delits')]
-    private ?Utilisateur $politicien_id = null;
+    private ?Utilisateur $utilisateur_id = null;
+
+    /**
+     * @var Collection<int, Preuve>
+     */
+    #[ORM\ManyToMany(targetEntity: Preuve::class, mappedBy: 'delit_id')]
+    private Collection $preuves;
+
+    /**
+     * @var Collection<int, DelitComplice>
+     */
+    #[ORM\ManyToMany(targetEntity: DelitComplice::class, mappedBy: 'delit_id')]
+    private Collection $delitComplices;
+
+    public function __construct()
+    {
+        $this->preuves = new ArrayCollection();
+        $this->delitComplices = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -82,14 +102,68 @@ class Delit
         return $this;
     }
 
-    public function getPoliticienId(): ?Utilisateur
+    public function getUtilisateurId(): ?Utilisateur
     {
-        return $this->politicien_id;
+        return $this->utilisateur_id;
     }
 
-    public function setPoliticienId(?Utilisateur $politicien_id): static
+    public function setUtilisateurId(?Utilisateur $utilisateur_id): static
     {
-        $this->politicien_id = $politicien_id;
+        $this->utilisateur_id = $utilisateur_id;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Preuve>
+     */
+    public function getPreuves(): Collection
+    {
+        return $this->preuves;
+    }
+
+    public function addPreufe(Preuve $preufe): static
+    {
+        if (!$this->preuves->contains($preufe)) {
+            $this->preuves->add($preufe);
+            $preufe->addDelitId($this);
+        }
+
+        return $this;
+    }
+
+    public function removePreufe(Preuve $preufe): static
+    {
+        if ($this->preuves->removeElement($preufe)) {
+            $preufe->removeDelitId($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, DelitComplice>
+     */
+    public function getDelitComplices(): Collection
+    {
+        return $this->delitComplices;
+    }
+
+    public function addDelitComplice(DelitComplice $delitComplice): static
+    {
+        if (!$this->delitComplices->contains($delitComplice)) {
+            $this->delitComplices->add($delitComplice);
+            $delitComplice->addDelitId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDelitComplice(DelitComplice $delitComplice): static
+    {
+        if ($this->delitComplices->removeElement($delitComplice)) {
+            $delitComplice->removeDelitId($this);
+        }
 
         return $this;
     }

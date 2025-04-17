@@ -36,12 +36,26 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Delit>
      */
-    #[ORM\OneToMany(targetEntity: Delit::class, mappedBy: 'politicien_id')]
+    #[ORM\OneToMany(targetEntity: Delit::class, mappedBy: 'utilisateur_id')]
     private Collection $delits;
+
+    /**
+     * @var Collection<int, DelitComplice>
+     */
+    #[ORM\ManyToMany(targetEntity: DelitComplice::class, mappedBy: 'user_id')]
+    private Collection $delitComplices;
+
+    /**
+     * @var Collection<int, UserTypedelit>
+     */
+    #[ORM\ManyToMany(targetEntity: UserTypedelit::class, mappedBy: 'user_id')]
+    private Collection $userTypedelits;
 
     public function __construct()
     {
         $this->delits = new ArrayCollection();
+        $this->delitComplices = new ArrayCollection();
+        $this->userTypedelits = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -131,7 +145,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->delits->contains($delit)) {
             $this->delits->add($delit);
-            $delit->setPoliticienId($this);
+            $delit->setUtilisateurId($this);
         }
 
         return $this;
@@ -141,9 +155,63 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->delits->removeElement($delit)) {
             // set the owning side to null (unless already changed)
-            if ($delit->getPoliticienId() === $this) {
-                $delit->setPoliticienId(null);
+            if ($delit->getUtilisateurId() === $this) {
+                $delit->setUtilisateurId(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, DelitComplice>
+     */
+    public function getDelitComplices(): Collection
+    {
+        return $this->delitComplices;
+    }
+
+    public function addDelitComplice(DelitComplice $delitComplice): static
+    {
+        if (!$this->delitComplices->contains($delitComplice)) {
+            $this->delitComplices->add($delitComplice);
+            $delitComplice->addUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDelitComplice(DelitComplice $delitComplice): static
+    {
+        if ($this->delitComplices->removeElement($delitComplice)) {
+            $delitComplice->removeUserId($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserTypedelit>
+     */
+    public function getUserTypedelits(): Collection
+    {
+        return $this->userTypedelits;
+    }
+
+    public function addUserTypedelit(UserTypedelit $userTypedelit): static
+    {
+        if (!$this->userTypedelits->contains($userTypedelit)) {
+            $this->userTypedelits->add($userTypedelit);
+            $userTypedelit->addUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserTypedelit(UserTypedelit $userTypedelit): static
+    {
+        if ($this->userTypedelits->removeElement($userTypedelit)) {
+            $userTypedelit->removeUserId($this);
         }
 
         return $this;

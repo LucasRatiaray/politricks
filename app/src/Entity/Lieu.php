@@ -26,11 +26,11 @@ class Lieu
      * @var Collection<int, Delit>
      */
     #[ORM\OneToMany(targetEntity: Delit::class, mappedBy: 'lieu_id')]
-    private Collection $politicien_id;
+    private Collection $delits;
 
     public function __construct()
     {
-        $this->politicien_id = new ArrayCollection();
+        $this->delits = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -65,27 +65,27 @@ class Lieu
     /**
      * @return Collection<int, Delit>
      */
-    public function getPoliticienId(): Collection
+    public function getUtilisateurId(): Collection
     {
-        return $this->politicien_id;
+        return $this->utilisateur_id;
     }
 
-    public function addPoliticienId(Delit $politicienId): static
+    public function addUtilisateurId(Delit $utilisateur_id): static
     {
-        if (!$this->politicien_id->contains($politicienId)) {
-            $this->politicien_id->add($politicienId);
-            $politicienId->setLieuId($this);
+        if (!$this->utilisateur_id->contains($utilisateur_id)) {
+            $this->utilisateur_id->add($utilisateur_id);
+            $utilisateur_id->setLieuId($this);
         }
 
         return $this;
     }
 
-    public function removePoliticienId(Delit $politicienId): static
+    public function removeUtilisateurId(Delit $utilisateur_id): static
     {
-        if ($this->politicien_id->removeElement($politicienId)) {
+        if ($this->utilisateur_id->removeElement($utilisateur_id)) {
             // set the owning side to null (unless already changed)
-            if ($politicienId->getLieuId() === $this) {
-                $politicienId->setLieuId(null);
+            if ($utilisateur_id->getLieuId() === $this) {
+                $utilisateur_id->setLieuId(null);
             }
         }
 
