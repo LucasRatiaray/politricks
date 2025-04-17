@@ -36,7 +36,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Delit>
      */
-    #[ORM\OneToMany(targetEntity: Delit::class, mappedBy: 'utilisateur_id')]
+    #[ORM\OneToMany(targetEntity: Delit::class, mappedBy: 'user_id')]
     private Collection $delits;
 
     /**
@@ -145,7 +145,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->delits->contains($delit)) {
             $this->delits->add($delit);
-            $delit->setUtilisateurId($this);
+            $delit->setUserId($this);
         }
 
         return $this;
@@ -155,8 +155,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->delits->removeElement($delit)) {
             // set the owning side to null (unless already changed)
-            if ($delit->getUtilisateurId() === $this) {
-                $delit->setUtilisateurId(null);
+            if ($delit->getUserId() === $this) {
+                $delit->setUserId(null);
             }
         }
 
