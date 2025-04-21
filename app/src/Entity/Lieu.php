@@ -7,8 +7,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: LieuRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Lieu
 {
     #[ORM\Id]
@@ -17,10 +19,24 @@ class Lieu
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom du lieu est obligatoire")]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: "Le nom doit contenir au moins {{ limit }} caractères",
+        maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères"
+    )]
     private ?string $nom = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "L'adresse est obligatoire")]
     private ?string $adresse = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $createdAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $updatedAt = null;
 
     /**
      * @var Collection<int, Delit>
@@ -31,6 +47,19 @@ class Lieu
     public function __construct()
     {
         $this->delits = new ArrayCollection();
+    }
+    
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
+    }
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTime();
     }
 
     public function getId(): ?int
@@ -61,31 +90,41 @@ class Lieu
 
         return $this;
     }
+    
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
 
     /**
      * @return Collection<int, Delit>
      */
-    public function getUserId(): Collection
+    public function getDelits(): Collection
     {
-        return $this->user_id;
+        return $this->delits;
     }
 
-    public function addUserId(Delit $user_id): static
+    public function addDelit(Delit $delit): static
     {
-        if (!$this->user_id->contains($user_id)) {
-            $this->user_id->add($user_id);
-            $user_id->setLieuId($this);
+        if (!$this->delits->contains($delit)) {
+            $this->delits->add($delit);
+            $delit->setLieuId($this);
         }
 
         return $this;
     }
 
-    public function removeUserId(Delit $user_id): static
+    public function removeDelit(Delit $delit): static
     {
-        if ($this->user_id->removeElement($user_id)) {
+        if ($this->delits->removeElement($delit)) {
             // set the owning side to null (unless already changed)
-            if ($user_id->getLieuId() === $this) {
-                $user_id->setLieuId(null);
+            if ($delit->getLieuId() === $this) {
+                $delit->setLieuId(null);
             }
         }
 

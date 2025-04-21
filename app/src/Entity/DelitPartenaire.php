@@ -5,9 +5,11 @@ namespace App\Entity;
 use App\Repository\DelitPartenaireRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-
+use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: DelitPartenaireRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class DelitPartenaire
 {
     #[ORM\Id]
@@ -15,19 +17,37 @@ class DelitPartenaire
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $created_at = null;
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        min: 10,
+        minMessage: "La description doit contenir au moins {{ limit }} caractères"
+    )]
+    private ?string $description = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $createdAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $updatedAt = null;
 
     /**
      * @var Collection<int, Partenaire>
      */
     #[ORM\ManyToMany(targetEntity: Partenaire::class, inversedBy: 'delitPartenaires')]
+    #[Assert\Count(
+        min: 1,
+        minMessage: "Au moins un partenaire doit être associé"
+    )]
     private Collection $partenaire_id;
 
     /**
      * @var Collection<int, Delit>
      */
-    #[ORM\ManyToMany(targetEntity: Delit::class)]
+    #[ORM\ManyToMany(targetEntity: Delit::class, inversedBy: 'delitPartenaires')]
+    #[Assert\Count(
+        min: 1,
+        minMessage: "Au moins un délit doit être associé"
+    )]
     private Collection $delit_id;
 
     public function __construct()
@@ -36,21 +56,43 @@ class DelitPartenaire
         $this->delit_id = new ArrayCollection();
     }
 
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
+    }
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTime();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getDescription(): ?string
     {
-        return $this->created_at;
+        return $this->description;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
+    public function setDescription(?string $description): static
     {
-        $this->created_at = $created_at;
-
+        $this->description = $description;
         return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
     }
 
     /**

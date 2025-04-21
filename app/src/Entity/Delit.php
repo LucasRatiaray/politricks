@@ -7,8 +7,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: DelitRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Delit
 {
     #[ORM\Id]
@@ -17,19 +19,40 @@ class Delit
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le type de délit est obligatoire")]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: "Le type doit contenir au moins {{ limit }} caractères",
+        maxMessage: "Le type ne peut pas dépasser {{ limit }} caractères"
+    )]
     private ?string $type = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "La description est obligatoire")]
+    #[Assert\Length(
+        min: 10,
+        minMessage: "La description doit contenir au moins {{ limit }} caractères"
+    )]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull(message: "La date du délit est obligatoire")]
     private ?\DateTimeInterface $date_delit = null;
 
-    #[ORM\ManyToOne(inversedBy: 'user_id')]
-    private ?lieu $lieu_id = null;
+    #[ORM\ManyToOne(inversedBy: 'delits')]
+    #[Assert\NotNull(message: "Le lieu est obligatoire")]
+    private ?Lieu $lieu_id = null;
 
     #[ORM\ManyToOne(inversedBy: 'delits')]
-    private ?Utilisateur $user_id = null;
+    #[Assert\NotNull(message: "L'utilisateur est obligatoire")]
+    private ?User $user_id = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $createdAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $updatedAt = null;
 
     /**
      * @var Collection<int, Preuve>
@@ -47,6 +70,19 @@ class Delit
     {
         $this->preuves = new ArrayCollection();
         $this->delitComplices = new ArrayCollection();
+    }
+    
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
+    }
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTime();
     }
 
     public function getId(): ?int
@@ -90,24 +126,34 @@ class Delit
         return $this;
     }
 
-    public function getLieuId(): ?lieu
+    public function getLieuId(): ?Lieu
     {
         return $this->lieu_id;
     }
 
-    public function setLieuId(?lieu $lieu_id): static
+    public function setLieuId(?Lieu $lieu_id): static
     {
         $this->lieu_id = $lieu_id;
 
         return $this;
     }
+    
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
 
-    public function getUserId(): ?Utilisateur
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function getUserId(): ?User
     {
         return $this->user_id;
     }
 
-    public function setUserId(?Utilisateur $user_id): static
+    public function setUserId(?User $user_id): static
     {
         $this->user_id = $user_id;
 
