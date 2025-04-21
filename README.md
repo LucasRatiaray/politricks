@@ -265,3 +265,55 @@ Si vous rencontrez des problèmes avec l'application :
    docker compose exec php bin/console cache:clear
    ```
 
+# Documentation des Entités
+
+## Entités actuelles et leurs relations :
+
+1. User (ex-Utilisateur)
+•  OneToMany avec Delit (1 User -> N Delits)
+•  ManyToMany avec DelitComplice (N Users -> N DelitComplices)
+•  ManyToMany avec UserTypedelit (N Users -> N UserTypedelits)
+2. Delit
+•  ManyToOne avec User (N Delits -> 1 User)
+•  ManyToOne avec Lieu (N Delits -> 1 Lieu)
+•  ManyToMany avec Preuve (N Delits -> N Preuves)
+•  ManyToMany avec DelitComplice (N Delits -> N DelitComplices)
+•  ManyToMany avec DelitPartenaire (N Delits -> N DelitPartenaires)
+3. Lieu
+•  OneToMany avec Delit (1 Lieu -> N Delits)
+4. Preuve
+•  ManyToMany avec Delit (N Preuves -> N Delits)
+5. DelitComplice
+•  ManyToMany avec User (N DelitComplices -> N Users)
+•  ManyToMany avec Delit (N DelitComplices -> N Delits)
+6. DelitPartenaire
+•  ManyToMany avec Partenaire (N DelitPartenaires -> N Partenaires)
+•  ManyToMany avec Delit (N DelitPartenaires -> N Delits)
+7. Partenaire
+•  ManyToMany avec DelitPartenaire (N Partenaires -> N DelitPartenaires)
+8. TypeDelit
+•  ManyToMany avec UserTypedelit (N TypeDelits -> N UserTypedelits)
+9. UserTypedelit
+•  ManyToMany avec User (N UserTypedelits -> N Users)
+•  ManyToMany avec TypeDelit (N UserTypedelits -> N TypeDelits)
+
+## Analyse par rapport aux contraintes :
+
+1. Nombre d'entités : 9 entités (il en manque 1 pour atteindre les 10 requises)
+2. Relations ManyToMany : 7 relations (déjà plus que les 2 requises)
+•  User <-> DelitComplice
+•  User <-> UserTypedelit
+•  Delit <-> Preuve
+•  Delit <-> DelitComplice
+•  Delit <-> DelitPartenaire
+•  Partenaire <-> DelitPartenaire
+•  TypeDelit <-> UserTypedelit
+3. Relations OneToMany : 2 relations (il en manque 6 pour atteindre les 8 requises)
+•  User -> Delit
+•  Lieu -> Delit
+4. Héritage d'entité : Actuellement aucun héritage d'entité n'est implémenté
+
+## Modifications à apporter :
+
+1. Ajouter une entité "PoliticienTypeDelit", qui sera une relation ManyToMany entre "User" et "TypeDelit". Cela permettra de lier un politicien à un type de délit spécifique.
+2. Ajouter une entité "StatutDelit", qui sera une relation OneToMany entre "Delit" et "StatutDélit". Cela permettra de suivre le statut d'un délit (par exemple, en cours, résolu, etc.).
