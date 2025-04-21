@@ -1,5 +1,10 @@
-.idea
+###> JetBrains IDEs ###
+.idea/
+
+###> MacOs ###
 .DS_Store
+
+###>
 .env
 
 ###> symfony/framework-bundle ###
