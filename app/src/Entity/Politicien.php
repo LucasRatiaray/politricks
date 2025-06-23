@@ -9,13 +9,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PoliticienRepository::class)]
-class Politicien
+class Politicien extends User
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $biographie = null;
 
@@ -66,14 +61,10 @@ class Politicien
 
     public function __construct()
     {
+        parent::__construct();
         $this->commentaires = new ArrayCollection();
         $this->documentsAuteur = new ArrayCollection();
         $this->delits = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getBiographie(): ?string

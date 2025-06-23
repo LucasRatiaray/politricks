@@ -9,13 +9,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DelitFraudeRepository::class)]
-class DelitFraude
+class DelitFraude extends Delit
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
     #[ORM\Column(enumType: DelitFraudeTypeFraudeEnum::class)]
     private ?DelitFraudeTypeFraudeEnum $typeFraude = null;
 
@@ -40,9 +35,9 @@ class DelitFraude
     #[ORM\Column(nullable: true)]
     private ?bool $fraudeOrganisee = null;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        parent::__construct();
     }
 
     public function getTypeFraude(): ?DelitFraudeTypeFraudeEnum

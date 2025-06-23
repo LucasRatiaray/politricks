@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\InheritanceType('SINGLE_TABLE')]
 #[ORM\DiscriminatorColumn(name: 'discr', type: 'string')]
 #[ORM\DiscriminatorMap([
+    'partenaire' => Partenaire::class,
     'physique' => PartenairePhysique::class,
     'moral' => PartenaireMoral::class
 ])]

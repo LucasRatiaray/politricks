@@ -6,13 +6,8 @@ use App\Repository\DocumentImageRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DocumentImageRepository::class)]
-class DocumentImage
+class DocumentImage extends Document
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
     #[ORM\Column(length: 10, nullable: true)]
     private ?string $formatImage = null;
 
@@ -55,9 +50,9 @@ class DocumentImage
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $qualiteImage = null;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        parent::__construct();
     }
 
     public function getFormatImage(): ?string

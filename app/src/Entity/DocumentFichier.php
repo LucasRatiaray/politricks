@@ -7,12 +7,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DocumentFichierRepository::class)]
-class DocumentFichier
+class DocumentFichier extends Document
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
 
     #[ORM\Column(length: 50)]
     private ?string $typeFichier = null;
@@ -65,9 +61,9 @@ class DocumentFichier
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dateValidite = null;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        parent::__construct();
     }
 
     public function getTypeFichier(): ?string

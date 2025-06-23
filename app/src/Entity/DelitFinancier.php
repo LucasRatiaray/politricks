@@ -8,13 +8,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DelitFinancierRepository::class)]
-class DelitFinancier
+class DelitFinancier extends Delit
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
     #[ORM\Column(type: Types::BIGINT, nullable: true)]
     private ?string $montantEstime = null;
 
@@ -44,10 +39,10 @@ class DelitFinancier
 
     #[ORM\Column(nullable: true)]
     private ?bool $argentRecupere = null;
-
-    public function getId(): ?int
+    
+    public function __construct()
     {
-        return $this->id;
+        parent::__construct();
     }
 
     public function getMontantEstime(): ?string

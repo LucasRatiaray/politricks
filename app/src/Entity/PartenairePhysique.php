@@ -7,13 +7,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PartenairePhysiqueRepository::class)]
-class PartenairePhysique
+class PartenairePhysique extends Partenaire
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
     #[ORM\Column(length: 100)]
     private ?string $prenom = null;
 
@@ -47,9 +42,9 @@ class PartenairePhysique
     #[ORM\Column(type: Types::BIGINT, nullable: true)]
     private ?string $fortuneEstimee = null;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        parent::__construct();
     }
 
     public function getPrenom(): ?string

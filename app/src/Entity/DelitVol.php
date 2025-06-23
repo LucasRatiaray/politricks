@@ -7,13 +7,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DelitVolRepository::class)]
-class DelitVol
+class DelitVol extends Delit
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
     #[ORM\Column(nullable: true)]
     private ?array $biensDerobes = null;
 
@@ -38,9 +33,9 @@ class DelitVol
     #[ORM\Column(nullable: true)]
     private ?bool $volPremedite = null;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        parent::__construct();
     }
 
     public function getBiensDerobes(): ?array

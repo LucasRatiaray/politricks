@@ -6,13 +6,8 @@ use App\Repository\DocumentVideoRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DocumentVideoRepository::class)]
-class DocumentVideo
+class DocumentVideo extends Document
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
     #[ORM\Column(length: 10, nullable: true)]
     private ?string $formatVideo = null;
 
@@ -61,9 +56,9 @@ class DocumentVideo
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $plateformeHebergement = null;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        parent::__construct();
     }
 
     public function getFormatVideo(): ?string

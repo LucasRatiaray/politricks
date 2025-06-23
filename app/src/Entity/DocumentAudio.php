@@ -7,13 +7,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DocumentAudioRepository::class)]
-class DocumentAudio
+class DocumentAudio extends Document
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
     #[ORM\Column(length: 10, nullable: true)]
     private ?string $formatAudio = null;
 
@@ -62,9 +57,9 @@ class DocumentAudio
     #[ORM\Column(nullable: true)]
     private ?array $filtresAppliques = null;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        parent::__construct();
     }
 
     public function getFormatAudio(): ?string
