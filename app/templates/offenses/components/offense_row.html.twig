@@ -16,4 +16,8 @@
     <td class="px-4 py-2">
         <a href="#" class="text-blue-400 hover:underline">View Details</a>
     </td>
+    <td class="px-4 py-2 flex gap-2">
+        {% include 'layout/components/button.html.twig' with {label: 'Edit', color: 'blue'} %}
+        {% include 'layout/components/button.html.twig' with {label: 'Delete', color: 'red'} %}
+    </td>
 </tr> 

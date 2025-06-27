@@ -14,10 +14,14 @@
                 {% include 'media/components/filter_select.html.twig' with {label: 'Date', name: 'date', options: ['Date']} %}
                 {% include 'media/components/filter_select.html.twig' with {label: 'Confidentiality', name: 'confidentiality', options: ['Confidentiality']} %}
             </div>
+            <div class="flex gap-2 mb-6 justify-end">
+                {% include 'layout/components/add_button.html.twig' with {modal_id: 'add-media-modal'} %}
+            </div>
             <div class="bg-gray-900 rounded-lg shadow-lg overflow-x-auto">
                 {% include 'media/components/media_table.html.twig' with {media: media} %}
             </div>
         </div>
     </div>
 </div>
+{% include 'layout/components/modal.html.twig' with {id: 'add-media-modal', title: '/media'} %}
 {% endblock %} 

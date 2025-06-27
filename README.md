@@ -47,9 +47,16 @@ Suivez ces étapes pour installer et exécuter l'application :
    docker compose exec php bin/console doctrine:migrations:migrate
    ```
 
-6. L'application est maintenant accessible à l'adresse : [http://localhost:8080](http://localhost:8080)
+6. Installez les dépendances JavaScript et compilez les assets :
+   ```bash
+   cd app 
+   npm install --save-dev @symfony/webpack-encore
+   npx encore dev
+   ```
+   
+7. L'application est maintenant accessible à l'adresse : [http://localhost:8080](http://localhost:8080)
 
-7. Accédez à pgAdmin pour gérer la base de données : [http://localhost:5050](http://localhost:5050)
+8. Accédez à pgAdmin pour gérer la base de données : [http://localhost:5050](http://localhost:5050)
    - Email : `admin@example.com` (configurable dans .env)
    - Mot de passe : `admin` (configurable dans .env)
    - Pour vous connecter à la base de données, créez un nouveau serveur avec :

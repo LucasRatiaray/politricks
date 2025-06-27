@@ -1,0 +1,6 @@
+{% set color = color|default('blue') %}
+<button type="button"
+    class="px-3 py-1 rounded text-xs font-semibold transition-colors focus:outline-none
+    {% if color == 'blue' %}bg-blue-700 text-blue-200 hover:bg-blue-800{% elseif color == 'red' %}bg-red-700 text-red-200 hover:bg-red-800{% else %}bg-gray-700 text-gray-200 hover:bg-gray-800{% endif %}">
+    {{ label }}
+</button> 

@@ -15,7 +15,7 @@ function bindPartnerCardClicks() {
   partnerCards.forEach(card => {
     card.addEventListener('click', async () => {
       const id = card.getAttribute('data-partner-id');
-      const response = await fetch(`/partner/${id}/partial`);
+      const response = await fetch(`/partners/${id}/partial`);
       if (response.ok) {
         const html = await response.text();
         detailContainer.innerHTML = html;
@@ -50,4 +50,20 @@ document.addEventListener('DOMContentLoaded', () => {
     closeBtn.addEventListener('click', closeMenu);
     overlay.addEventListener('click', closeMenu);
   }
+
+  // Gestion des modals "Ajouter"
+  document.querySelectorAll('[data-open-modal]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const modalId = btn.getAttribute('data-open-modal');
+      const modal = document.getElementById(modalId);
+      if (modal) modal.classList.remove('hidden');
+    });
+  });
+  document.querySelectorAll('[data-close-modal]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const modalId = btn.getAttribute('data-close-modal');
+      const modal = document.getElementById(modalId);
+      if (modal) modal.classList.add('hidden');
+    });
+  });
 });

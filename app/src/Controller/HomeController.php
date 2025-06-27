@@ -152,7 +152,7 @@ class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('/partner', name: 'app_partner')]
+    #[Route('/partners', name: 'app_partner')]
     public function partner(): Response
     {
         $partners = [
@@ -213,7 +213,7 @@ class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('/partner/{id}/partial', name: 'app_partner_partial')]
+    #[Route('/partners/{id}/partial', name: 'app_partner_partial')]
     public function partnerPartial(int $id): Response
     {
         $partners = [
@@ -274,7 +274,7 @@ class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('/media', name: 'app_media')]
+    #[Route('/medias', name: 'app_media')]
     public function media(): Response
     {
         $media = [
