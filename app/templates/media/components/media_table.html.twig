@@ -1,0 +1,35 @@
+<table class="min-w-full divide-y divide-slate-800">
+    <thead>
+        <tr>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Title</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Type</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Associated Offense</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Confidentiality</th>
+        </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-800">
+        {% for item in media %}
+            <tr>
+                <td class="px-4 py-2 text-white">{{ item.title }}</td>
+                <td class="px-4 py-2 text-gray-300">{{ item.type }}</td>
+                <td class="px-4 py-2 text-gray-300">{{ item.date }}</td>
+                <td class="px-4 py-2 text-gray-300">{{ item.offense }}</td>
+                <td class="px-4 py-2">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold
+                        {% if item.confidentiality == 'Public' %}bg-blue-700 text-blue-200
+                        {% elseif item.confidentiality == 'Confidential' %}bg-gray-700 text-gray-300
+                        {% elseif item.confidentiality == 'Secret' %}bg-yellow-700 text-yellow-200
+                        {% elseif item.confidentiality == 'Top Secret' %}bg-red-700 text-red-200
+                        {% else %}bg-gray-700 text-gray-300{% endif %}">
+                        {{ item.confidentiality }}
+                    </span>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5" class="px-4 py-2 text-gray-500 italic text-center">No media found</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table> 

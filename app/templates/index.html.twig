@@ -1,0 +1,32 @@
+{% extends "layout/dashboard.html.twig" %}
+
+{% block content %}
+    <div class="min-h-screen bg-gray-900 flex flex-col items-center py-8">
+        <div class="w-full max-w-5xl mx-auto">
+            <div class="mb-6">
+                <input type="text" placeholder="Search" class="w-full bg-gray-800 text-gray-200 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div class="flex gap-6 mb-8">
+                {% include 'layout/components/card.html.twig' with { title: 'Total Offenses', value: '1,234', variation: '+12%', variation_color: '#22c55e' } %}
+                {% include 'layout/components/card.html.twig' with { title: 'Politicians Tracked', value: '567', variation: '+8%', variation_color: '#22c55e' } %}
+                {% include 'layout/components/card.html.twig' with { title: 'Active Partners', value: '89', variation: '+5%', variation_color: '#22c55e' } %}
+            </div>
+            <div class="mb-6">
+                <h3 class="text-white text-lg font-semibold mb-4">Recent Activity</h3>
+                <div class="flex flex-col gap-1">
+                    {% include 'layout/components/activity_item.html.twig' with { text: 'Offense Reported: Misappropriation of Funds', date: '2 hours ago' } %}
+                    {% include 'layout/components/activity_item.html.twig' with { text: 'Politician Added: Senator Thompson', date: '4 hours ago' } %}
+                    {% include 'layout/components/activity_item.html.twig' with { text: 'Partner Onboarded: Transparency Watch', date: '1 day ago' } %}
+                    {% include 'layout/components/activity_item.html.twig' with { text: 'Document Uploaded: Financial Records', date: '2 days ago' } %}
+                    {% include 'layout/components/activity_item.html.twig' with { text: 'Offense Resolved: Conflict of Interest', date: '5 days ago' } %}
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-4 justify-end mt-8">
+                {% include 'layout/components/dashboard_button.html.twig' with { label: 'Offenses', url: '#' } %}
+                {% include 'layout/components/dashboard_button.html.twig' with { label: 'Partners', url: '#' } %}
+                {% include 'layout/components/dashboard_button.html.twig' with { label: 'Politicians', url: '#' } %}
+                {% include 'layout/components/dashboard_button.html.twig' with { label: 'Documents', url: '#' } %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

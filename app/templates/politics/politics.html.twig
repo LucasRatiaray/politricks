@@ -1,0 +1,49 @@
+{% extends "layout/dashboard.html.twig" %}
+
+{% block content %}
+<div class="flex min-h-screen bg-slate-900">
+    <aside class="w-80 bg-gray-900 p-6 flex flex-col gap-6 max-h-screen overflow-y-auto">
+        <h2 class="text-white text-lg font-semibold mb-4">Politicians</h2>
+        <input type="text" placeholder="Search" class="mb-4 w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <div class="flex flex-col gap-4 overflow-y-auto">
+            {% for politician in politicians %}
+                {% include 'politics/components/politician_card.html.twig' with {politician: politician, selected: politician.id == selected.id} %}
+            {% endfor %}
+        </div>
+    </aside>
+    <main class="flex-1 p-10 flex flex-col items-center">
+        <div class="flex flex-col items-center">
+            <img src="{{ selected.image }}" alt="{{ selected.name }}" class="w-24 h-24 rounded-full border-4 border-blue-600 shadow mb-4" />
+            <h1 class="text-2xl font-bold text-white">{{ selected.name }}</h1>
+            <div class="text-blue-400 text-sm mb-2">{{ selected.role }}</div>
+            <div class="text-gray-300 text-center max-w-2xl mb-6">{{ selected.bio }}</div>
+            <div class="w-full flex flex-col md:flex-row gap-8">
+                <div class="flex-1">
+                    <h3 class="text-white text-lg font-semibold mb-2">Offenses</h3>
+                    <ul class="list-disc list-inside text-gray-300">
+                        {% for offense in selected.offenses %}
+                            <li>{{ offense }}</li>
+                        {% else %}
+                            <li class="text-gray-500 italic">No offenses</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-white text-lg font-semibold mb-2">Timeline</h3>
+                    <ul class="text-gray-300">
+                        {% for event in selected.timeline %}
+                            <li class="flex items-center gap-2 mb-2">
+                                <span>{{ event.icon }}</span>
+                                <span>{{ event.event }}</span>
+                                <span class="ml-auto text-xs text-gray-400">{{ event.year }}</span>
+                            </li>
+                        {% else %}
+                            <li class="text-gray-500 italic">No events</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %} 

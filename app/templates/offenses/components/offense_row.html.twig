@@ -1,0 +1,19 @@
+<tr>
+    <td class="px-4 py-2 text-white">{{ offense.type }}</td>
+    <td class="px-4 py-2 text-gray-300">{{ offense.description }}</td>
+    <td class="px-4 py-2 text-gray-300">{{ offense.date }}</td>
+    <td class="px-4 py-2">
+        <span class="px-3 py-1 rounded-full text-xs font-semibold {% if offense.status == 'Open' %}bg-blue-700 text-blue-200{% else %}bg-gray-700 text-gray-300{% endif %}">
+            {{ offense.status }}
+        </span>
+    </td>
+    <td class="px-4 py-2">
+        <span class="px-3 py-1 rounded-full text-xs font-semibold {% if offense.severity == 'High' %}bg-red-700 text-red-200{% elseif offense.severity == 'Medium' %}bg-yellow-700 text-yellow-200{% else %}bg-green-700 text-green-200{% endif %}">
+            {{ offense.severity }}
+        </span>
+    </td>
+    <td class="px-4 py-2 text-gray-300">{{ offense.politician }}</td>
+    <td class="px-4 py-2">
+        <a href="#" class="text-blue-400 hover:underline">View Details</a>
+    </td>
+</tr> 
