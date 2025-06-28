@@ -1,0 +1,57 @@
+{% extends "layout/dashboard.html.twig" %}
+
+{% block content %}
+<div class="flex min-h-screen bg-slate-900">
+    <div class="max-w-2xl mx-auto mt-10 bg-gray-800 rounded-lg p-8 shadow-lg w-full max-h-fit">
+        <h2 class="text-2xl font-bold text-white mb-8">Mon profil</h2>
+        <form class="space-y-10">
+            <div>
+                <h3 class="text-lg font-semibold text-blue-400 mb-4 border-b border-slate-700 pb-2">Identité</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-gray-400 mb-1" for="firstName">Prénom</label>
+                        <input id="firstName" name="firstName" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.firstName }}" />
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 mb-1" for="lastName">Nom</label>
+                        <input id="lastName" name="lastName" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.lastName }}" />
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-blue-400 mb-4 border-b border-slate-700 pb-2">Contact</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-gray-400 mb-1" for="email">Email</label>
+                        <input id="email" name="email" type="email" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.email }}" />
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 mb-1" for="telephone">Téléphone</label>
+                        <input id="telephone" name="telephone" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.telephone }}" />
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-blue-400 mb-4 border-b border-slate-700 pb-2">Informations personnelles</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-gray-400 mb-1" for="dateNaissance">Date de naissance</label>
+                        <input id="dateNaissance" name="dateNaissance" type="date" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.dateNaissance }}" />
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 mb-1" for="nationalite">Nationalité</label>
+                        <input id="nationalite" name="nationalite" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.nationalite }}" />
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 mb-1" for="profession">Profession</label>
+                        <input id="profession" name="profession" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.profession }}" />
+                    </div>
+                </div>
+            </div>
+            <div class="pt-6 flex justify-end">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-2 rounded transition">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

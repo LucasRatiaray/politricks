@@ -21,12 +21,6 @@
                     {% include 'layout/components/activity_item.html.twig' with { text: 'Offense Resolved: Conflict of Interest', date: '5 days ago' } %}
                 </div>
             </div>
-            <div class="flex flex-wrap gap-4 justify-end mt-8">
-                {% include 'layout/components/dashboard_button.html.twig' with { label: 'Offenses', url: '/offenses' } %}
-                {% include 'layout/components/dashboard_button.html.twig' with { label: 'Partners', url: '/partners' } %}
-                {% include 'layout/components/dashboard_button.html.twig' with { label: 'Politicians', url: '/politics' } %}
-                {% include 'layout/components/dashboard_button.html.twig' with { label: 'Documents', url: '/medias' } %}
-            </div>
         </div>
     </div>
 {% endblock %}

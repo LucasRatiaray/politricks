@@ -353,4 +353,22 @@ class HomeController extends AbstractController
             'media' => $media,
         ]);
     }
+
+    #[Route('/profile', name: 'app_profile')]
+    public function profile(): Response
+    {
+        // TODO: remplacer par l'utilisateur connecté
+        $user = [
+            'firstName' => 'John',
+            'lastName' => 'Doe',
+            'email' => 'john.doe@example.com',
+            'telephone' => '0601020304',
+            'dateNaissance' => '1990-01-01',
+            'nationalite' => 'Française',
+            'profession' => 'Développeur',
+        ];
+        return $this->render('profile/profile.html.twig', [
+            'user' => $user
+        ]);
+    }
 } 
