@@ -1,0 +1,24 @@
+{% extends "layout/dashboard.html.twig" %}
+
+{% block content %}
+<div class="flex min-h-screen bg-slate-900">
+    <aside class="w-64 bg-gray-900 p-6 flex flex-col gap-6">
+        <h2 class="text-white text-lg font-semibold mb-4">Filters</h2>
+        <div class="flex flex-col gap-4">
+            {% include 'offenses/components/filter_select.html.twig' with {label: 'Type', name: 'type', options: ['All']} %}
+            {% include 'offenses/components/filter_select.html.twig' with {label: 'Status', name: 'status', options: ['All']} %}
+            {% include 'offenses/components/filter_select.html.twig' with {label: 'Date', name: 'date', options: ['All']} %}
+        </div>
+    </aside>
+    <main class="flex-1 p-10">
+        <div class="flex justify-end mb-4">
+            {% include 'layout/components/add_button.html.twig' with {modal_id: 'add-offense-modal'} %}
+        </div>
+        <h1 class="text-3xl font-bold text-white mb-8">Political Offenses</h1>
+        <div class="bg-[#0a1622] rounded-lg p-6 shadow-lg">
+            {% include 'offenses/components/offenses_table.html.twig' with {offenses: offenses} %}
+        </div>
+        {% include 'layout/components/modal.html.twig' with {id: 'add-offense-modal', title: '/offenses'} %}
+    </main>
+</div>
+{% endblock %} 

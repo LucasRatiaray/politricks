@@ -1,0 +1,33 @@
+<h1 class="text-2xl font-bold text-white mb-6">Partner Profile: {{ selected.name }}</h1>
+<div class="bg-gray-900 rounded-lg p-8 shadow-lg">
+    <h2 class="text-white text-lg font-semibold mb-4">Partner Information</h2>
+    <div class="grid grid-cols-2 gap-6 border-b border-slate-800 pb-6 mb-6">
+        <div>
+            <div class="text-gray-400 text-xs mb-1">Partner Type</div>
+            <div class="text-white">{{ selected.type }}</div>
+        </div>
+        <div>
+            <div class="text-gray-400 text-xs mb-1">Risk Level</div>
+            <div class="text-white">{{ selected.risk }}</div>
+        </div>
+        <div>
+            <div class="text-gray-400 text-xs mb-1">Contact Email</div>
+            <div class="text-white">{{ selected.email|default('-') }}</div>
+        </div>
+        <div>
+            <div class="text-gray-400 text-xs mb-1">Contact Phone</div>
+            <div class="text-white">{{ selected.phone|default('-') }}</div>
+        </div>
+    </div>
+    <h2 class="text-white text-lg font-semibold mb-4">Offense History</h2>
+    <div class="overflow-x-auto mb-6">
+        {% include 'partner/components/offense_history_table.html.twig' with {offenses: selected.offenses|default([])} %}
+    </div>
+    <h2 class="text-white text-lg font-semibold mb-2">Internal Notes</h2>
+    <div class="text-gray-300">{{ selected.notes|default('No notes available.') }}</div>
+</div>
+<script>
+if (window.bindPartnerCardClicks) {
+  setTimeout(window.bindPartnerCardClicks, 10);
+}
+</script> 

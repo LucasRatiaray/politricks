@@ -3,19 +3,15 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\HasLifecycleCallbacks]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
-#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé')]
+#[ORM\InheritanceType('SINGLE_TABLE')]
+#[ORM\DiscriminatorColumn(name: 'discr', type: 'string')]
+#[ORM\DiscriminatorMap(['user' => User::class, 'politicien' => Politicien::class])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -24,8 +20,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Assert\NotBlank(message: "L'email est obligatoire")]
-    #[Assert\Email(message: "L'email '{{ value }}' n'est pas un email valide.")]
     private ?string $email = null;
 
     /**
@@ -38,56 +32,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
-    #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
-    #[Assert\Length(
-        min: 6,
-        minMessage: "Le mot de passe doit contenir au moins {{ limit }} caractères"
-    )]
     private ?string $password = null;
-    
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $createdAt = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $updatedAt = null;
+    #[ORM\Column(length: 100)]
+    private ?string $firstName = null;
 
-    /**
-     * @var Collection<int, Delit>
-     */
-    #[ORM\OneToMany(targetEntity: Delit::class, mappedBy: 'user_id')]
-    private Collection $delits;
+    #[ORM\Column(length: 100)]
+    private ?string $lastName = null;
 
-    /**
-     * @var Collection<int, DelitComplice>
-     */
-    #[ORM\ManyToMany(targetEntity: DelitComplice::class, mappedBy: 'user_id')]
-    private Collection $delitComplices;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTime $dateCreation = null;
 
-    /**
-     * @var Collection<int, UserTypedelit>
-     */
-    #[ORM\ManyToMany(targetEntity: UserTypedelit::class, mappedBy: 'user_id')]
-    private Collection $userTypedelits;
+    #[ORM\Column(nullable: true)]
+    private ?\DateTime $derniereConnexion = null;
 
-    public function __construct()
-    {
-        $this->delits = new ArrayCollection();
-        $this->delitComplices = new ArrayCollection();
-        $this->userTypedelits = new ArrayCollection();
-    }
-    
-    #[ORM\PrePersist]
-    public function setCreatedAtValue(): void
-    {
-        $this->createdAt = new \DateTime();
-        $this->updatedAt = new \DateTime();
-    }
+    #[ORM\Column(nullable: true)]
+    private ?bool $estActif = null;
 
-    #[ORM\PreUpdate]
-    public function setUpdatedAtValue(): void
-    {
-        $this->updatedAt = new \DateTime();
-    }
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $telephone = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTime $dateNaissance = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $nationalite = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $profession = null;
 
     public function getId(): ?int
     {
@@ -118,8 +90,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @see UserInterface
-     *
-     * @return list<string>
      */
     public function getRoles(): array
     {
@@ -163,97 +133,111 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
     }
-    
-    public function getCreatedAt(): ?\DateTimeInterface
+
+    public function getFirstName(): ?string
     {
-        return $this->createdAt;
+        return $this->firstName;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function setFirstName(string $firstName): static
     {
-        return $this->updatedAt;
-    }
-
-    /**
-     * @return Collection<int, Delit>
-     */
-    public function getDelits(): Collection
-    {
-        return $this->delits;
-    }
-
-    public function addDelit(Delit $delit): static
-    {
-        if (!$this->delits->contains($delit)) {
-            $this->delits->add($delit);
-            $delit->setUserId($this);
-        }
+        $this->firstName = $firstName;
 
         return $this;
     }
 
-    public function removeDelit(Delit $delit): static
+    public function getLastName(): ?string
     {
-        if ($this->delits->removeElement($delit)) {
-            // set the owning side to null (unless already changed)
-            if ($delit->getUserId() === $this) {
-                $delit->setUserId(null);
-            }
-        }
+        return $this->lastName;
+    }
+
+    public function setLastName(string $lastName): static
+    {
+        $this->lastName = $lastName;
 
         return $this;
     }
 
-    /**
-     * @return Collection<int, DelitComplice>
-     */
-    public function getDelitComplices(): Collection
+    public function getDateCreation(): ?\DateTime
     {
-        return $this->delitComplices;
+        return $this->dateCreation;
     }
 
-    public function addDelitComplice(DelitComplice $delitComplice): static
+    public function setDateCreation(\DateTime $dateCreation): static
     {
-        if (!$this->delitComplices->contains($delitComplice)) {
-            $this->delitComplices->add($delitComplice);
-            $delitComplice->addUserId($this);
-        }
+        $this->dateCreation = $dateCreation;
 
         return $this;
     }
 
-    public function removeDelitComplice(DelitComplice $delitComplice): static
+    public function getDerniereConnexion(): ?\DateTime
     {
-        if ($this->delitComplices->removeElement($delitComplice)) {
-            $delitComplice->removeUserId($this);
-        }
+        return $this->derniereConnexion;
+    }
+
+    public function setDerniereConnexion(?\DateTime $derniereConnexion): static
+    {
+        $this->derniereConnexion = $derniereConnexion;
 
         return $this;
     }
 
-    /**
-     * @return Collection<int, UserTypedelit>
-     */
-    public function getUserTypedelits(): Collection
+    public function isEstActif(): ?bool
     {
-        return $this->userTypedelits;
+        return $this->estActif;
     }
 
-    public function addUserTypedelit(UserTypedelit $userTypedelit): static
+    public function setEstActif(?bool $estActif): static
     {
-        if (!$this->userTypedelits->contains($userTypedelit)) {
-            $this->userTypedelits->add($userTypedelit);
-            $userTypedelit->addUserId($this);
-        }
+        $this->estActif = $estActif;
 
         return $this;
     }
 
-    public function removeUserTypedelit(UserTypedelit $userTypedelit): static
+    public function getTelephone(): ?string
     {
-        if ($this->userTypedelits->removeElement($userTypedelit)) {
-            $userTypedelit->removeUserId($this);
-        }
+        return $this->telephone;
+    }
+
+    public function setTelephone(?string $telephone): static
+    {
+        $this->telephone = $telephone;
+
+        return $this;
+    }
+
+    public function getDateNaissance(): ?\DateTime
+    {
+        return $this->dateNaissance;
+    }
+
+    public function setDateNaissance(?\DateTime $dateNaissance): static
+    {
+        $this->dateNaissance = $dateNaissance;
+
+        return $this;
+    }
+
+    public function getNationalite(): ?string
+    {
+        return $this->nationalite;
+    }
+
+    public function setNationalite(?string $nationalite): static
+    {
+        $this->nationalite = $nationalite;
+
+        return $this;
+    }
+
+    public function getProfession(): ?string
+    {
+        return $this->profession;
+    }
+
+    public function setProfession(?string $profession): static
+    {
+        $this->profession = $profession;
 
         return $this;
     }

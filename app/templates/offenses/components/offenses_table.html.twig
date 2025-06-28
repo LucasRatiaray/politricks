@@ -1,0 +1,18 @@
+<table class="min-w-full divide-y divide-slate-800">
+    <thead>
+        <tr>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Type</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Description</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Severity</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Politician(s) Involved</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
+        </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-800">
+        {% for offense in offenses %}
+            {% include 'offenses/components/offense_row.html.twig' with {offense: offense} %}
+        {% endfor %}
+    </tbody>
+</table> 

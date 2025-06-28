@@ -1,0 +1,32 @@
+<table class="min-w-full divide-y divide-slate-800">
+    <thead>
+        <tr>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Offense Type</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Description</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
+        </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-800">
+        {% for offense in offenses %}
+            <tr>
+                <td class="px-4 py-2 text-gray-300">{{ offense.date }}</td>
+                <td class="px-4 py-2 text-white">{{ offense.type }}</td>
+                <td class="px-4 py-2 text-gray-300">{{ offense.description }}</td>
+                <td class="px-4 py-2">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold
+                        {% if offense.status == 'Pending' %}bg-blue-700 text-blue-200
+                        {% elseif offense.status == 'Resolved' %}bg-green-700 text-green-200
+                        {% elseif offense.status == 'Under Review' %}bg-yellow-700 text-yellow-200
+                        {% else %}bg-gray-700 text-gray-300{% endif %}">
+                        {{ offense.status }}
+                    </span>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4" class="px-4 py-2 text-gray-500 italic text-center">No offense history</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table> 

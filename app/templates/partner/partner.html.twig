@@ -1,0 +1,21 @@
+{% extends "layout/dashboard.html.twig" %}
+
+{% block content %}
+<div class="flex min-h-screen bg-slate-900">
+    <aside class="w-80 bg-gray-900 p-6 flex flex-col gap-6 max-h-screen overflow-y-auto">
+        <input type="text" placeholder="Search partners" class="mb-4 w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <div class="flex flex-col gap-2 overflow-y-auto">
+            {% for partner in partners %}
+                <div data-partner-id="{{ partner.id }}">
+                    {% include 'partner/components/partner_card.html.twig' with {partner: partner, selected: partner.id == selected.id} %}
+                </div>
+            {% endfor %}
+        </div>
+    </aside>
+    <main class="flex-1 p-10">
+        <div id="partner-detail-container">
+            {% include 'partner/components/partner_detail.html.twig' with {selected: selected} %}
+        </div>
+    </main>
+</div>
+{% endblock %} 

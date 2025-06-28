@@ -1,0 +1,27 @@
+{% extends "layout/dashboard.html.twig" %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-900 flex flex-col">
+    <div class="flex-1 flex flex-col items-center w-full">
+        <div class="w-full max-w-5xl mx-auto mt-8">
+            <h1 class="text-3xl font-bold text-white mb-2">Media Management</h1>
+            <p class="text-gray-400 mb-6">Manage and organize media files and evidence related to political offenses.</p>
+            <div class="mb-4">
+                <input type="text" placeholder="Search media files" class="w-full bg-slate-800 text-gray-200 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div class="flex gap-2 mb-6">
+                {% include 'media/components/filter_select.html.twig' with {label: 'Type', name: 'type', options: ['Type']} %}
+                {% include 'media/components/filter_select.html.twig' with {label: 'Date', name: 'date', options: ['Date']} %}
+                {% include 'media/components/filter_select.html.twig' with {label: 'Confidentiality', name: 'confidentiality', options: ['Confidentiality']} %}
+            </div>
+            <div class="flex gap-2 mb-6 justify-end">
+                {% include 'layout/components/add_button.html.twig' with {modal_id: 'add-media-modal'} %}
+            </div>
+            <div class="bg-gray-900 rounded-lg shadow-lg overflow-x-auto">
+                {% include 'media/components/media_table.html.twig' with {media: media} %}
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'layout/components/modal.html.twig' with {id: 'add-media-modal', title: '/media'} %}
+{% endblock %} 

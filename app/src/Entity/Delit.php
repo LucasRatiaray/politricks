@@ -2,15 +2,24 @@
 
 namespace App\Entity;
 
+use App\Enum\DelitGraviteEnum;
+use App\Enum\DelitStatutEnum;
+use App\Enum\DelitTypeEnum;
 use App\Repository\DelitRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: DelitRepository::class)]
-#[ORM\HasLifecycleCallbacks]
+#[ORM\InheritanceType('SINGLE_TABLE')]
+#[ORM\DiscriminatorColumn(name: 'discr', type: 'string')]
+#[ORM\DiscriminatorMap([
+    'delit' => Delit::class,
+    'financier' => DelitFinancier::class,
+    'fraude' => DelitFraude::class,
+    'vol' => DelitVol::class
+])]
 class Delit
 {
     #[ORM\Id]
@@ -18,71 +27,69 @@ class Delit
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "Le type de délit est obligatoire")]
-    #[Assert\Length(
-        min: 2,
-        max: 255,
-        minMessage: "Le type doit contenir au moins {{ limit }} caractères",
-        maxMessage: "Le type ne peut pas dépasser {{ limit }} caractères"
-    )]
-    private ?string $type = null;
+    #[ORM\Column(enumType: DelitTypeEnum::class)]
+    private ?DelitTypeEnum $type = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank(message: "La description est obligatoire")]
-    #[Assert\Length(
-        min: 10,
-        minMessage: "La description doit contenir au moins {{ limit }} caractères"
-    )]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Assert\NotNull(message: "La date du délit est obligatoire")]
-    private ?\DateTimeInterface $date_delit = null;
+    #[ORM\Column]
+    private ?\DateTime $date = null;
+
+    #[ORM\Column(enumType: DelitStatutEnum::class)]
+    private ?DelitStatutEnum $statut = null;
+
+    #[ORM\Column(enumType: DelitGraviteEnum::class)]
+    private ?DelitGraviteEnum $gravite = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTime $dateDeclaration = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $numeroAffaire = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $procureurResponsable = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?array $temoinsPrincipaux = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?array $preuvesPrincipales = null;
 
     #[ORM\ManyToOne(inversedBy: 'delits')]
-    #[Assert\NotNull(message: "Le lieu est obligatoire")]
-    private ?Lieu $lieu_id = null;
-
-    #[ORM\ManyToOne(inversedBy: 'delits')]
-    #[Assert\NotNull(message: "L'utilisateur est obligatoire")]
-    private ?User $user_id = null;
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $createdAt = null;
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $updatedAt = null;
+    private ?Lieu $lieu = null;
 
     /**
-     * @var Collection<int, Preuve>
+     * @var Collection<int, Commentaire>
      */
-    #[ORM\ManyToMany(targetEntity: Preuve::class, mappedBy: 'delit_id')]
-    private Collection $preuves;
+    #[ORM\OneToMany(targetEntity: Commentaire::class, mappedBy: 'delit')]
+    private Collection $commentaires;
 
     /**
-     * @var Collection<int, DelitComplice>
+     * @var Collection<int, Document>
      */
-    #[ORM\ManyToMany(targetEntity: DelitComplice::class, mappedBy: 'delit_id')]
-    private Collection $delitComplices;
+    #[ORM\OneToMany(targetEntity: Document::class, mappedBy: 'delit')]
+    private Collection $documents;
+
+    /**
+     * @var Collection<int, Politicien>
+     */
+    #[ORM\ManyToMany(targetEntity: Politicien::class, mappedBy: 'delits')]
+    private Collection $politiciens;
+
+    /**
+     * @var Collection<int, Partenaire>
+     */
+    #[ORM\ManyToMany(targetEntity: Partenaire::class, inversedBy: 'delits')]
+    private Collection $partenaires;
 
     public function __construct()
     {
-        $this->preuves = new ArrayCollection();
-        $this->delitComplices = new ArrayCollection();
-    }
-    
-    #[ORM\PrePersist]
-    public function setCreatedAtValue(): void
-    {
-        $this->createdAt = new \DateTime();
-        $this->updatedAt = new \DateTime();
-    }
-
-    #[ORM\PreUpdate]
-    public function setUpdatedAtValue(): void
-    {
-        $this->updatedAt = new \DateTime();
+        $this->commentaires = new ArrayCollection();
+        $this->documents = new ArrayCollection();
+        $this->politiciens = new ArrayCollection();
+        $this->partenaires = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -90,12 +97,12 @@ class Delit
         return $this->id;
     }
 
-    public function getType(): ?string
+    public function getType(): ?DelitTypeEnum
     {
         return $this->type;
     }
 
-    public function setType(string $type): static
+    public function setType(DelitTypeEnum $type): static
     {
         $this->type = $type;
 
@@ -114,102 +121,221 @@ class Delit
         return $this;
     }
 
-    public function getDateDelit(): ?\DateTimeInterface
+    public function getDate(): ?\DateTime
     {
-        return $this->date_delit;
+        return $this->date;
     }
 
-    public function setDateDelit(\DateTimeInterface $date_delit): static
+    public function setDate(\DateTime $date): static
     {
-        $this->date_delit = $date_delit;
+        $this->date = $date;
 
         return $this;
     }
 
-    public function getLieuId(): ?Lieu
+    public function getStatut(): ?DelitStatutEnum
     {
-        return $this->lieu_id;
+        return $this->statut;
     }
 
-    public function setLieuId(?Lieu $lieu_id): static
+    public function setStatut(DelitStatutEnum $statut): static
     {
-        $this->lieu_id = $lieu_id;
+        $this->statut = $statut;
 
         return $this;
     }
-    
-    public function getCreatedAt(): ?\DateTimeInterface
+
+    public function getGravite(): ?DelitGraviteEnum
     {
-        return $this->createdAt;
+        return $this->gravite;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function setGravite(DelitGraviteEnum $gravite): static
     {
-        return $this->updatedAt;
+        $this->gravite = $gravite;
+
+        return $this;
     }
 
-    public function getUserId(): ?User
+    public function getDateDeclaration(): ?\DateTime
     {
-        return $this->user_id;
+        return $this->dateDeclaration;
     }
 
-    public function setUserId(?User $user_id): static
+    public function setDateDeclaration(?\DateTime $dateDeclaration): static
     {
-        $this->user_id = $user_id;
+        $this->dateDeclaration = $dateDeclaration;
+
+        return $this;
+    }
+
+    public function getNumeroAffaire(): ?string
+    {
+        return $this->numeroAffaire;
+    }
+
+    public function setNumeroAffaire(?string $numeroAffaire): static
+    {
+        $this->numeroAffaire = $numeroAffaire;
+
+        return $this;
+    }
+
+    public function getProcureurResponsable(): ?string
+    {
+        return $this->procureurResponsable;
+    }
+
+    public function setProcureurResponsable(?string $procureurResponsable): static
+    {
+        $this->procureurResponsable = $procureurResponsable;
+
+        return $this;
+    }
+
+    public function getTemoinsPrincipaux(): ?array
+    {
+        return $this->temoinsPrincipaux;
+    }
+
+    public function setTemoinsPrincipaux(?array $temoinsPrincipaux): static
+    {
+        $this->temoinsPrincipaux = $temoinsPrincipaux;
+
+        return $this;
+    }
+
+    public function getPreuvesPrincipales(): ?array
+    {
+        return $this->preuvesPrincipales;
+    }
+
+    public function setPreuvesPrincipales(?array $preuvesPrincipales): static
+    {
+        $this->preuvesPrincipales = $preuvesPrincipales;
+
+        return $this;
+    }
+
+    public function getLieu(): ?Lieu
+    {
+        return $this->lieu;
+    }
+
+    public function setLieu(?Lieu $lieu): static
+    {
+        $this->lieu = $lieu;
 
         return $this;
     }
 
     /**
-     * @return Collection<int, Preuve>
+     * @return Collection<int, Commentaire>
      */
-    public function getPreuves(): Collection
+    public function getCommentaires(): Collection
     {
-        return $this->preuves;
+        return $this->commentaires;
     }
 
-    public function addPreufe(Preuve $preufe): static
+    public function addCommentaire(Commentaire $commentaire): static
     {
-        if (!$this->preuves->contains($preufe)) {
-            $this->preuves->add($preufe);
-            $preufe->addDelitId($this);
+        if (!$this->commentaires->contains($commentaire)) {
+            $this->commentaires->add($commentaire);
+            $commentaire->setDelit($this);
         }
 
         return $this;
     }
 
-    public function removePreufe(Preuve $preufe): static
+    public function removeCommentaire(Commentaire $commentaire): static
     {
-        if ($this->preuves->removeElement($preufe)) {
-            $preufe->removeDelitId($this);
+        if ($this->commentaires->removeElement($commentaire)) {
+            // set the owning side to null (unless already changed)
+            if ($commentaire->getDelit() === $this) {
+                $commentaire->setDelit(null);
+            }
         }
 
         return $this;
     }
 
     /**
-     * @return Collection<int, DelitComplice>
+     * @return Collection<int, Document>
      */
-    public function getDelitComplices(): Collection
+    public function getDocuments(): Collection
     {
-        return $this->delitComplices;
+        return $this->documents;
     }
 
-    public function addDelitComplice(DelitComplice $delitComplice): static
+    public function addDocument(Document $document): static
     {
-        if (!$this->delitComplices->contains($delitComplice)) {
-            $this->delitComplices->add($delitComplice);
-            $delitComplice->addDelitId($this);
+        if (!$this->documents->contains($document)) {
+            $this->documents->add($document);
+            $document->setDelit($this);
         }
 
         return $this;
     }
 
-    public function removeDelitComplice(DelitComplice $delitComplice): static
+    public function removeDocument(Document $document): static
     {
-        if ($this->delitComplices->removeElement($delitComplice)) {
-            $delitComplice->removeDelitId($this);
+        if ($this->documents->removeElement($document)) {
+            // set the owning side to null (unless already changed)
+            if ($document->getDelit() === $this) {
+                $document->setDelit(null);
+            }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Politicien>
+     */
+    public function getPoliticiens(): Collection
+    {
+        return $this->politiciens;
+    }
+
+    public function addPoliticien(Politicien $politicien): static
+    {
+        if (!$this->politiciens->contains($politicien)) {
+            $this->politiciens->add($politicien);
+            $politicien->addDelit($this);
+        }
+
+        return $this;
+    }
+
+    public function removePoliticien(Politicien $politicien): static
+    {
+        if ($this->politiciens->removeElement($politicien)) {
+            $politicien->removeDelit($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Partenaire>
+     */
+    public function getPartenaires(): Collection
+    {
+        return $this->partenaires;
+    }
+
+    public function addPartenaire(Partenaire $partenaire): static
+    {
+        if (!$this->partenaires->contains($partenaire)) {
+            $this->partenaires->add($partenaire);
+        }
+
+        return $this;
+    }
+
+    public function removePartenaire(Partenaire $partenaire): static
+    {
+        $this->partenaires->removeElement($partenaire);
 
         return $this;
     }
