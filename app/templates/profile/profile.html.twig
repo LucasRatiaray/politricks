@@ -10,11 +10,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-gray-400 mb-1" for="firstName">Prénom</label>
-                        <input id="firstName" name="firstName" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.firstName }}" />
+                        <input id="firstName" name="firstName" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.firstName|default('') }}" />
                     </div>
                     <div>
                         <label class="block text-gray-400 mb-1" for="lastName">Nom</label>
-                        <input id="lastName" name="lastName" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.lastName }}" />
+                        <input id="lastName" name="lastName" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.lastName|default('') }}" />
                     </div>
                 </div>
             </div>
@@ -23,11 +23,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-gray-400 mb-1" for="email">Email</label>
-                        <input id="email" name="email" type="email" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.email }}" />
+                        <input id="email" name="email" type="email" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.email|default('') }}" />
                     </div>
                     <div>
                         <label class="block text-gray-400 mb-1" for="telephone">Téléphone</label>
-                        <input id="telephone" name="telephone" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.telephone }}" />
+                        <input id="telephone" name="telephone" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.telephone|default('') }}" />
                     </div>
                 </div>
             </div>
@@ -36,15 +36,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-gray-400 mb-1" for="dateNaissance">Date de naissance</label>
-                        <input id="dateNaissance" name="dateNaissance" type="date" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.dateNaissance }}" />
+                        <input id="dateNaissance" name="dateNaissance" type="date" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.dateNaissance ? user.dateNaissance|date('Y-m-d') : '' }}" />
                     </div>
                     <div>
                         <label class="block text-gray-400 mb-1" for="nationalite">Nationalité</label>
-                        <input id="nationalite" name="nationalite" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.nationalite }}" />
+                        <input id="nationalite" name="nationalite" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.nationalite|default('') }}" />
                     </div>
                     <div>
                         <label class="block text-gray-400 mb-1" for="profession">Profession</label>
-                        <input id="profession" name="profession" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.profession }}" />
+                        <input id="profession" name="profession" type="text" class="w-full rounded bg-gray-900 text-white border border-gray-700 px-3 py-2 focus:outline-none focus:border-blue-500" value="{{ user.profession|default('') }}" />
                     </div>
                 </div>
             </div>

@@ -1,0 +1,53 @@
+<form id="add-politician-form" class="space-y-4">
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="firstName">Prénom *</label>
+            <input type="text" id="firstName" name="firstName" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="lastName">Nom *</label>
+            <input type="text" id="lastName" name="lastName" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+        </div>
+    </div>
+    
+    <div>
+        <label class="block text-gray-300 text-sm mb-1" for="email">Email *</label>
+        <input type="email" id="email" name="email" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+    </div>
+    
+    <div>
+        <label class="block text-gray-300 text-sm mb-1" for="password">Mot de passe *</label>
+        <input type="password" id="password" name="password" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="telephone">Téléphone</label>
+            <input type="text" id="telephone" name="telephone" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="nationalite">Nationalité</label>
+            <input type="text" id="nationalite" name="nationalite" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="dateNaissance">Date de naissance</label>
+            <input type="date" id="dateNaissance" name="dateNaissance" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="profession">Profession</label>
+            <input type="text" id="profession" name="profession" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+        </div>
+    </div>
+    
+    <div class="flex justify-end gap-3 pt-4">
+        <button type="button" data-close-modal="add-politician-modal" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors">
+            Annuler
+        </button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+            Ajouter
+        </button>
+    </div>
+</form> 

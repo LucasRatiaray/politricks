@@ -1,0 +1,99 @@
+<h1 class="text-2xl font-bold text-white mb-6">Profil Politicien: {{ selected.name }}</h1>
+<div class="bg-gray-900 rounded-lg p-8 shadow-lg relative">
+    <button type="button" 
+            class="absolute top-4 right-4 px-3 py-1 rounded text-xs font-semibold transition-colors focus:outline-none bg-red-700 text-red-200 hover:bg-red-800"
+            onclick="deletePolitician({{ selected.id }})">
+        Supprimer
+    </button>
+    
+    <div class="flex items-center gap-6 mb-6">
+        <img src="{{ selected.image }}" alt="{{ selected.name }}" class="w-24 h-24 rounded-full object-cover" />
+        <div>
+            <h2 class="text-white text-xl font-semibold mb-2">{{ selected.name }}</h2>
+            <div class="text-blue-400 font-medium">{{ selected.role }}</div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-6 border-b border-slate-800 pb-6 mb-6">
+        <div>
+            <div class="text-gray-400 text-xs mb-1">Email</div>
+            <div class="text-white">{{ selected.email|default('-') }}</div>
+        </div>
+        <div>
+            <div class="text-gray-400 text-xs mb-1">Téléphone</div>
+            <div class="text-white">{{ selected.telephone|default('-') }}</div>
+        </div>
+        <div>
+            <div class="text-gray-400 text-xs mb-1">Nationalité</div>
+            <div class="text-white">{{ selected.nationalite|default('-') }}</div>
+        </div>
+        <div>
+            <div class="text-gray-400 text-xs mb-1">Profession</div>
+            <div class="text-white">{{ selected.profession|default('-') }}</div>
+        </div>
+        <div>
+            <div class="text-gray-400 text-xs mb-1">Date de naissance</div>
+            <div class="text-white">{{ selected.dateNaissance ? selected.dateNaissance|date('d/m/Y') : '-' }}</div>
+        </div>
+        <div>
+            <div class="text-gray-400 text-xs mb-1">Membre depuis</div>
+            <div class="text-white">{{ selected.dateCreation ? selected.dateCreation|date('d/m/Y') : '-' }}</div>
+        </div>
+    </div>
+    
+    <h2 class="text-white text-lg font-semibold mb-4">Biographie</h2>
+    <div class="text-gray-300 mb-6 leading-relaxed">{{ selected.bio|default('Aucune biographie disponible.') }}</div>
+    
+    <h2 class="text-white text-lg font-semibold mb-4">Offenses récentes</h2>
+    {% if selected.offenses and selected.offenses|length > 0 %}
+        <div class="space-y-3 mb-6">
+            {% for offense in selected.offenses %}
+                <div class="bg-gray-800 rounded p-4 border-l-4 border-red-500">
+                    <div class="text-white font-medium">{{ offense.type|default('Type non spécifié') }}</div>
+                    <div class="text-gray-400 text-sm mt-1">{{ offense.description|default('Aucune description disponible.') }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-gray-400 mb-6">Aucune offense enregistrée.</div>
+    {% endif %}
+    
+    <h2 class="text-white text-lg font-semibold mb-4">Timeline</h2>
+    {% if selected.timeline and selected.timeline|length > 0 %}
+        <div class="space-y-3">
+            {% for event in selected.timeline %}
+                <div class="flex items-center gap-3">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <div>
+                        <div class="text-white">{{ event.title|default('Événement') }}</div>
+                        <div class="text-gray-400 text-sm">{{ event.date|default('Date non spécifiée') }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-gray-400">Aucun événement enregistré.</div>
+    {% endif %}
+</div>
+
+<script>
+function deletePolitician(politicianId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce politicien ?')) {
+        fetch(`/politics/${politicianId}/delete`, {
+            method: 'DELETE',
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                window.location.href = '/politics';
+            } else {
+                alert('Erreur: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la suppression du politicien');
+        });
+    }
+}
+</script> 

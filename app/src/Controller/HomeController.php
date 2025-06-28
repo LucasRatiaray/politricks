@@ -4,7 +4,12 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\User;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class HomeController extends AbstractController
 {
@@ -106,50 +111,170 @@ class HomeController extends AbstractController
     }
 
     #[Route('/politics', name: 'app_politics')]
-    public function politics(): Response
+    public function politics(EntityManagerInterface $em): Response
     {
-        $politicians = [
-            [
-                'id' => 1,
-                'name' => 'Liam Harrison',
-                'role' => 'Representative',
-                'offenses' => [
-                    'Campaign Finance Violation',
-                    'Conflict of Interest',
-                    'Misuse of Public Funds',
-                ],
-                'timeline' => [
-                    ['year' => 2017, 'event' => 'Elected to City Council', 'icon' => '🏛️'],
-                    ['year' => 2020, 'event' => 'Announces Candidacy for Mayor', 'icon' => '📢'],
-                    ['year' => 2023, 'event' => 'Wins Mayoral Election', 'icon' => '🏆'],
-                ],
-                'bio' => 'Liam has served as a respected politician known for his strong stance on fiscal responsibility and environmental protection. He has received numerous accolades, including for policies that promoted transparent governance and economic growth. Harrison is recognized for his ability to bring together community stakeholders, maintain consensus, and implement lasting change.',
-                'image' => 'https://randomuser.me/api/portraits/men/32.jpg',
-            ],
-            [
-                'id' => 2,
-                'name' => 'Jessica Ross',
-                'role' => 'Senator',
-                'offenses' => [],
-                'timeline' => [],
-                'bio' => '',
-                'image' => 'https://randomuser.me/api/portraits/women/44.jpg',
-            ],
-            [
-                'id' => 3,
-                'name' => 'Michael Brown',
-                'role' => 'Councilman',
-                'offenses' => [],
-                'timeline' => [],
-                'bio' => '',
-                'image' => 'https://randomuser.me/api/portraits/men/45.jpg',
-            ],
-        ];
-        $selected = $politicians[0];
+        // Récupérer tous les utilisateurs et filtrer côté PHP
+        $allUsers = $em->getRepository(User::class)->findAll();
+        
+        $politicians = [];
+        foreach ($allUsers as $user) {
+            if (in_array('ROLE_POLITICIAN', $user->getRoles())) {
+                $politicians[] = $user;
+            }
+        }
+
+        $politiciansData = [];
+        
+        foreach ($politicians as $politician) {
+            // Générer une image placeholder basée sur le nom
+            $placeholderImage = $this->generatePlaceholderImage($politician->getFirstName(), $politician->getLastName());
+            
+            $politiciansData[] = [
+                'id' => $politician->getId(),
+                'name' => $politician->getFirstName() . ' ' . $politician->getLastName(),
+                'firstName' => $politician->getFirstName(),
+                'lastName' => $politician->getLastName(),
+                'email' => $politician->getEmail(),
+                'role' => $this->getPoliticianRole($politician),
+                'offenses' => [], // À implémenter plus tard avec les vraies données
+                'timeline' => [], // À implémenter plus tard
+                'bio' => $this->generateBio($politician),
+                'image' => $placeholderImage,
+                'telephone' => $politician->getTelephone(),
+                'nationalite' => $politician->getNationalite(),
+                'profession' => $politician->getProfession(),
+                'dateNaissance' => $politician->getDateNaissance(),
+                'dateCreation' => $politician->getDateCreation(),
+            ];
+        }
+
+        $selected = !empty($politiciansData) ? $politiciansData[0] : null;
+        
         return $this->render('politics/politics.html.twig', [
-            'politicians' => $politicians,
+            'politicians' => $politiciansData,
             'selected' => $selected,
         ]);
+    }
+
+    #[Route('/politics/{id}/partial', name: 'app_politics_partial')]
+    public function politicsPartial(int $id, EntityManagerInterface $em): Response
+    {
+        // Récupérer le politicien spécifique
+        $politician = $em->getRepository(User::class)->find($id);
+        
+        if (!$politician || !in_array('ROLE_POLITICIAN', $politician->getRoles())) {
+            throw $this->createNotFoundException('Politicien non trouvé');
+        }
+
+        // Générer une image placeholder basée sur le nom
+        $placeholderImage = $this->generatePlaceholderImage($politician->getFirstName(), $politician->getLastName());
+        
+        $politicianData = [
+            'id' => $politician->getId(),
+            'name' => $politician->getFirstName() . ' ' . $politician->getLastName(),
+            'firstName' => $politician->getFirstName(),
+            'lastName' => $politician->getLastName(),
+            'email' => $politician->getEmail(),
+            'role' => $this->getPoliticianRole($politician),
+            'offenses' => [], // À implémenter plus tard avec les vraies données
+            'timeline' => [], // À implémenter plus tard
+            'bio' => $this->generateBio($politician),
+            'image' => $placeholderImage,
+            'telephone' => $politician->getTelephone(),
+            'nationalite' => $politician->getNationalite(),
+            'profession' => $politician->getProfession(),
+            'dateNaissance' => $politician->getDateNaissance(),
+            'dateCreation' => $politician->getDateCreation(),
+        ];
+
+        return $this->render('politics/components/politician_detail.html.twig', [
+            'selected' => $politicianData,
+        ]);
+    }
+
+    #[Route('/politics/add', name: 'app_politics_add', methods: ['POST'])]
+    public function politicsAdd(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        
+        // Validation des données requises
+        if (empty($data['firstName']) || empty($data['lastName']) || empty($data['email']) || empty($data['password'])) {
+            return new JsonResponse(['success' => false, 'message' => 'Tous les champs obligatoires doivent être remplis']);
+        }
+        
+        // Vérifier si l'email existe déjà
+        $existingUser = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
+        if ($existingUser) {
+            return new JsonResponse(['success' => false, 'message' => 'Un utilisateur avec cet email existe déjà']);
+        }
+        
+        // Créer le nouvel utilisateur
+        $user = new User();
+        $user->setFirstName($data['firstName']);
+        $user->setLastName($data['lastName']);
+        $user->setEmail($data['email']);
+        $user->setPassword($passwordHasher->hashPassword($user, $data['password']));
+        $user->setRoles(['ROLE_POLITICIAN']);
+        
+        // Champs optionnels
+        if (!empty($data['telephone'])) {
+            $user->setTelephone($data['telephone']);
+        }
+        if (!empty($data['nationalite'])) {
+            $user->setNationalite($data['nationalite']);
+        }
+        if (!empty($data['profession'])) {
+            $user->setProfession($data['profession']);
+        }
+        if (!empty($data['dateNaissance'])) {
+            $user->setDateNaissance(new \DateTime($data['dateNaissance']));
+        }
+        
+        try {
+            $em->persist($user);
+            $em->flush();
+            
+            return new JsonResponse(['success' => true, 'message' => 'Politicien ajouté avec succès']);
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => 'Erreur lors de l\'ajout du politicien']);
+        }
+    }
+
+    #[Route('/politics/{id}/delete', name: 'app_politics_delete', methods: ['DELETE'])]
+    public function politicsDelete(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        try {
+            $politician = $em->getRepository(User::class)->find($id);
+            
+            if (!$politician) {
+                return new JsonResponse(['success' => false, 'message' => 'Politicien non trouvé']);
+            }
+            
+            if (!in_array('ROLE_POLITICIAN', $politician->getRoles())) {
+                return new JsonResponse(['success' => false, 'message' => 'Cet utilisateur n\'est pas un politicien']);
+            }
+            
+            // Vérifier s'il y a des relations qui empêchent la suppression
+            // Pour l'instant, on va juste supprimer le rôle POLITICIAN au lieu de supprimer l'utilisateur
+            $roles = $politician->getRoles();
+            $roles = array_filter($roles, function($role) {
+                return $role !== 'ROLE_POLITICIAN';
+            });
+            
+            if (empty($roles)) {
+                $roles = ['ROLE_USER']; // Garder au moins ROLE_USER
+            }
+            
+            $politician->setRoles($roles);
+            $em->flush();
+            
+            return new JsonResponse(['success' => true, 'message' => 'Politicien supprimé avec succès']);
+            
+        } catch (\Exception $e) {
+            // Log l'erreur pour le debugging
+            error_log('Erreur suppression politicien: ' . $e->getMessage());
+            return new JsonResponse(['success' => false, 'message' => 'Erreur lors de la suppression du politicien: ' . $e->getMessage()]);
+        }
     }
 
     #[Route('/partners', name: 'app_partner')]
@@ -357,18 +482,68 @@ class HomeController extends AbstractController
     #[Route('/profile', name: 'app_profile')]
     public function profile(): Response
     {
-        // TODO: remplacer par l'utilisateur connecté
-        $user = [
-            'firstName' => 'John',
-            'lastName' => 'Doe',
-            'email' => 'john.doe@example.com',
-            'telephone' => '0601020304',
-            'dateNaissance' => '1990-01-01',
-            'nationalite' => 'Française',
-            'profession' => 'Développeur',
-        ];
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
         return $this->render('profile/profile.html.twig', [
             'user' => $user
         ]);
+    }
+
+    /**
+     * Génère une image placeholder basée sur les initiales du politicien
+     */
+    private function generatePlaceholderImage(string $firstName, string $lastName): string
+    {
+        $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
+        $colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'];
+        $color = $colors[array_rand($colors)];
+        
+        return "https://ui-avatars.com/api/?name=" . urlencode($initials) . "&background=" . substr($color, 1) . "&color=fff&size=200&bold=true";
+    }
+
+    /**
+     * Détermine le rôle du politicien basé sur son email ou autres critères
+     */
+    private function getPoliticianRole(User $politician): string
+    {
+        $email = $politician->getEmail();
+        
+        if (str_contains($email, 'elysee')) {
+            return 'Président de la République';
+        } elseif (str_contains($email, 'rn.fr')) {
+            return 'Chef de parti politique';
+        } elseif (str_contains($email, 'politicien')) {
+            return 'Politicien';
+        } else {
+            return 'Représentant politique';
+        }
+    }
+
+    /**
+     * Génère une bio basée sur les informations du politicien
+     */
+    private function generateBio(User $politician): string
+    {
+        $firstName = $politician->getFirstName();
+        $lastName = $politician->getLastName();
+        $profession = $politician->getProfession();
+        $nationalite = $politician->getNationalite();
+        
+        $bio = "{$firstName} {$lastName} est un politicien";
+        
+        if ($nationalite) {
+            $bio .= " {$nationalite}";
+        }
+        
+        if ($profession) {
+            $bio .= " spécialisé dans {$profession}";
+        }
+        
+        $bio .= ". Il/elle s'engage activement dans la vie politique et représente les intérêts de ses concitoyens.";
+        
+        return $bio;
     }
 } 

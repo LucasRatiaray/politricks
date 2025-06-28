@@ -3,47 +3,167 @@
 {% block content %}
 <div class="flex min-h-screen bg-slate-900">
     <aside class="w-80 bg-gray-900 p-6 flex flex-col gap-6 max-h-screen overflow-y-auto">
-        <h2 class="text-white text-lg font-semibold mb-4">Politicians</h2>
-        <input type="text" placeholder="Search" class="mb-4 w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <div class="flex flex-col gap-4 overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-white text-lg font-semibold">Politiciens</h2>
+            {% include 'layout/components/add_button.html.twig' with {modal_id: 'add-politician-modal'} %}
+        </div>
+        <input type="text" id="search-politicians" placeholder="Rechercher" class="mb-4 w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <div class="flex flex-col gap-4 overflow-y-auto" id="politicians-list">
             {% for politician in politicians %}
-                {% include 'politics/components/politician_card.html.twig' with {politician: politician, selected: politician.id == selected.id} %}
+                <div class="politician-card" data-politician-id="{{ politician.id }}" data-politician-name="{{ politician.firstName|lower }} {{ politician.lastName|lower }}">
+                    {% include 'politics/components/politician_card.html.twig' with {politician: politician, selected: politician.id == selected.id} %}
+                </div>
             {% endfor %}
         </div>
     </aside>
     <main class="flex-1 p-10 flex flex-col items-center">
-        <div class="flex flex-col items-center">
-            <img src="{{ selected.image }}" alt="{{ selected.name }}" class="w-24 h-24 rounded-full border-4 border-blue-600 shadow mb-4" />
-            <h1 class="text-2xl font-bold text-white">{{ selected.name }}</h1>
-            <div class="text-blue-400 text-sm mb-2">{{ selected.role }}</div>
-            <div class="text-gray-300 text-center max-w-2xl mb-6">{{ selected.bio }}</div>
-            <div class="w-full flex flex-col md:flex-row gap-8">
-                <div class="flex-1">
-                    <h3 class="text-white text-lg font-semibold mb-2">Offenses</h3>
-                    <ul class="list-disc list-inside text-gray-300">
-                        {% for offense in selected.offenses %}
-                            <li>{{ offense }}</li>
-                        {% else %}
-                            <li class="text-gray-500 italic">No offenses</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="flex-1">
-                    <h3 class="text-white text-lg font-semibold mb-2">Timeline</h3>
-                    <ul class="text-gray-300">
-                        {% for event in selected.timeline %}
-                            <li class="flex items-center gap-2 mb-2">
-                                <span>{{ event.icon }}</span>
-                                <span>{{ event.event }}</span>
-                                <span class="ml-auto text-xs text-gray-400">{{ event.year }}</span>
-                            </li>
-                        {% else %}
-                            <li class="text-gray-500 italic">No events</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
+        <div id="politician-detail">
+            {% include 'politics/components/politician_detail.html.twig' with {selected: selected} %}
         </div>
     </main>
 </div>
+
+{#modal #}
+<div id="add-politician-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-[#101c2b] rounded-lg shadow-lg p-8 min-w-[320px] max-w-full">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-white text-lg font-semibold">Ajouter un politicien</h2>
+            <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="add-politician-modal">&times;</button>
+        </div>
+        <div class="text-gray-300">
+            {% include 'politics/components/add_politician_form.html.twig' %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Stock les data des politics
+const politiciansData = {{ politicians|json_encode|raw }};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const politicianCards = document.querySelectorAll('.politician-card');
+    const detailContainer = document.getElementById('politician-detail');
+    const searchInput = document.getElementById('search-politicians');
+    
+    // recherche
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        const politiciansList = document.getElementById('politicians-list');
+        
+        politicianCards.forEach(card => {
+            const politicianName = card.dataset.politicianName;
+            const cardDiv = card.querySelector('div');
+            
+            if (searchTerm === '' || politicianName.includes(searchTerm)) {
+                card.style.display = 'block';
+                cardDiv.classList.remove('opacity-50');
+            } else {
+                card.style.display = 'none';
+                cardDiv.classList.add('opacity-50');
+            }
+        });
+        
+        // pas de resultat
+        const visibleCards = Array.from(politicianCards).filter(card => card.style.display !== 'none');
+        if (visibleCards.length === 0 && searchTerm !== '') {
+            if (!document.getElementById('no-results')) {
+                const noResults = document.createElement('div');
+                noResults.id = 'no-results';
+                noResults.className = 'text-gray-400 text-center py-4';
+                noResults.textContent = 'Aucun politicien trouvé';
+                politiciansList.appendChild(noResults);
+            }
+        } else {
+            const noResults = document.getElementById('no-results');
+            if (noResults) {
+                noResults.remove();
+            }
+        }
+    });
+    
+    politicianCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const politicianId = this.dataset.politicianId;
+            
+            // update le visuel
+            politicianCards.forEach(c => {
+                const cardDiv = c.querySelector('div');
+                cardDiv.classList.remove('bg-gray-800', 'border-l-4', 'border-blue-600');
+                cardDiv.classList.add('hover:bg-gray-800');
+            });
+            
+            const currentCardDiv = this.querySelector('div');
+            currentCardDiv.classList.remove('hover:bg-gray-800');
+            currentCardDiv.classList.add('bg-gray-800', 'border-l-4', 'border-blue-600');
+            
+            // Charger les détails via AJAX
+            fetch(`/politics/${politicianId}/partial`)
+                .then(response => response.text())
+                .then(html => {
+                    detailContainer.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des détails:', error);
+                });
+        });
+    });
+    
+    // Gestion des modals
+    document.querySelectorAll('[data-open-modal]').forEach(button => {
+        button.addEventListener('click', function() {
+            const modalId = this.dataset.openModal;
+            document.getElementById(modalId).classList.remove('hidden');
+        });
+    });
+    
+    document.querySelectorAll('[data-close-modal]').forEach(button => {
+        button.addEventListener('click', function() {
+            const modalId = this.dataset.closeModal;
+            document.getElementById(modalId).classList.add('hidden');
+        });
+    });
+    
+    // Fermer la modal en cliquant à l'extérieur
+    document.querySelectorAll('[id$="-modal"]').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+    });
+    
+    // Gestion du formulaire d'ajout de politicien
+    const addForm = document.getElementById('add-politician-form');
+    if (addForm) {
+        addForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            fetch('/politics/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // Fermer la modal et recharger la page
+                    document.getElementById('add-politician-modal').classList.add('hidden');
+                    window.location.reload();
+                } else {
+                    alert('Erreur: ' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors de l\'ajout du politicien');
+            });
+        });
+    }
+});
+</script>
 {% endblock %} 
