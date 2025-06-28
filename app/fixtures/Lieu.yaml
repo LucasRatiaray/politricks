@@ -1,0 +1,60 @@
+App\Entity\Lieu:
+    lieu_elysee:
+        adresse: '55 rue du Faubourg Saint-Honoré'
+        ville: 'Paris'
+        pays: 'France'
+        codePostal: '75008'
+        latitude: '48.8700'
+        longitude: '2.3165'
+        typeEtablissement: 'Palais présidentiel'
+        estPublic: true
+        niveauSecurite: 'Maximum'
+        capaciteAccueil: 500
+        horaireAcces: 'Sur rendez-vous uniquement'
+        responsableSecurite: 'Service de protection présidentielle'
+        videoSurveillance: true
+
+    lieu_senat:
+        adresse: 'Palais du Luxembourg'
+        ville: 'Paris'
+        pays: 'France'
+        codePostal: '75006'
+        latitude: '48.8482'
+        longitude: '2.3370'
+        typeEtablissement: 'Sénat'
+        estPublic: true
+        niveauSecurite: 'Élevé'
+        capaciteAccueil: 1000
+        horaireAcces: '9h-18h du lundi au vendredi'
+        responsableSecurite: 'Garde républicaine'
+        videoSurveillance: true
+
+    lieu_assemblee:
+        adresse: '126 rue de l''Université'
+        ville: 'Paris'
+        pays: 'France'
+        codePostal: '75007'
+        latitude: '48.8606'
+        longitude: '2.3102'
+        typeEtablissement: 'Assemblée Nationale'
+        estPublic: true
+        niveauSecurite: 'Élevé'
+        capaciteAccueil: 800
+        horaireAcces: '9h-18h selon sessions'
+        responsableSecurite: 'Service de sécurité parlementaire'
+        videoSurveillance: true
+
+    lieu_{1..10}:
+        adresse: '<streetAddress()>'
+        ville: '<city()>'
+        pays: 'France'
+        codePostal: '<postcode()>'
+        latitude: '<latitude(43, 51)>'
+        longitude: '<longitude(-5, 8)>'
+        typeEtablissement: '<randomElement(["Mairie", "Préfecture", "Conseil régional", "Bureau de parti", "Salle de réunion"])>'
+        estPublic: '<boolean(70)>'
+        niveauSecurite: '<randomElement(["Faible", "Modéré", "Élevé"])>'
+        capaciteAccueil: '<numberBetween(50, 1000)>'
+        horaireAcces: '<randomElement(["9h-17h", "9h-18h", "Sur rendez-vous", "24h/24"])>'
+        responsableSecurite: '<name()>'
+        videoSurveillance: '<boolean(80)>'

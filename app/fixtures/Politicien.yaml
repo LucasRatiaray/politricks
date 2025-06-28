@@ -1,0 +1,75 @@
+App\Entity\Politicien:
+    politicien_macron:
+        email: 'emmanuel.macron@elysee.fr'
+        roles: ['ROLE_POLITICIAN', 'ROLE_USER']
+        password: '<password("politician123")>'
+        firstName: 'Emmanuel'
+        lastName: 'Macron'
+        dateCreation: '<dateTimeBetween("-5 years", "now")>'
+        estActif: true
+        telephone: '+33144507000'
+        dateNaissance: '<dateTime("1977-12-21")>'
+        nationalite: 'Française'
+        profession: 'Président de la République'
+        biographie: 'Président de la République française depuis 2017, ancien ministre de l''Économie'
+        fonction: 'Président de la République'
+        dateEntreePolitique: '<dateTime("2012-05-15")>'
+        mandatActuel: 'Président de la République (2017-2027)'
+        circonscription: 'National'
+        salaireMensuel: '15140'
+        declarationPatrimoine: 
+            immobilier: 1200000
+            mobilier: 300000
+            comptes: 150000
+        casierJudiciaire: 'Vierge'
+        parti: '@parti_lrem'
+
+    politicien_lepen:
+        email: 'marine.lepen@rn.fr'
+        roles: ['ROLE_POLITICIAN', 'ROLE_USER']
+        password: '<password("politician123")>'
+        firstName: 'Marine'
+        lastName: 'Le Pen'
+        dateCreation: '<dateTimeBetween("-5 years", "now")>'
+        estActif: true
+        telephone: '+33141209090'
+        dateNaissance: '<dateTime("1968-08-05")>'
+        nationalite: 'Française'
+        profession: 'Députée européenne'
+        biographie: 'Présidente du Rassemblement National, députée européenne'
+        fonction: 'Présidente de parti'
+        dateEntreePolitique: '<dateTime("1986-09-01")>'
+        mandatActuel: 'Députée européenne'
+        circonscription: 'Pas-de-Calais (11ème)'
+        salaireMensuel: '7239'
+        declarationPatrimoine:
+            immobilier: 800000
+            mobilier: 200000
+            comptes: 100000
+        casierJudiciaire: 'Vierge'
+        parti: '@parti_rn'
+
+    politicien_{1..15}:
+        email: '<email()>'
+        roles: ['ROLE_POLITICIAN', 'ROLE_USER']
+        password: '<password("politician123")>'
+        firstName: '<firstName()>'
+        lastName: '<lastName()>'
+        dateCreation: '<dateTimeBetween("-3 years", "now")>'
+        estActif: '<boolean(85)>'
+        telephone: '<phoneNumber()>'
+        dateNaissance: '<dateTimeBetween("-70 years", "-25 years")>'
+        nationalite: 'Française'
+        profession: '<randomElement(["Député", "Sénateur", "Maire", "Conseiller régional", "Ministre"])>'
+        biographie: '<text(200)>'
+        fonction: '<randomElement(["Député", "Sénateur", "Maire", "Ministre", "Secrétaire"])>'
+        dateEntreePolitique: '<dateTimeBetween("-30 years", "-2 years")>'
+        mandatActuel: '<randomElement(["Député", "Sénateur", "Maire", "Conseiller"])>'
+        circonscription: '<city()> (<numberBetween(1, 15)>ème)'
+        salaireMensuel: '<numberBetween(3000, 15000)>'
+        declarationPatrimoine:
+            immobilier: '<numberBetween(200000, 2000000)>'
+            mobilier: '<numberBetween(50000, 500000)>'
+            comptes: '<numberBetween(10000, 300000)>'
+        casierJudiciaire: '<randomElement(["Vierge", "Contraventions mineures"])>'
+        parti: '<randomElement(["@parti_lrem", "@parti_lr", "@parti_ps", "@parti_rn"])>'
