@@ -4,7 +4,7 @@
 <div class="flex min-h-screen bg-slate-900">
     <div class="max-w-2xl mx-auto mt-10 bg-gray-800 rounded-lg p-8 shadow-lg w-full max-h-fit">
         <h2 class="text-2xl font-bold text-white mb-8">Mon profil</h2>
-        <form class="space-y-10">
+        <form id="profile-form" class="space-y-10">
             <div>
                 <h3 class="text-lg font-semibold text-blue-400 mb-4 border-b border-slate-700 pb-2">Identité</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -54,4 +54,41 @@
         </form>
     </div>
 </div>
+
+<script>
+document.getElementById('profile-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Convertir les champs vides en null pour les champs optionnels
+    if (data.telephone === '') data.telephone = null;
+    if (data.nationalite === '') data.nationalite = null;
+    if (data.profession === '') data.profession = null;
+    if (data.dateNaissance === '') data.dateNaissance = null;
+    
+    fetch('/profile/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('Profil mis à jour avec succès !');
+            // Optionnel : recharger la page pour afficher les nouvelles données
+            // window.location.reload();
+        } else {
+            alert('Erreur: ' + result.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de la mise à jour du profil');
+    });
+});
+</script>
 {% endblock %}

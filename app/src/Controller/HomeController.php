@@ -277,6 +277,96 @@ class HomeController extends AbstractController
         }
     }
 
+    #[Route('/politics/{id}/edit', name: 'app_politics_edit', methods: ['GET'])]
+    public function politicsEdit(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user || !$user instanceof User || !in_array('ROLE_ADMIN', $user->getRoles())) {
+            return new JsonResponse(['success' => false, 'message' => 'Accès refusé']);
+        }
+
+        $politician = $em->getRepository(User::class)->find($id);
+        
+        if (!$politician) {
+            return new JsonResponse(['success' => false, 'message' => 'Politicien non trouvé']);
+        }
+        
+        if (!in_array('ROLE_POLITICIAN', $politician->getRoles())) {
+            return new JsonResponse(['success' => false, 'message' => 'Cet utilisateur n\'est pas un politicien']);
+        }
+        
+        $politicianData = [
+            'id' => $politician->getId(),
+            'firstName' => $politician->getFirstName(),
+            'lastName' => $politician->getLastName(),
+            'email' => $politician->getEmail(),
+            'telephone' => $politician->getTelephone(),
+            'nationalite' => $politician->getNationalite(),
+            'profession' => $politician->getProfession(),
+            'dateNaissance' => $politician->getDateNaissance() ? $politician->getDateNaissance()->format('Y-m-d') : null,
+        ];
+
+        return new JsonResponse(['success' => true, 'politician' => $politicianData]);
+    }
+
+    #[Route('/politics/{id}/update', name: 'app_politics_update', methods: ['POST'])]
+    public function politicsUpdate(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user || !$user instanceof User || !in_array('ROLE_ADMIN', $user->getRoles())) {
+            return new JsonResponse(['success' => false, 'message' => 'Accès refusé']);
+        }
+
+        $politician = $em->getRepository(User::class)->find($id);
+        
+        if (!$politician) {
+            return new JsonResponse(['success' => false, 'message' => 'Politicien non trouvé']);
+        }
+        
+        if (!in_array('ROLE_POLITICIAN', $politician->getRoles())) {
+            return new JsonResponse(['success' => false, 'message' => 'Cet utilisateur n\'est pas un politicien']);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        
+        try {
+            // Validation des données requises
+            if (empty($data['firstName']) || empty($data['lastName']) || empty($data['email'])) {
+                return new JsonResponse(['success' => false, 'message' => 'Prénom, nom et email sont obligatoires']);
+            }
+            
+            // Vérifier si l'email n'est pas déjà utilisé par un autre utilisateur
+            $existingUser = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
+            if ($existingUser && $existingUser->getId() !== $politician->getId()) {
+                return new JsonResponse(['success' => false, 'message' => 'Cet email est déjà utilisé par un autre utilisateur']);
+            }
+            
+            // Mise à jour des champs
+            $politician->setFirstName($data['firstName']);
+            $politician->setLastName($data['lastName']);
+            $politician->setEmail($data['email']);
+            
+            // Champs optionnels
+            $politician->setTelephone($data['telephone'] ?? null);
+            $politician->setNationalite($data['nationalite'] ?? null);
+            $politician->setProfession($data['profession'] ?? null);
+            
+            if (!empty($data['dateNaissance'])) {
+                $politician->setDateNaissance(new \DateTime($data['dateNaissance']));
+            } else {
+                $politician->setDateNaissance(null);
+            }
+            
+            $em->flush();
+            
+            return new JsonResponse(['success' => true, 'message' => 'Politicien modifié avec succès']);
+            
+        } catch (\Exception $e) {
+            error_log('Erreur modification politicien: ' . $e->getMessage());
+            return new JsonResponse(['success' => false, 'message' => 'Erreur lors de la modification du politicien']);
+        }
+    }
+
     #[Route('/partners', name: 'app_partner')]
     public function partner(): Response
     {
@@ -490,6 +580,59 @@ class HomeController extends AbstractController
         return $this->render('profile/profile.html.twig', [
             'user' => $user
         ]);
+    }
+
+    #[Route('/profile/update', name: 'app_profile_update', methods: ['POST'])]
+    public function profileUpdate(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user || !$user instanceof User) {
+            return new JsonResponse(['success' => false, 'message' => 'Utilisateur non connecté']);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        
+        try {
+            // Mise à jour des champs de base
+            if (!empty($data['firstName'])) {
+                $user->setFirstName($data['firstName']);
+            }
+            if (!empty($data['lastName'])) {
+                $user->setLastName($data['lastName']);
+            }
+            if (!empty($data['email'])) {
+                // Vérifier si l'email n'est pas déjà utilisé par un autre utilisateur
+                $existingUser = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
+                if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                    return new JsonResponse(['success' => false, 'message' => 'Cet email est déjà utilisé par un autre utilisateur']);
+                }
+                $user->setEmail($data['email']);
+            }
+            
+            // Mise à jour des champs optionnels
+            if (isset($data['telephone'])) {
+                $user->setTelephone($data['telephone'] ?: null);
+            }
+            if (isset($data['nationalite'])) {
+                $user->setNationalite($data['nationalite'] ?: null);
+            }
+            if (isset($data['profession'])) {
+                $user->setProfession($data['profession'] ?: null);
+            }
+            if (!empty($data['dateNaissance'])) {
+                $user->setDateNaissance(new \DateTime($data['dateNaissance']));
+            } elseif (isset($data['dateNaissance']) && empty($data['dateNaissance'])) {
+                $user->setDateNaissance(null);
+            }
+            
+            $em->flush();
+            
+            return new JsonResponse(['success' => true, 'message' => 'Profil mis à jour avec succès']);
+            
+        } catch (\Exception $e) {
+            error_log('Erreur mise à jour profil: ' . $e->getMessage());
+            return new JsonResponse(['success' => false, 'message' => 'Erreur lors de la mise à jour du profil']);
+        }
     }
 
     /**
