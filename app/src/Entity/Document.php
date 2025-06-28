@@ -79,7 +79,7 @@ class Document
     private ?Delit $delit = null;
 
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'documentsEnfants')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?self $documentParent = null;
 
     /**

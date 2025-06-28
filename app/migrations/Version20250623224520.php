@@ -47,7 +47,7 @@ final class Version20250623224520 extends AbstractMigration
             DROP SEQUENCE politicien_id_seq CASCADE
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE lieu (id SERIAL NOT NULL, adresse VARCHAR(255) NOT NULL, ville VARCHAR(255) NOT NULL, pays VARCHAR(100) NOT NULL, code�postal VARCHAR(10) NOT NULL, latitude NUMERIC(10, 8) DEFAULT NULL, longitude NUMERIC(11, 8) DEFAULT NULL, type_etablissement VARCHAR(100) DEFAULT NULL, est_public BOOLEAN DEFAULT NULL, niveau_securite VARCHAR(50) DEFAULT NULL, capacite_accueil INT DEFAULT NULL, horaire_acces VARCHAR(255) DEFAULT NULL, responsable_securite VARCHAR(255) DEFAULT NULL, video_surveillance BOOLEAN DEFAULT NULL, PRIMARY KEY(id))
+            CREATE TABLE lieu (id SERIAL NOT NULL, adresse VARCHAR(255) NOT NULL, ville VARCHAR(255) NOT NULL, pays VARCHAR(100) NOT NULL, codepostal VARCHAR(10) NOT NULL, latitude NUMERIC(10, 8) DEFAULT NULL, longitude NUMERIC(11, 8) DEFAULT NULL, type_etablissement VARCHAR(100) DEFAULT NULL, est_public BOOLEAN DEFAULT NULL, niveau_securite VARCHAR(50) DEFAULT NULL, capacite_accueil INT DEFAULT NULL, horaire_acces VARCHAR(255) DEFAULT NULL, responsable_securite VARCHAR(255) DEFAULT NULL, video_surveillance BOOLEAN DEFAULT NULL, PRIMARY KEY(id))
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE messenger_messages (id BIGSERIAL NOT NULL, body TEXT NOT NULL, headers TEXT NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, available_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, delivered_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))

@@ -31,3 +31,5 @@ app/phpunit.xml
 app/public/assets/
 app/assets/vendor/
 ###< symfony/asset-mapper ###
+
+/vendor

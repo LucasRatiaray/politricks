@@ -26,7 +26,7 @@ class Lieu
     private ?string $pays = null;
 
     #[ORM\Column(length: 10)]
-    private ?string $code�Postal = null;
+    private ?string $codePostal = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 8, nullable: true)]
     private ?string $latitude = null;
@@ -107,14 +107,14 @@ class Lieu
         return $this;
     }
 
-    public function getCode�Postal(): ?string
+    public function getCodePostal(): ?string
     {
-        return $this->code�Postal;
+        return $this->codePostal;
     }
 
-    public function setCode�Postal(string $code�Postal): static
+    public function setCodePostal(string $codePostal): static
     {
-        $this->code�Postal = $code�Postal;
+        $this->codePostal = $codePostal;
 
         return $this;
     }
