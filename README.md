@@ -324,3 +324,7 @@ Si vous rencontrez des problèmes avec l'application :
 
 1. Ajouter une entité "PoliticienTypeDelit", qui sera une relation ManyToMany entre "User" et "TypeDelit". Cela permettra de lier un politicien à un type de délit spécifique.
 2. Ajouter une entité "StatutDelit", qui sera une relation OneToMany entre "Delit" et "StatutDélit". Cela permettra de suivre le statut d'un délit (par exemple, en cours, résolu, etc.).
+
+## Identifiants de connexion Administrateur
+- Email : `admin@politricks.com`
+- Mot de passe : `password`

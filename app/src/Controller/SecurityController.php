@@ -21,12 +21,17 @@ class SecurityController extends AbstractController
         }
 
         $error = $authenticationUtils->getLastAuthenticationError();
-
         $lastUsername = $authenticationUtils->getLastUsername();
+
+        // pour les messages d'erreur utilisateur
+        $errorMessage = null;
+        if ($error) {
+            $errorMessage = 'Email ou mot de passe incorrect.';
+        }
 
         return $this->render('security/login.html.twig', [
             'last_username' => $lastUsername,
-            'error' => $error,
+            'error' => $errorMessage,
         ]);
     }
 
@@ -38,35 +43,79 @@ class SecurityController extends AbstractController
         }
 
         $error = null;
-        $last_username = '';
+        $formData = [];
 
         if ($request->isMethod('POST')) {
+            // Récupération des données du formulaire
             $email = $request->request->get('email');
             $password = $request->request->get('password');
             $confirmPassword = $request->request->get('confirm_password');
+            $firstName = $request->request->get('firstName');
+            $lastName = $request->request->get('lastName');
+            $telephone = $request->request->get('telephone');
+            $dateNaissance = $request->request->get('dateNaissance');
+            $nationalite = $request->request->get('nationalite');
+            $profession = $request->request->get('profession');
 
-            if (!$email || !$password || !$confirmPassword) {
-                $error = 'Tous les champs sont obligatoires.';
+            // Stockage des données pour réaffichage en cas d'erreur
+            $formData = [
+                'email' => $email,
+                'firstName' => $firstName,
+                'lastName' => $lastName,
+                'telephone' => $telephone,
+                'dateNaissance' => $dateNaissance,
+                'nationalite' => $nationalite,
+                'profession' => $profession,
+            ];
+
+            // Validation des champs obligatoires
+            if (!$email || !$password || !$confirmPassword || !$firstName || !$lastName) {
+                $error = 'Tous les champs obligatoires doivent être remplis.';
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $error = 'Veuillez saisir une adresse email valide.';
+            } elseif (strlen($password) < 6) {
+                $error = 'Le mot de passe doit contenir au moins 6 caractères.';
             } elseif ($password !== $confirmPassword) {
                 $error = 'Les mots de passe ne correspondent pas.';
             } else {
+                // Vérification si l'email existe déjà
                 $existingUser = $em->getRepository(User::class)->findOneBy(['email' => $email]);
                 if ($existingUser) {
                     $error = 'Un compte existe déjà avec cet email.';
                 } else {
+                    // Création du nouvel utilisateur
                     $user = new User();
                     $user->setEmail($email);
                     $user->setPassword($passwordHasher->hashPassword($user, $password));
+                    $user->setFirstName($firstName);
+                    $user->setLastName($lastName);
+                    
+                    // Champs optionnels
+                    if ($telephone) {
+                        $user->setTelephone($telephone);
+                    }
+                    if ($dateNaissance) {
+                        $user->setDateNaissance(new \DateTime($dateNaissance));
+                    }
+                    if ($nationalite) {
+                        $user->setNationalite($nationalite);
+                    }
+                    if ($profession) {
+                        $user->setProfession($profession);
+                    }
+
                     $em->persist($user);
                     $em->flush();
+
+                    // Redirection vers la page de login avec un message de succès
+                    $this->addFlash('success', 'Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter.');
                     return $this->redirectToRoute('app_login');
                 }
             }
-            $last_username = $email;
         }
 
         return $this->render('security/register.html.twig', [
-            'last_username' => $last_username,
+            'form_data' => $formData,
             'error' => $error,
         ]);
     }

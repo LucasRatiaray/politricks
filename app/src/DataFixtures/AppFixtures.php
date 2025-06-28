@@ -23,7 +23,7 @@ class AppFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
-        $passwordHash = '$2y$13$KIXQ4QdQFQJ6QdQFQJ6QdOQdQFQJ6QdQFQJ6QdQFQJ6QdQFQJ6QdQ'; // hash de "password"
+        $passwordHash = '$2y$13$JFjWZsbpfZXIPranyB44deXu5l8vffHUpIKEmkG0xiEi2552AR1ou'; // hash de "password" fait avec : docker exec -it politricks-php-1 php bin/console security:hash-password
 
         // Créer les utilisateurs
         $users = $this->createUsers($manager, $passwordHash);
