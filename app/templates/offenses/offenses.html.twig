@@ -5,9 +5,9 @@
     <aside class="w-64 bg-gray-900 p-6 flex flex-col gap-6">
         <h2 class="text-white text-lg font-semibold mb-4">Filters</h2>
         <div class="flex flex-col gap-4">
-            {% include 'offenses/components/filter_select.html.twig' with {label: 'Type', name: 'type', options: ['All']} %}
-            {% include 'offenses/components/filter_select.html.twig' with {label: 'Status', name: 'status', options: ['All']} %}
-            {% include 'offenses/components/filter_select.html.twig' with {label: 'Date', name: 'date', options: ['All']} %}
+            {% include 'offenses/components/filter_select.html.twig' with {label: 'Type', name: 'type', options: ['Tous']} %}
+            {% include 'offenses/components/filter_select.html.twig' with {label: 'Status', name: 'status', options: ['Tous']} %}
+            {% include 'offenses/components/filter_select.html.twig' with {label: 'Date', name: 'date', options: ['Toutes']} %}
         </div>
     </aside>
     <main class="flex-1 p-10">

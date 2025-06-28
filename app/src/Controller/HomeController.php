@@ -10,6 +10,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\User;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use App\Entity\Partenaire;
+use App\Entity\PartenairePhysique;
+use App\Entity\PartenaireMoral;
+use App\Enum\PartenaireNiveauRisqueEnum;
 
 class HomeController extends AbstractController
 {
@@ -368,125 +372,366 @@ class HomeController extends AbstractController
     }
 
     #[Route('/partners', name: 'app_partner')]
-    public function partner(): Response
+    public function partner(EntityManagerInterface $em): Response
     {
-        $partners = [
-            [
-                'id' => 1,
-                'name' => 'Ethan Carter',
-                'risk' => 'High',
-                'type' => 'Individual',
-                'email' => 'ethan.carter@email.com',
-                'phone' => '+1-555-123-4567',
-                'offenses' => [
-                    [
-                        'date' => '2023-05-15',
-                        'type' => 'Campaign Finance Violation',
-                        'description' => 'Exceeded contribution limits',
-                        'status' => 'Pending',
-                    ],
-                    [
-                        'date' => '2023-08-22',
-                        'type' => 'Misleading Advertising',
-                        'description' => 'False claims in campaign ads',
-                        'status' => 'Resolved',
-                    ],
-                    [
-                        'date' => '2024-01-10',
-                        'type' => 'Ethical Misconduct',
-                        'description' => 'Inappropriate use of public funds',
-                        'status' => 'Under Review',
-                    ],
-                ],
-                'notes' => 'Ethan Carter has a history of high-risk behavior, including multiple offenses related to campaign finance and ethical conduct. Close monitoring is recommended. Further investigation into recent activities is warranted.',
-            ],
-            [
-                'id' => 2,
-                'name' => 'Civic Action Group',
-                'risk' => 'Medium',
-                'type' => 'Organization',
-                'email' => 'contact@civicgroup.org',
-                'phone' => '+1-555-222-3333',
-                'offenses' => [],
-                'notes' => 'Civic Action Group is a medium-risk organization focused on community engagement.',
-            ],
-            [
-                'id' => 3,
-                'name' => 'Olivia Bennett',
-                'risk' => 'Low',
-                'type' => 'Individual',
-                'email' => 'olivia.bennett@email.com',
-                'phone' => '+1-555-987-6543',
-                'offenses' => [],
-                'notes' => 'Olivia Bennett is a low-risk individual with no known offenses.',
-            ],
-        ];
-        $selected = $partners[0];
+        // Récupérer tous les partenaires de la base de données
+        $partenaires = $em->getRepository(Partenaire::class)->findAll();
+        
+        // Fonction helper pour formater les dates de manière sécurisée
+        $formatDate = function($date) {
+            if ($date instanceof \DateTime) {
+                return $date->format('d/m/Y');
+            }
+            return null;
+        };
+        
+        $partnersData = [];
+        foreach ($partenaires as $partenaire) {
+            // Déterminer le type de partenaire
+            $type = 'Partenaire';
+            if ($partenaire instanceof PartenairePhysique) {
+                $type = 'Individuel';
+                $name = $partenaire->getPrenom() . ' ' . $partenaire->getNomFamille();
+            } elseif ($partenaire instanceof PartenaireMoral) {
+                $type = 'Organisation';
+                $name = $partenaire->getRaisonSociale();
+            } else {
+                $name = $partenaire->getNom();
+            }
+            
+            // Récupérer les délits associés
+            $delits = [];
+            foreach ($partenaire->getDelits() as $delit) {
+                $delits[] = [
+                    'date' => $delit->getDateDelit() ? $delit->getDateDelit()->format('d/m/Y') : 'Date inconnue',
+                    'type' => $delit->getType()->value ?? 'Type inconnu',
+                    'description' => $delit->getDescription() ?? 'Aucune description',
+                    'status' => $delit->getStatut()->value ?? 'Statut inconnu',
+                ];
+            }
+            
+            $partnersData[] = [
+                'id' => $partenaire->getId(),
+                'name' => $name,
+                'risk' => $partenaire->getNiveauRisque() ? $partenaire->getNiveauRisque()->value : 'Inconnu',
+                'type' => $type,
+                'email' => $partenaire->getEmail(),
+                'phone' => $partenaire->getTelephone(),
+                'offenses' => $delits,
+                'notes' => $partenaire->getNotes(),
+                'adresse' => $partenaire->getAdresse(),
+                'ville' => $partenaire->getVille(),
+                'codePostal' => $partenaire->getCodePostal(),
+                'pays' => $partenaire->getPays(),
+                'siteWeb' => $partenaire->getSiteWeb(),
+                'dateCreation' => $formatDate($partenaire->getDateCreation()),
+                'datePremiereCollaboration' => $formatDate($partenaire->getDatePremiereCollaboration()),
+                'nombreDelitsImplique' => $partenaire->getNombreDelitsImplique(),
+                'estActif' => $partenaire->isEstActif(),
+                'commentairesInternes' => $partenaire->getCommentairesInternes(),
+                // Champs spécifiques aux partenaires physiques
+                'prenom' => $partenaire instanceof PartenairePhysique ? $partenaire->getPrenom() : null,
+                'nomFamille' => $partenaire instanceof PartenairePhysique ? $partenaire->getNomFamille() : null,
+                'dateNaissance' => $partenaire instanceof PartenairePhysique ? $formatDate($partenaire->getDateNaissance()) : null,
+                'lieuNaissance' => $partenaire instanceof PartenairePhysique ? $partenaire->getLieuNaissance() : null,
+                'nationalite' => $partenaire instanceof PartenairePhysique ? $partenaire->getNationalite() : null,
+                'profession' => $partenaire instanceof PartenairePhysique ? $partenaire->getProfession() : null,
+                'numeroSecu' => $partenaire instanceof PartenairePhysique ? $partenaire->getNumeroSecu() : null,
+                'numeroCNI' => $partenaire instanceof PartenairePhysique ? $partenaire->getNumeroCNI() : null,
+                'situationFamiliale' => $partenaire instanceof PartenairePhysique ? $partenaire->getSituationFamiliale() : null,
+                'casierJudiciaire' => $partenaire instanceof PartenairePhysique ? $partenaire->isCasierJudiciaire() : null,
+                'fortuneEstimee' => $partenaire instanceof PartenairePhysique ? $partenaire->getFortuneEstimee() : null,
+                // Champs spécifiques aux partenaires moraux
+                'raisonSociale' => $partenaire instanceof PartenaireMoral ? $partenaire->getRaisonSociale() : null,
+                'formeJuridique' => $partenaire instanceof PartenaireMoral ? $partenaire->getFormeJuridique() : null,
+                'siret' => $partenaire instanceof PartenaireMoral ? $partenaire->getSiret() : null,
+                'secteurActivite' => $partenaire instanceof PartenaireMoral ? $partenaire->getSecteurActivite() : null,
+                'dirigeantPrincipal' => $partenaire instanceof PartenaireMoral ? $partenaire->getDirigeantPrincipal() : null,
+                'chiffreAffaires' => $partenaire instanceof PartenaireMoral ? $partenaire->getChiffreAffaires() : null,
+                'nombreEmployes' => $partenaire instanceof PartenaireMoral ? $partenaire->getNombreEmployes() : null,
+                'paysFiscal' => $partenaire instanceof PartenaireMoral ? $partenaire->getPaysFiscal() : null,
+                'dateCreationEntreprise' => $partenaire instanceof PartenaireMoral ? $formatDate($partenaire->getDateCreationEntreprise()) : null,
+                'capitalSocial' => $partenaire instanceof PartenaireMoral ? $partenaire->getCapitalSocial() : null,
+            ];
+        }
+        
+        $selected = !empty($partnersData) ? $partnersData[0] : null;
+        
         return $this->render('partner/partner.html.twig', [
-            'partners' => $partners,
+            'partners' => $partnersData,
             'selected' => $selected,
         ]);
     }
 
     #[Route('/partners/{id}/partial', name: 'app_partner_partial')]
-    public function partnerPartial(int $id): Response
+    public function partnerPartial(int $id, EntityManagerInterface $em): Response
     {
-        $partners = [
-            [
-                'id' => 1,
-                'name' => 'Ethan Carter',
-                'risk' => 'High',
-                'type' => 'Individual',
-                'email' => 'ethan.carter@email.com',
-                'phone' => '+1-555-123-4567',
-                'offenses' => [
-                    [
-                        'date' => '2023-05-15',
-                        'type' => 'Campaign Finance Violation',
-                        'description' => 'Exceeded contribution limits',
-                        'status' => 'Pending',
-                    ],
-                    [
-                        'date' => '2023-08-22',
-                        'type' => 'Misleading Advertising',
-                        'description' => 'False claims in campaign ads',
-                        'status' => 'Resolved',
-                    ],
-                    [
-                        'date' => '2024-01-10',
-                        'type' => 'Ethical Misconduct',
-                        'description' => 'Inappropriate use of public funds',
-                        'status' => 'Under Review',
-                    ],
-                ],
-                'notes' => 'Ethan Carter has a history of high-risk behavior, including multiple offenses related to campaign finance and ethical conduct. Close monitoring is recommended. Further investigation into recent activities is warranted.',
-            ],
-            [
-                'id' => 2,
-                'name' => 'Civic Action Group',
-                'risk' => 'Medium',
-                'type' => 'Organization',
-                'email' => 'contact@civicgroup.org',
-                'phone' => '+1-555-222-3333',
-                'offenses' => [],
-                'notes' => 'Civic Action Group is a medium-risk organization focused on community engagement.',
-            ],
-            [
-                'id' => 3,
-                'name' => 'Olivia Bennett',
-                'risk' => 'Low',
-                'type' => 'Individual',
-                'email' => 'olivia.bennett@email.com',
-                'phone' => '+1-555-987-6543',
-                'offenses' => [],
-                'notes' => 'Olivia Bennett is a low-risk individual with no known offenses.',
-            ],
+        $partenaire = $em->getRepository(Partenaire::class)->find($id);
+        
+        if (!$partenaire) {
+            throw $this->createNotFoundException('Partenaire non trouvé');
+        }
+        
+        // Fonction helper pour formater les dates de manière sécurisée
+        $formatDate = function($date) {
+            if ($date instanceof \DateTime) {
+                return $date->format('d/m/Y');
+            }
+            return null;
+        };
+        
+        // Déterminer le type de partenaire
+        $type = 'Partenaire';
+        if ($partenaire instanceof PartenairePhysique) {
+            $type = 'Individuel';
+            $name = $partenaire->getPrenom() . ' ' . $partenaire->getNomFamille();
+        } elseif ($partenaire instanceof PartenaireMoral) {
+            $type = 'Organisation';
+            $name = $partenaire->getRaisonSociale();
+        } else {
+            $name = $partenaire->getNom();
+        }
+        
+        // Récupérer les délits associés
+        $delits = [];
+        foreach ($partenaire->getDelits() as $delit) {
+            $delits[] = [
+                'date' => $delit->getDateDelit() ? $delit->getDateDelit()->format('d/m/Y') : 'Date inconnue',
+                'type' => $delit->getType()->value ?? 'Type inconnu',
+                'description' => $delit->getDescription() ?? 'Aucune description',
+                'status' => $delit->getStatut()->value ?? 'Statut inconnu',
+            ];
+        }
+        
+        $selected = [
+            'id' => $partenaire->getId(),
+            'name' => $name,
+            'risk' => $partenaire->getNiveauRisque() ? $partenaire->getNiveauRisque()->value : 'Inconnu',
+            'type' => $type,
+            'email' => $partenaire->getEmail(),
+            'phone' => $partenaire->getTelephone(),
+            'offenses' => $delits,
+            'notes' => $partenaire->getNotes(),
+            'adresse' => $partenaire->getAdresse(),
+            'ville' => $partenaire->getVille(),
+            'codePostal' => $partenaire->getCodePostal(),
+            'pays' => $partenaire->getPays(),
+            'siteWeb' => $partenaire->getSiteWeb(),
+            'dateCreation' => $formatDate($partenaire->getDateCreation()),
+            'datePremiereCollaboration' => $formatDate($partenaire->getDatePremiereCollaboration()),
+            'nombreDelitsImplique' => $partenaire->getNombreDelitsImplique(),
+            'estActif' => $partenaire->isEstActif(),
+            'commentairesInternes' => $partenaire->getCommentairesInternes(),
+            // Champs spécifiques aux partenaires physiques
+            'prenom' => $partenaire instanceof PartenairePhysique ? $partenaire->getPrenom() : null,
+            'nomFamille' => $partenaire instanceof PartenairePhysique ? $partenaire->getNomFamille() : null,
+            'dateNaissance' => $partenaire instanceof PartenairePhysique ? $formatDate($partenaire->getDateNaissance()) : null,
+            'lieuNaissance' => $partenaire instanceof PartenairePhysique ? $partenaire->getLieuNaissance() : null,
+            'nationalite' => $partenaire instanceof PartenairePhysique ? $partenaire->getNationalite() : null,
+            'profession' => $partenaire instanceof PartenairePhysique ? $partenaire->getProfession() : null,
+            'numeroSecu' => $partenaire instanceof PartenairePhysique ? $partenaire->getNumeroSecu() : null,
+            'numeroCNI' => $partenaire instanceof PartenairePhysique ? $partenaire->getNumeroCNI() : null,
+            'situationFamiliale' => $partenaire instanceof PartenairePhysique ? $partenaire->getSituationFamiliale() : null,
+            'casierJudiciaire' => $partenaire instanceof PartenairePhysique ? $partenaire->isCasierJudiciaire() : null,
+            'fortuneEstimee' => $partenaire instanceof PartenairePhysique ? $partenaire->getFortuneEstimee() : null,
+            // Champs spécifiques aux partenaires moraux
+            'raisonSociale' => $partenaire instanceof PartenaireMoral ? $partenaire->getRaisonSociale() : null,
+            'formeJuridique' => $partenaire instanceof PartenaireMoral ? $partenaire->getFormeJuridique() : null,
+            'siret' => $partenaire instanceof PartenaireMoral ? $partenaire->getSiret() : null,
+            'secteurActivite' => $partenaire instanceof PartenaireMoral ? $partenaire->getSecteurActivite() : null,
+            'dirigeantPrincipal' => $partenaire instanceof PartenaireMoral ? $partenaire->getDirigeantPrincipal() : null,
+            'chiffreAffaires' => $partenaire instanceof PartenaireMoral ? $partenaire->getChiffreAffaires() : null,
+            'nombreEmployes' => $partenaire instanceof PartenaireMoral ? $partenaire->getNombreEmployes() : null,
+            'paysFiscal' => $partenaire instanceof PartenaireMoral ? $partenaire->getPaysFiscal() : null,
+            'dateCreationEntreprise' => $partenaire instanceof PartenaireMoral ? $formatDate($partenaire->getDateCreationEntreprise()) : null,
+            'capitalSocial' => $partenaire instanceof PartenaireMoral ? $partenaire->getCapitalSocial() : null,
         ];
-        $selected = array_filter($partners, fn($p) => $p['id'] == $id);
-        $selected = $selected ? array_values($selected)[0] : $partners[0];
+        
         return $this->render('partner/components/partner_detail.html.twig', [
             'selected' => $selected,
         ]);
+    }
+
+    #[Route('/partners/{id}/edit', name: 'app_partner_edit', methods: ['GET'])]
+    public function partnerEdit(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user || !$user instanceof User || !in_array('ROLE_ADMIN', $user->getRoles())) {
+            return new JsonResponse(['success' => false, 'message' => 'Accès refusé']);
+        }
+
+        $partenaire = $em->getRepository(Partenaire::class)->find($id);
+        
+        if (!$partenaire) {
+            return new JsonResponse(['success' => false, 'message' => 'Partenaire non trouvé']);
+        }
+        
+        // Préparer les données du partenaire
+        $partnerData = [
+            'id' => $partenaire->getId(),
+            'nom' => $partenaire->getNom(),
+            'email' => $partenaire->getEmail(),
+            'telephone' => $partenaire->getTelephone(),
+            'niveauRisque' => $partenaire->getNiveauRisque()->value ?? 'modere',
+            'adresse' => $partenaire->getAdresse(),
+            'ville' => $partenaire->getVille(),
+            'codePostal' => $partenaire->getCodePostal(),
+            'pays' => $partenaire->getPays(),
+            'siteWeb' => $partenaire->getSiteWeb(),
+            'dateCreation' => $partenaire->getDateCreation() ? $partenaire->getDateCreation()->format('Y-m-d') : null,
+            'datePremiereCollaboration' => $partenaire->getDatePremiereCollaboration() ? $partenaire->getDatePremiereCollaboration()->format('Y-m-d') : null,
+            'nombreDelitsImplique' => $partenaire->getNombreDelitsImplique(),
+            'estActif' => $partenaire->isEstActif(),
+            'notes' => $partenaire->getNotes(),
+            'commentairesInternes' => $partenaire->getCommentairesInternes(),
+        ];
+        
+        // Ajouter les données spécifiques selon le type
+        if ($partenaire instanceof PartenairePhysique) {
+            $partnerData['type'] = 'Individuel';
+            $partnerData['prenom'] = $partenaire->getPrenom();
+            $partnerData['nomFamille'] = $partenaire->getNomFamille();
+            $partnerData['dateNaissance'] = $partenaire->getDateNaissance() ? $partenaire->getDateNaissance()->format('Y-m-d') : null;
+            $partnerData['lieuNaissance'] = $partenaire->getLieuNaissance();
+            $partnerData['nationalite'] = $partenaire->getNationalite();
+            $partnerData['profession'] = $partenaire->getProfession();
+            $partnerData['numeroSecu'] = $partenaire->getNumeroSecu();
+            $partnerData['numeroCNI'] = $partenaire->getNumeroCNI();
+            $partnerData['situationFamiliale'] = $partenaire->getSituationFamiliale();
+            $partnerData['casierJudiciaire'] = $partenaire->isCasierJudiciaire();
+            $partnerData['fortuneEstimee'] = $partenaire->getFortuneEstimee();
+        } elseif ($partenaire instanceof PartenaireMoral) {
+            $partnerData['type'] = 'Organisation';
+            $partnerData['raisonSociale'] = $partenaire->getRaisonSociale();
+            $partnerData['formeJuridique'] = $partenaire->getFormeJuridique();
+            $partnerData['siret'] = $partenaire->getSiret();
+            $partnerData['secteurActivite'] = $partenaire->getSecteurActivite();
+            $partnerData['dirigeantPrincipal'] = $partenaire->getDirigeantPrincipal();
+            $partnerData['chiffreAffaires'] = $partenaire->getChiffreAffaires();
+            $partnerData['nombreEmployes'] = $partenaire->getNombreEmployes();
+            $partnerData['paysFiscal'] = $partenaire->getPaysFiscal();
+            $partnerData['dateCreationEntreprise'] = $partenaire->getDateCreationEntreprise() ? $partenaire->getDateCreationEntreprise()->format('Y-m-d') : null;
+            $partnerData['capitalSocial'] = $partenaire->getCapitalSocial();
+        } else {
+            $partnerData['type'] = 'Partenaire';
+        }
+
+        return new JsonResponse(['success' => true, 'partner' => $partnerData]);
+    }
+
+    #[Route('/partners/{id}/update', name: 'app_partner_update', methods: ['POST'])]
+    public function partnerUpdate(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user || !$user instanceof User || !in_array('ROLE_ADMIN', $user->getRoles())) {
+            return new JsonResponse(['success' => false, 'message' => 'Accès refusé']);
+        }
+
+        $partenaire = $em->getRepository(Partenaire::class)->find($id);
+        
+        if (!$partenaire) {
+            return new JsonResponse(['success' => false, 'message' => 'Partenaire non trouvé']);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        
+        try {
+            // Validation des données requises
+            if (empty($data['nom']) || empty($data['email'])) {
+                return new JsonResponse(['success' => false, 'message' => 'Nom et email sont obligatoires']);
+            }
+            
+            // Vérifier si l'email n'est pas déjà utilisé par un autre partenaire
+            $existingPartner = $em->getRepository(Partenaire::class)->findOneBy(['email' => $data['email']]);
+            if ($existingPartner && $existingPartner->getId() !== $partenaire->getId()) {
+                return new JsonResponse(['success' => false, 'message' => 'Cet email est déjà utilisé par un autre partenaire']);
+            }
+            
+            // Mise à jour des champs de base
+            $partenaire->setNom($data['nom']);
+            $partenaire->setEmail($data['email']);
+            $partenaire->setTelephone($data['telephone'] ?? null);
+            $partenaire->setNiveauRisque(PartenaireNiveauRisqueEnum::from($data['niveauRisque'] ?? 'modere'));
+            $partenaire->setAdresse($data['adresse'] ?? null);
+            $partenaire->setVille($data['ville'] ?? null);
+            $partenaire->setCodePostal($data['codePostal'] ?? null);
+            $partenaire->setPays($data['pays'] ?? null);
+            $partenaire->setSiteWeb($data['siteWeb'] ?? null);
+            $partenaire->setEstActif($data['estActif'] ?? false);
+            $partenaire->setNotes($data['notes'] ?? null);
+            $partenaire->setCommentairesInternes($data['commentairesInternes'] ?? null);
+            
+            // Dates
+            if (!empty($data['dateCreation'])) {
+                $partenaire->setDateCreation(new \DateTime($data['dateCreation']));
+            } else {
+                $partenaire->setDateCreation(null);
+            }
+            
+            if (!empty($data['datePremiereCollaboration'])) {
+                $partenaire->setDatePremiereCollaboration(new \DateTime($data['datePremiereCollaboration']));
+            } else {
+                $partenaire->setDatePremiereCollaboration(null);
+            }
+            
+            // Nombre de délits impliqués
+            $partenaire->setNombreDelitsImplique($data['nombreDelitsImplique'] ?? 0);
+            
+            // Mise à jour des champs spécifiques selon le type
+            if ($partenaire instanceof PartenairePhysique) {
+                // Validation des champs obligatoires pour les partenaires physiques
+                if (empty($data['prenom']) || empty($data['nomFamille'])) {
+                    return new JsonResponse(['success' => false, 'message' => 'Prénom et nom de famille sont obligatoires pour un partenaire individuel']);
+                }
+                
+                $partenaire->setPrenom($data['prenom']);
+                $partenaire->setNomFamille($data['nomFamille']);
+                $partenaire->setLieuNaissance($data['lieuNaissance'] ?? null);
+                $partenaire->setNationalite($data['nationalite'] ?? null);
+                $partenaire->setProfession($data['profession'] ?? null);
+                $partenaire->setNumeroSecu($data['numeroSecu'] ?? null);
+                $partenaire->setNumeroCNI($data['numeroCNI'] ?? null);
+                $partenaire->setSituationFamiliale($data['situationFamiliale'] ?? null);
+                $partenaire->setCasierJudiciaire($data['casierJudiciaire'] ?? false);
+                $partenaire->setFortuneEstimee($data['fortuneEstimee'] ?? null);
+                
+                if (!empty($data['dateNaissance'])) {
+                    $partenaire->setDateNaissance(new \DateTime($data['dateNaissance']));
+                } else {
+                    $partenaire->setDateNaissance(null);
+                }
+                
+            } elseif ($partenaire instanceof PartenaireMoral) {
+                // Validation des champs obligatoires pour les partenaires moraux
+                if (empty($data['raisonSociale']) || empty($data['formeJuridique'])) {
+                    return new JsonResponse(['success' => false, 'message' => 'Raison sociale et forme juridique sont obligatoires pour un partenaire organisation']);
+                }
+                
+                $partenaire->setRaisonSociale($data['raisonSociale']);
+                $partenaire->setFormeJuridique($data['formeJuridique']);
+                $partenaire->setSiret($data['siret'] ?? null);
+                $partenaire->setSecteurActivite($data['secteurActivite'] ?? null);
+                $partenaire->setDirigeantPrincipal($data['dirigeantPrincipal'] ?? null);
+                $partenaire->setChiffreAffaires($data['chiffreAffaires'] ?? null);
+                $partenaire->setNombreEmployes($data['nombreEmployes'] ?? null);
+                $partenaire->setPaysFiscal($data['paysFiscal'] ?? null);
+                $partenaire->setCapitalSocial($data['capitalSocial'] ?? null);
+                
+                if (!empty($data['dateCreationEntreprise'])) {
+                    $partenaire->setDateCreationEntreprise(new \DateTime($data['dateCreationEntreprise']));
+                } else {
+                    $partenaire->setDateCreationEntreprise(null);
+                }
+            }
+            
+            $em->flush();
+            
+            return new JsonResponse(['success' => true, 'message' => 'Partenaire modifié avec succès']);
+            
+        } catch (\Exception $e) {
+            error_log('Erreur modification partenaire: ' . $e->getMessage());
+            return new JsonResponse(['success' => false, 'message' => 'Erreur lors de la modification du partenaire: ' . $e->getMessage()]);
+        }
     }
 
     #[Route('/medias', name: 'app_media')]
