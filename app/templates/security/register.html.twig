@@ -5,13 +5,16 @@
     <div class="w-full max-w-md mx-auto p-8 rounded-lg flex flex-col items-center">
         <h2 class="text-white text-2xl font-bold mb-1">PoliTricks</h2>
         <p class="text-xs text-gray-400 mb-6">Tracking and analysis of political offenses</p>
+        {% if error %}
+            <div class="bg-red-700 text-white rounded px-3 py-2 mb-2 w-full text-center">{{ error }}</div>
+        {% endif %}
         <form method="post" class="w-full flex flex-col gap-3">
-            <input type="email" name="email" placeholder="Email" required autofocus class="bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input type="email" name="email" placeholder="Email" required autofocus class="bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value="{{ last_username|default('') }}" />
             <input type="password" name="password" placeholder="Password" required class="bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
             <input type="password" name="confirm_password" placeholder="Confirm password" required class="bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded py-2 mt-2 transition-colors">Register</button>
         </form>
-        <p class="text-xs text-gray-400 mt-3">Already have an account ?</p>
+        <a href="/login" class="text-xs text-gray-400 mt-3 hover:underline">Already have an account ?</a>
     </div>
 </div>
 {% endblock %}
