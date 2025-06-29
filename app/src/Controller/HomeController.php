@@ -13,104 +13,473 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\Partenaire;
 use App\Entity\PartenairePhysique;
 use App\Entity\PartenaireMoral;
+use App\Entity\Delit;
+use App\Entity\DelitFinancier;
+use App\Entity\DelitFraude;
+use App\Entity\DelitVol;
+use App\Entity\Lieu;
+use App\Entity\Commentaire;
+use App\Entity\Document;
+use App\Entity\DocumentImage;
+use App\Entity\DocumentVideo;
+use App\Entity\DocumentAudio;
+use App\Entity\DocumentFichier;
 use App\Enum\PartenaireNiveauRisqueEnum;
+use App\Enum\DelitStatutEnum;
+use App\Enum\DelitGraviteEnum;
+use App\Entity\Politicien;
+use App\Enum\DelitTypeEnum;
 
 class HomeController extends AbstractController
 {
     #[Route('/', name: 'app_home')]
-    public function index(): Response
+    public function index(EntityManagerInterface $em): Response
     {
-        return $this->render('index.html.twig');
+        // Récupérer l'utilisateur connecté
+        $user = $this->getUser();
+        
+        // Statistiques globales
+        $totalDelits = $em->getRepository(Delit::class)->count([]);
+        
+        // Compter les politiciens (utilisateurs avec ROLE_POLITICIAN) - utiliser SQL natif pour PostgreSQL
+        $connection = $em->getConnection();
+        $sql = "SELECT COUNT(*) FROM users WHERE roles::text LIKE '%ROLE_POLITICIAN%'";
+        $totalPoliticiens = $connection->executeQuery($sql)->fetchOne();
+        
+        $totalPartenaires = $em->getRepository(Partenaire::class)->count([]);
+        
+        // Calculer les variations (comparaison avec le mois précédent)
+        $lastMonth = new \DateTime('-1 month');
+        
+        // Délits du mois dernier
+        $qb = $em->createQueryBuilder();
+        $qb->select('COUNT(d.id)')
+           ->from(Delit::class, 'd')
+           ->where('d.date >= :lastMonth')
+           ->setParameter('lastMonth', $lastMonth);
+        $delitsLastMonth = $qb->getQuery()->getSingleScalarResult();
+        
+        // Politiciens créés le mois dernier
+        $sql = "SELECT COUNT(*) FROM users WHERE roles::text LIKE '%ROLE_POLITICIAN%' AND date_creation >= :lastMonth";
+        $politiciensLastMonth = $connection->executeQuery($sql, ['lastMonth' => $lastMonth->format('Y-m-d')])->fetchOne();
+        
+        // Partenaires créés le mois dernier
+        $qb = $em->createQueryBuilder();
+        $qb->select('COUNT(p.id)')
+           ->from(Partenaire::class, 'p')
+           ->where('p.dateCreation >= :lastMonth')
+           ->setParameter('lastMonth', $lastMonth);
+        $partenairesLastMonth = $qb->getQuery()->getSingleScalarResult();
+        
+        $delitsVariation = $delitsLastMonth > 0 ? round((($totalDelits - $delitsLastMonth) / $delitsLastMonth) * 100) : 0;
+        $politiciensVariation = $politiciensLastMonth > 0 ? round((($totalPoliticiens - $politiciensLastMonth) / $politiciensLastMonth) * 100) : 0;
+        $partenairesVariation = $partenairesLastMonth > 0 ? round((($totalPartenaires - $partenairesLastMonth) / $partenairesLastMonth) * 100) : 0;
+        
+        // Activités récentes de l'utilisateur connecté (7 derniers jours)
+        $recentActivities = [];
+        $sevenDaysAgo = new \DateTime('-7 days');
+        
+        if ($user) {
+            // Commentaires créés par l'utilisateur
+            $qb = $em->createQueryBuilder();
+            $qb->select('c')
+               ->from(Commentaire::class, 'c')
+               ->where('c.dateCreation >= :sevenDaysAgo')
+               ->andWhere('c.auteur = :user')
+               ->orderBy('c.dateCreation', 'DESC')
+               ->setParameter('sevenDaysAgo', $sevenDaysAgo)
+               ->setParameter('user', $user);
+            
+            $recentCommentaires = $qb->getQuery()->getResult();
+            
+            foreach ($recentCommentaires as $commentaire) {
+                $delitId = $commentaire->getDelit() ? $commentaire->getDelit()->getId() : 'N/A';
+                $recentActivities[] = [
+                    'type' => 'commentaire',
+                    'text' => 'Commentaire ajouté sur le délit #' . $delitId,
+                    'date' => $this->getTimeAgo($commentaire->getDateCreation()),
+                    'icon' => '💬'
+                ];
+            }
+            
+            // Documents uploadés par l'utilisateur
+            $qb = $em->createQueryBuilder();
+            $qb->select('d')
+               ->from(Document::class, 'd')
+               ->where('d.dateCreation >= :sevenDaysAgo')
+               ->andWhere('d.auteur = :user')
+               ->orderBy('d.dateCreation', 'DESC')
+               ->setParameter('sevenDaysAgo', $sevenDaysAgo)
+               ->setParameter('user', $user);
+            
+            $recentDocuments = $qb->getQuery()->getResult();
+            
+            foreach ($recentDocuments as $document) {
+                $recentActivities[] = [
+                    'type' => 'document',
+                    'text' => 'Document uploadé : ' . $document->getNom(),
+                    'date' => $this->getTimeAgo($document->getDateCreation()),
+                    'icon' => '📄'
+                ];
+            }
+            
+            // Trier par date (plus récent en premier) et limiter à 10 activités
+            usort($recentActivities, function($a, $b) {
+                // Tri simple basé sur l'ordre des activités (les plus récentes en premier)
+                return 0; // On garde l'ordre d'insertion qui est déjà chronologique
+            });
+            
+            $recentActivities = array_slice($recentActivities, 0, 10);
+        }
+        
+        return $this->render('index.html.twig', [
+            'totalDelits' => $totalDelits,
+            'totalPoliticiens' => $totalPoliticiens,
+            'totalPartenaires' => $totalPartenaires,
+            'delitsVariation' => $delitsVariation,
+            'politiciensVariation' => $politiciensVariation,
+            'partenairesVariation' => $partenairesVariation,
+            'recentActivities' => $recentActivities,
+        ]);
     }
 
     #[Route('/offenses', name: 'app_offenses')]
-    public function offenses(): Response
+    public function offenses(EntityManagerInterface $em): Response
     {
-        // Les données seront simulées pour l'instant
-        $offenses = [
-            [
-                'type' => 'Bribery',
-                'description' => 'Accepting illicit funds for favorable policy decisions',
-                'date' => '2023-05-15',
-                'status' => 'Open',
-                'severity' => 'High',
-                'politician' => 'Senator Thompson',
-            ],
-            [
-                'type' => 'Embezzlement',
-                'description' => 'Misappropriation of public funds for personal use',
-                'date' => '2023-08-22',
-                'status' => 'Closed',
-                'severity' => 'High',
-                'politician' => 'Representative Davis',
-            ],
-            [
-                'type' => 'Fraud',
-                'description' => 'Falsifying financial records to conceal illegal activities',
-                'date' => '2023-11-10',
-                'status' => 'Open',
-                'severity' => 'Medium',
-                'politician' => 'Governor Martinez',
-            ],
-            [
-                'type' => 'Obstruction of Justice',
-                'description' => 'Interfering with a criminal investigation',
-                'date' => '2024-01-28',
-                'status' => 'Closed',
-                'severity' => 'High',
-                'politician' => 'Attorney General Clark',
-            ],
-            [
-                'type' => 'Perjury',
-                'description' => 'Lying under oath in a court of law',
-                'date' => '2024-03-05',
-                'status' => 'Open',
-                'severity' => 'Medium',
-                'politician' => 'Councilman Harris',
-            ],
-            [
-                'type' => 'Campaign Finance Violation',
-                'description' => 'Accepting illegal contributions to a campaign',
-                'date' => '2024-05-12',
-                'status' => 'Closed',
-                'severity' => 'Low',
-                'politician' => 'Mayor Johnson',
-            ],
-            [
-                'type' => 'Abuse of Power',
-                'description' => 'Using official position for personal gain',
-                'date' => '2024-07-18',
-                'status' => 'Open',
-                'severity' => 'High',
-                'politician' => 'President Walker',
-            ],
-            [
-                'type' => 'Conflict of Interest',
-                'description' => 'Making decisions that benefit personal interests',
-                'date' => '2024-09-25',
-                'status' => 'Closed',
-                'severity' => 'Medium',
-                'politician' => 'Secretary Evans',
-            ],
-            [
-                'type' => 'Influence Peddling',
-                'description' => 'Using connections to gain undue advantages',
-                'date' => '2024-11-02',
-                'status' => 'Open',
-                'severity' => 'Low',
-                'politician' => 'Ambassador Lewis',
-            ],
-            [
-                'type' => 'Tax Evasion',
-                'description' => 'Illegally avoiding payment of taxes',
-                'date' => '2025-01-09',
-                'status' => 'Closed',
-                'severity' => 'High',
-                'politician' => 'Treasurer Scott',
-            ],
-        ];
+        // Récupérer tous les délits de la base de données
+        $delits = $em->getRepository(Delit::class)->findAll();
+        
+        // Fonction helper pour formater les dates de manière sécurisée
+        $formatDate = function($date) {
+            if ($date instanceof \DateTime) {
+                return $date->format('d/m/Y');
+            }
+            return null;
+        };
+        
+        $offensesData = [];
+        foreach ($delits as $delit) {
+            // Utiliser le vrai type de délit depuis l'enum
+            $type = $delit->getType() ? $delit->getType()->value : 'delit';
+            
+            // Récupérer les politiciens impliqués
+            $politiciens = [];
+            foreach ($delit->getPoliticiens() as $politicien) {
+                $politiciens[] = [
+                    'id' => $politicien->getId(),
+                    'name' => $politicien->getFirstName() . ' ' . $politicien->getLastName(),
+                    'email' => $politicien->getEmail(),
+                ];
+            }
+            
+            // Récupérer les partenaires impliqués
+            $partenaires = [];
+            foreach ($delit->getPartenaires() as $partenaire) {
+                if ($partenaire instanceof PartenairePhysique) {
+                    $partenaires[] = [
+                        'id' => $partenaire->getId(),
+                        'name' => $partenaire->getPrenom() . ' ' . $partenaire->getNomFamille(),
+                        'type' => 'Individuel',
+                    ];
+                } elseif ($partenaire instanceof PartenaireMoral) {
+                    $partenaires[] = [
+                        'id' => $partenaire->getId(),
+                        'name' => $partenaire->getRaisonSociale(),
+                        'type' => 'Organisation',
+                    ];
+                } else {
+                    $partenaires[] = [
+                        'id' => $partenaire->getId(),
+                        'name' => $partenaire->getNom(),
+                        'type' => 'Partenaire',
+                    ];
+                }
+            }
+            
+            $offensesData[] = [
+                'id' => $delit->getId(),
+                'type' => $type,
+                'description' => $delit->getDescription(),
+                'date' => $formatDate($delit->getDate()),
+                'dateDeclaration' => $formatDate($delit->getDateDeclaration()),
+                'statut' => $delit->getStatut() ? $delit->getStatut()->value : 'Inconnu',
+                'gravite' => $delit->getGravite() ? $delit->getGravite()->value : 'Inconnu',
+                'numeroAffaire' => $delit->getNumeroAffaire(),
+                'procureurResponsable' => $delit->getProcureurResponsable(),
+                'temoinsPrincipaux' => $delit->getTemoinsPrincipaux(),
+                'preuvesPrincipales' => $delit->getPreuvesPrincipales(),
+                'lieu' => $delit->getLieu() ? $delit->getLieu()->getAdresse() : null,
+                'politiciens' => $politiciens,
+                'partenaires' => $partenaires,
+                'nombreCommentaires' => $delit->getCommentaires()->count(),
+                'nombreDocuments' => $delit->getDocuments()->count(),
+            ];
+        }
+        
+        $selected = !empty($offensesData) ? $offensesData[0] : null;
+        
+        // Si on a un délit sélectionné, récupérer les données complètes
+        if ($selected) {
+            $delit = $em->getRepository(Delit::class)->find($selected['id']);
+            
+            // Récupérer les commentaires
+            $commentaires = [];
+            foreach ($delit->getCommentaires() as $commentaire) {
+                $commentaires[] = [
+                    'id' => $commentaire->getId(),
+                    'contenu' => $commentaire->getContenu(),
+                    'dateCreation' => $formatDate($commentaire->getDateCreation()),
+                    'auteur' => $commentaire->getAuteur() ? $commentaire->getAuteur()->getFirstName() . ' ' . $commentaire->getAuteur()->getLastName() : 'Anonyme',
+                ];
+            }
+            
+            // Récupérer les documents
+            $documents = [];
+            foreach ($delit->getDocuments() as $document) {
+                // Déterminer le type de document
+                $documentType = 'Document';
+                if ($document instanceof DocumentImage) {
+                    $documentType = 'Image';
+                } elseif ($document instanceof DocumentVideo) {
+                    $documentType = 'Vidéo';
+                } elseif ($document instanceof DocumentAudio) {
+                    $documentType = 'Audio';
+                } elseif ($document instanceof DocumentFichier) {
+                    $documentType = 'Fichier';
+                }
+                
+                $documents[] = [
+                    'id' => $document->getId(),
+                    'titre' => $document->getNom(),
+                    'type' => $documentType,
+                    'dateCreation' => $formatDate($document->getDateCreation()),
+                    'niveauConfidentialite' => $document->getNiveauConfidentialite() ? $document->getNiveauConfidentialite()->value : null,
+                ];
+            }
+            
+            $selected = [
+                'id' => $delit->getId(),
+                'type' => $delit->getType() ? $delit->getType()->value : 'delit',
+                'description' => $delit->getDescription(),
+                'date' => $formatDate($delit->getDate()),
+                'dateDeclaration' => $formatDate($delit->getDateDeclaration()),
+                'statut' => $delit->getStatut() ? $delit->getStatut()->value : 'Inconnu',
+                'gravite' => $delit->getGravite() ? $delit->getGravite()->value : 'Inconnu',
+                'numeroAffaire' => $delit->getNumeroAffaire(),
+                'procureurResponsable' => $delit->getProcureurResponsable(),
+                'temoinsPrincipaux' => $delit->getTemoinsPrincipaux(),
+                'preuvesPrincipales' => $delit->getPreuvesPrincipales(),
+                'lieu' => $delit->getLieu() ? $delit->getLieu()->getAdresse() : null,
+                'politiciens' => $politiciens,
+                'partenaires' => $partenaires,
+                'commentaires' => $commentaires,
+                'documents' => $documents,
+            ];
+            
+            // Ajouter les données spécifiques selon le type
+            if ($delit instanceof DelitFinancier) {
+                $selected['montantEstime'] = $delit->getMontantEstime();
+                $selected['devise'] = $delit->getDedevise() ? $delit->getDedevise()->value : null;
+                $selected['methodePaiement'] = $delit->getMethodePaiement();
+                $selected['compteBancaire'] = $delit->getCompteBancaire();
+                $selected['paradissFiscal'] = $delit->getParadissFiscal();
+                $selected['blanchimentSoupçonne'] = $delit->isBlanchimentSoupçonne();
+                $selected['institutionsImpliquees'] = $delit->getInstitutionsImpliquees();
+                $selected['circuitFinancier'] = $delit->getCircuitFinancier();
+                $selected['montantRecupere'] = $delit->getMontantRecupere();
+                $selected['argentRecupere'] = $delit->isArgentRecupere();
+            } elseif ($delit instanceof DelitFraude) {
+                $selected['typeFraude'] = $delit->getTypeFraude() ? $delit->getTypeFraude()->value : null;
+                $selected['documentsManipules'] = $delit->getDocumentsManipules();
+                $selected['nombreVictimes'] = $delit->getNombreVictimes();
+                $selected['prejudiceEstime'] = $delit->getPrejudiceEstime();
+                $selected['methodeFraude'] = array_map(fn($m) => $m->value, $delit->getMethodeFraude());
+                $selected['complicesIdentifies'] = $delit->getComplicesIdentifies();
+                $selected['systemeInformatique'] = $delit->isSystemeInformatique();
+                $selected['fraudeOrganisee'] = $delit->isFraudeOrganisee();
+            } elseif ($delit instanceof DelitVol) {
+                $selected['biensDerobes'] = $delit->getBiensDerobes();
+                $selected['valeurEstimee'] = $delit->getValeurEstimee();
+                $selected['biensRecuperes'] = $delit->isBiensRecuperes();
+                $selected['pourcentageRecupere'] = $delit->getPourcentageRecupere();
+                $selected['lieuStockage'] = $delit->getLieuStockage();
+                $selected['methodeDerriereVol'] = $delit->getMethodeDerriereVol();
+                $selected['receleurs'] = $delit->getReceleurs();
+                $selected['volPremedite'] = $delit->isVolPremedite();
+            }
+        }
+
+        // Récupérer les types de délits depuis l'enum pour les filtres
+        $delitTypes = [];
+        foreach (DelitTypeEnum::cases() as $type) {
+            $delitTypes[] = $type->value;
+        }
+
+        // Récupérer les statuts pour les filtres
+        $delitStatuts = [];
+        foreach (DelitStatutEnum::cases() as $statut) {
+            $delitStatuts[] = $statut->value;
+        }
+
+        // Récupérer les gravités pour les filtres
+        $delitGravites = [];
+        foreach (DelitGraviteEnum::cases() as $gravite) {
+            $delitGravites[] = $gravite->value;
+        }
+        
         return $this->render('offenses/offenses.html.twig', [
-            'offenses' => $offenses
+            'offenses' => $offensesData,
+            'selected' => $selected,
+            'politicians' => $this->getPoliticiansForTemplate($em),
+            'partners' => $this->getPartnersForTemplate($em),
+            'delitTypes' => $delitTypes,
+            'delitStatuts' => $delitStatuts,
+            'delitGravites' => $delitGravites,
+        ]);
+    }
+
+    #[Route('/offenses/{id}/partial', name: 'app_offenses_partial')]
+    public function offensesPartial(int $id, EntityManagerInterface $em): Response
+    {
+        $delit = $em->getRepository(Delit::class)->find($id);
+        
+        if (!$delit) {
+            throw $this->createNotFoundException('Délit non trouvé');
+        }
+        
+        // Fonction helper pour formater les dates de manière sécurisée
+        $formatDate = function($date) {
+            if ($date instanceof \DateTime) {
+                return $date->format('d/m/Y');
+            }
+            return null;
+        };
+        
+        // Déterminer le type de délit
+        $type = $delit->getType() ? $delit->getType()->value : 'delit';
+        
+        // Récupérer les politiciens impliqués
+        $politiciens = [];
+        foreach ($delit->getPoliticiens() as $politicien) {
+            $politiciens[] = [
+                'id' => $politicien->getId(),
+                'name' => $politicien->getFirstName() . ' ' . $politicien->getLastName(),
+                'email' => $politicien->getEmail(),
+            ];
+        }
+        
+        // Récupérer les partenaires impliqués
+        $partenaires = [];
+        foreach ($delit->getPartenaires() as $partenaire) {
+            if ($partenaire instanceof PartenairePhysique) {
+                $partenaires[] = [
+                    'id' => $partenaire->getId(),
+                    'name' => $partenaire->getPrenom() . ' ' . $partenaire->getNomFamille(),
+                    'type' => 'Individuel',
+                ];
+            } elseif ($partenaire instanceof PartenaireMoral) {
+                $partenaires[] = [
+                    'id' => $partenaire->getId(),
+                    'name' => $partenaire->getRaisonSociale(),
+                    'type' => 'Organisation',
+                ];
+            } else {
+                $partenaires[] = [
+                    'id' => $partenaire->getId(),
+                    'name' => $partenaire->getNom(),
+                    'type' => 'Partenaire',
+                ];
+            }
+        }
+        
+        // Récupérer les commentaires
+        $commentaires = [];
+        foreach ($delit->getCommentaires() as $commentaire) {
+            $commentaires[] = [
+                'id' => $commentaire->getId(),
+                'contenu' => $commentaire->getContenu(),
+                'dateCreation' => $formatDate($commentaire->getDateCreation()),
+                'auteur' => $commentaire->getAuteur() ? $commentaire->getAuteur()->getFirstName() . ' ' . $commentaire->getAuteur()->getLastName() : 'Anonyme',
+            ];
+        }
+        
+        // Récupérer les documents
+        $documents = [];
+        foreach ($delit->getDocuments() as $document) {
+            // Déterminer le type de document
+            $documentType = 'Document';
+            if ($document instanceof DocumentImage) {
+                $documentType = 'Image';
+            } elseif ($document instanceof DocumentVideo) {
+                $documentType = 'Vidéo';
+            } elseif ($document instanceof DocumentAudio) {
+                $documentType = 'Audio';
+            } elseif ($document instanceof DocumentFichier) {
+                $documentType = 'Fichier';
+            }
+            
+            $documents[] = [
+                'id' => $document->getId(),
+                'titre' => $document->getNom(),
+                'type' => $documentType,
+                'dateCreation' => $formatDate($document->getDateCreation()),
+                'niveauConfidentialite' => $document->getNiveauConfidentialite() ? $document->getNiveauConfidentialite()->value : null,
+            ];
+        }
+        
+        $selected = [
+            'id' => $delit->getId(),
+            'type' => $delit->getType() ? $delit->getType()->value : 'delit',
+            'description' => $delit->getDescription(),
+            'date' => $formatDate($delit->getDate()),
+            'dateDeclaration' => $formatDate($delit->getDateDeclaration()),
+            'statut' => $delit->getStatut() ? $delit->getStatut()->value : 'Inconnu',
+            'gravite' => $delit->getGravite() ? $delit->getGravite()->value : 'Inconnu',
+            'numeroAffaire' => $delit->getNumeroAffaire(),
+            'procureurResponsable' => $delit->getProcureurResponsable(),
+            'temoinsPrincipaux' => $delit->getTemoinsPrincipaux(),
+            'preuvesPrincipales' => $delit->getPreuvesPrincipales(),
+            'lieu' => $delit->getLieu() ? $delit->getLieu()->getAdresse() : null,
+            'politiciens' => $politiciens,
+            'partenaires' => $partenaires,
+            'commentaires' => $commentaires,
+            'documents' => $documents,
+        ];
+        
+        // Ajouter les données spécifiques selon le type
+        if ($delit instanceof DelitFinancier) {
+            $selected['montantEstime'] = $delit->getMontantEstime();
+            $selected['devise'] = $delit->getDedevise() ? $delit->getDedevise()->value : null;
+            $selected['methodePaiement'] = $delit->getMethodePaiement();
+            $selected['compteBancaire'] = $delit->getCompteBancaire();
+            $selected['paradissFiscal'] = $delit->getParadissFiscal();
+            $selected['blanchimentSoupçonne'] = $delit->isBlanchimentSoupçonne();
+            $selected['institutionsImpliquees'] = $delit->getInstitutionsImpliquees();
+            $selected['circuitFinancier'] = $delit->getCircuitFinancier();
+            $selected['montantRecupere'] = $delit->getMontantRecupere();
+            $selected['argentRecupere'] = $delit->isArgentRecupere();
+        } elseif ($delit instanceof DelitFraude) {
+            $selected['typeFraude'] = $delit->getTypeFraude() ? $delit->getTypeFraude()->value : null;
+            $selected['documentsManipules'] = $delit->getDocumentsManipules();
+            $selected['nombreVictimes'] = $delit->getNombreVictimes();
+            $selected['prejudiceEstime'] = $delit->getPrejudiceEstime();
+            $selected['methodeFraude'] = array_map(fn($m) => $m->value, $delit->getMethodeFraude());
+            $selected['complicesIdentifies'] = $delit->getComplicesIdentifies();
+            $selected['systemeInformatique'] = $delit->isSystemeInformatique();
+            $selected['fraudeOrganisee'] = $delit->isFraudeOrganisee();
+        } elseif ($delit instanceof DelitVol) {
+            $selected['biensDerobes'] = $delit->getBiensDerobes();
+            $selected['valeurEstimee'] = $delit->getValeurEstimee();
+            $selected['biensRecuperes'] = $delit->isBiensRecuperes();
+            $selected['pourcentageRecupere'] = $delit->getPourcentageRecupere();
+            $selected['lieuStockage'] = $delit->getLieuStockage();
+            $selected['methodeDerriereVol'] = $delit->getMethodeDerriereVol();
+            $selected['receleurs'] = $delit->getReceleurs();
+            $selected['volPremedite'] = $delit->isVolPremedite();
+        }
+        
+        return $this->render('offenses/components/offense_detail.html.twig', [
+            'selected' => $selected,
         ]);
     }
 
@@ -118,10 +487,10 @@ class HomeController extends AbstractController
     public function politics(EntityManagerInterface $em): Response
     {
         // Récupérer tous les utilisateurs et filtrer côté PHP
-        $allUsers = $em->getRepository(User::class)->findAll();
+        $users = $em->getRepository(User::class)->findAll();
         
         $politicians = [];
-        foreach ($allUsers as $user) {
+        foreach ($users as $user) {
             if (in_array('ROLE_POLITICIAN', $user->getRoles())) {
                 $politicians[] = $user;
             }
@@ -170,6 +539,73 @@ class HomeController extends AbstractController
             throw $this->createNotFoundException('Politicien non trouvé');
         }
 
+        // Récupérer les délits associés au politicien (3 dernières années)
+        $threeYearsAgo = new \DateTime('-3 years');
+        $qb = $em->createQueryBuilder();
+        $qb->select('d')
+        ->from(Delit::class, 'd')
+        ->join('d.politiciens', 'p')
+        ->where('p.id = :politicianId')
+        ->andWhere('d.date >= :threeYearsAgo')
+        ->orderBy('d.date', 'DESC')
+        ->setParameter('politicianId', $politician->getId())
+        ->setParameter('threeYearsAgo', $threeYearsAgo);
+        
+        $offenses = $qb->getQuery()->getResult();
+        
+        // Formater les offenses pour l'affichage
+        $offensesData = [];
+        foreach ($offenses as $offense) {
+            $offensesData[] = [
+                'id' => $offense->getId(),
+                'type' => $offense->getType()->value,
+                'description' => $offense->getDescription(),
+                'date' => $offense->getDate()->format('d/m/Y'),
+                'statut' => $offense->getStatut()->value,
+                'gravite' => $offense->getGravite()->value,
+            ];
+        }
+
+        // Générer la timeline basée sur les délits et événements
+        $timelineData = [];
+        
+        // Ajouter les délits à la timeline
+        foreach ($offenses as $offense) {
+            $timelineData[] = [
+                'date' => $offense->getDate()->format('d/m/Y'),
+                'title' => 'Délit: ' . $offense->getType()->value,
+                'description' => $offense->getDescription(),
+                'type' => 'delit',
+                'statut' => $offense->getStatut()->value,
+                'gravite' => $offense->getGravite()->value,
+            ];
+        }
+        
+        // Ajouter la date d'entrée en politique (si disponible)
+        if ($politician->getDateCreation()) {
+            $timelineData[] = [
+                'date' => $politician->getDateCreation()->format('d/m/Y'),
+                'title' => 'Entrée en politique',
+                'description' => 'Début de carrière politique',
+                'type' => 'carriere',
+            ];
+        }
+        
+        // Ajouter la date de naissance (si disponible)
+        if ($politician->getDateNaissance()) {
+            $timelineData[] = [
+                'date' => $politician->getDateNaissance()->format('d/m/Y'),
+                'title' => 'Naissance',
+                'description' => 'Date de naissance',
+                'type' => 'naissance',
+            ];
+        }
+        
+        // Trier la timeline par date (du plus récent au plus ancien)
+        usort($timelineData, function($a, $b) {
+            return strtotime($b['date']) - strtotime($a['date']);
+        });
+
         // Générer une image placeholder basée sur le nom
         $placeholderImage = $this->generatePlaceholderImage($politician->getFirstName(), $politician->getLastName());
         
@@ -180,8 +616,8 @@ class HomeController extends AbstractController
             'lastName' => $politician->getLastName(),
             'email' => $politician->getEmail(),
             'role' => $this->getPoliticianRole($politician),
-            'offenses' => [], // À implémenter plus tard avec les vraies données
-            'timeline' => [], // À implémenter plus tard
+            'offenses' => $offensesData,
+            'timeline' => $timelineData,
             'bio' => $this->generateBio($politician),
             'image' => $placeholderImage,
             'telephone' => $politician->getTelephone(),
@@ -403,7 +839,7 @@ class HomeController extends AbstractController
             $delits = [];
             foreach ($partenaire->getDelits() as $delit) {
                 $delits[] = [
-                    'date' => $delit->getDateDelit() ? $delit->getDateDelit()->format('d/m/Y') : 'Date inconnue',
+                    'date' => $delit->getDate() ? $delit->getDate()->format('d/m/Y') : 'Date inconnue',
                     'type' => $delit->getType()->value ?? 'Type inconnu',
                     'description' => $delit->getDescription() ?? 'Aucune description',
                     'status' => $delit->getStatut()->value ?? 'Statut inconnu',
@@ -496,7 +932,7 @@ class HomeController extends AbstractController
         $delits = [];
         foreach ($partenaire->getDelits() as $delit) {
             $delits[] = [
-                'date' => $delit->getDateDelit() ? $delit->getDateDelit()->format('d/m/Y') : 'Date inconnue',
+                'date' => $delit->getDate() ? $delit->getDate()->format('d/m/Y') : 'Date inconnue',
                 'type' => $delit->getType()->value ?? 'Type inconnu',
                 'description' => $delit->getDescription() ?? 'Aucune description',
                 'status' => $delit->getStatut()->value ?? 'Statut inconnu',
@@ -880,6 +1316,168 @@ class HomeController extends AbstractController
         }
     }
 
+    #[Route('/offenses/add', name: 'offenses_add', methods: ['POST'])]
+    public function addOffense(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        error_log('=== DÉBUT ADD OFFENSE ===');
+        
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        try {
+            error_log('Récupération des données du formulaire...');
+            
+            $type = $request->request->get('type');
+            $description = $request->request->get('description');
+            $date = $request->request->get('date');
+            $dateDeclaration = $request->request->get('dateDeclaration');
+            $statut = $request->request->get('statut');
+            $gravite = $request->request->get('gravite');
+            $numeroAffaire = $request->request->get('numeroAffaire');
+            $procureurResponsable = $request->request->get('procureurResponsable');
+            $politiciensIds = $request->request->all('politiciens');
+            $partenairesIds = $request->request->all('partenaires');
+            
+            error_log('Type: ' . $type);
+            error_log('Description: ' . $description);
+            error_log('Date: ' . $date);
+            error_log('Statut: ' . $statut);
+            error_log('Gravité: ' . $gravite);
+            error_log('Politiciens: ' . json_encode($politiciensIds));
+            error_log('Partenaires: ' . json_encode($partenairesIds));
+            
+            // Créer le délit selon le type
+            error_log('Création du délit selon le type: ' . $type);
+            
+            // Créer un délit de base et définir le type
+            $delit = new Delit();
+            $delit->setType(DelitTypeEnum::from($type));
+            
+            error_log('Délit créé, classe: ' . get_class($delit));
+            
+            // Remplir les propriétés communes
+            error_log('Remplissage des propriétés communes...');
+            $delit->setDescription($description);
+            $delit->setDate(new \DateTime($date));
+            if ($dateDeclaration) {
+                $delit->setDateDeclaration(new \DateTime($dateDeclaration));
+            }
+            $delit->setStatut(DelitStatutEnum::from($statut));
+            $delit->setGravite(DelitGraviteEnum::from($gravite));
+            $delit->setNumeroAffaire($numeroAffaire);
+            $delit->setProcureurResponsable($procureurResponsable);
+            
+            error_log('Propriétés communes remplies');
+            
+            // Ajouter les politiciens (optionnel pour le moment)
+            error_log('Ajout des politiciens...');
+            foreach ($politiciensIds as $politicienId) {
+                if ($politicienId) {
+                    try {
+                        $politicien = $em->getRepository(Politicien::class)->find($politicienId);
+                        if ($politicien) {
+                            $delit->addPoliticien($politicien);
+                            error_log('Politicien ajouté: ' . $politicien->getEmail());
+                        } else {
+                            error_log('Politicien non trouvé avec ID: ' . $politicienId);
+                        }
+                    } catch (\Exception $e) {
+                        error_log('Erreur lors de la récupération du politicien: ' . $e->getMessage());
+                    }
+                }
+            }
+            
+            // Ajouter les partenaires (optionnel pour le moment)
+            error_log('Ajout des partenaires...');
+            foreach ($partenairesIds as $partenaireId) {
+                if ($partenaireId) {
+                    try {
+                        $partenaire = $em->getRepository(Partenaire::class)->find($partenaireId);
+                        if ($partenaire) {
+                            $delit->addPartenaire($partenaire);
+                            error_log('Partenaire ajouté: ' . $partenaire->getNom());
+                        } else {
+                            error_log('Partenaire non trouvé avec ID: ' . $partenaireId);
+                        }
+                    } catch (\Exception $e) {
+                        error_log('Erreur lors de la récupération du partenaire: ' . $e->getMessage());
+                    }
+                }
+            }
+            
+            error_log('Persistance du délit...');
+            $em->persist($delit);
+            
+            error_log('Flush de la base de données...');
+            $em->flush();
+            
+            error_log('Délit ajouté avec succès, ID: ' . $delit->getId());
+            error_log('=== FIN ADD OFFENSE SUCCÈS ===');
+            
+            return new JsonResponse(['success' => true, 'id' => $delit->getId()]);
+            
+        } catch (\Exception $e) {
+            error_log('ERREUR dans addOffense: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
+            error_log('=== FIN ADD OFFENSE ERREUR ===');
+            return new JsonResponse(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    #[Route('/api/politicians', name: 'api_politicians')]
+    public function getPoliticians(): JsonResponse
+    {
+        $em = $this->getDoctrine()->getManager();
+        $users = $em->getRepository(User::class)->findAll();
+        
+        error_log('API Politicians - Total users found: ' . count($users));
+        
+        $politicians = [];
+        foreach ($users as $user) {
+            error_log('API Politicians - User: ' . $user->getEmail() . ' - Roles: ' . json_encode($user->getRoles()));
+            if (in_array('ROLE_POLITICIAN', $user->getRoles())) {
+                $politicians[] = [
+                    'id' => $user->getId(),
+                    'name' => $user->getFirstName() . ' ' . $user->getLastName(),
+                    'email' => $user->getEmail(),
+                ];
+            }
+        }
+        
+        error_log('API Politicians - Politicians found: ' . count($politicians));
+        
+        return new JsonResponse($politicians);
+    }
+
+    #[Route('/api/partners', name: 'api_partners')]
+    public function getPartners(): JsonResponse
+    {
+        $em = $this->getDoctrine()->getManager();
+        $partenaires = $em->getRepository(Partenaire::class)->findAll();
+        
+        error_log('API Partners - Total partners found: ' . count($partenaires));
+        
+        $partners = [];
+        foreach ($partenaires as $partenaire) {
+            if ($partenaire instanceof PartenairePhysique) {
+                $partners[] = [
+                    'id' => $partenaire->getId(),
+                    'name' => $partenaire->getPrenom() . ' ' . $partenaire->getNomFamille(),
+                    'type' => 'Individuel',
+                ];
+            } elseif ($partenaire instanceof PartenaireMoral) {
+                $partners[] = [
+                    'id' => $partenaire->getId(),
+                    'name' => $partenaire->getRaisonSociale(),
+                    'type' => 'Entreprise',
+                ];
+            }
+        }
+        
+        error_log('API Partners - Processed partners: ' . count($partners));
+        
+        return new JsonResponse($partners);
+    }
+
     /**
      * Génère une image placeholder basée sur les initiales du politicien
      */
@@ -933,5 +1531,176 @@ class HomeController extends AbstractController
         $bio .= ". Il/elle s'engage activement dans la vie politique et représente les intérêts de ses concitoyens.";
         
         return $bio;
+    }
+
+    #[Route('/offenses/{id}/edit', name: 'offenses_edit', methods: ['GET'])]
+    public function editOffense(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        $delit = $em->getRepository(Delit::class)->find($id);
+        
+        if (!$delit) {
+            return new JsonResponse(['success' => false, 'message' => 'Délit non trouvé']);
+        }
+        
+        // Récupérer les IDs des politiciens et partenaires
+        $politiciensIds = [];
+        foreach ($delit->getPoliticiens() as $politicien) {
+            $politiciensIds[] = $politicien->getId();
+        }
+        
+        $partenairesIds = [];
+        foreach ($delit->getPartenaires() as $partenaire) {
+            $partenairesIds[] = $partenaire->getId();
+        }
+        
+        $offenseData = [
+            'id' => $delit->getId(),
+            'type' => $delit->getType()->value,
+            'description' => $delit->getDescription(),
+            'date' => $delit->getDate() ? $delit->getDate()->format('Y-m-d') : null,
+            'dateDeclaration' => $delit->getDateDeclaration() ? $delit->getDateDeclaration()->format('Y-m-d') : null,
+            'statut' => $delit->getStatut()->value,
+            'gravite' => $delit->getGravite()->value,
+            'numeroAffaire' => $delit->getNumeroAffaire(),
+            'procureurResponsable' => $delit->getProcureurResponsable(),
+            'politiciens' => $politiciensIds,
+            'partenaires' => $partenairesIds,
+        ];
+        
+        return new JsonResponse(['success' => true, 'offense' => $offenseData]);
+    }
+
+    #[Route('/offenses/{id}/update', name: 'offenses_update', methods: ['POST'])]
+    public function updateOffense(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        $delit = $em->getRepository(Delit::class)->find($id);
+        
+        if (!$delit) {
+            return new JsonResponse(['success' => false, 'error' => 'Délit non trouvé']);
+        }
+        
+        try {
+            $description = $request->request->get('description');
+            $date = $request->request->get('date');
+            $dateDeclaration = $request->request->get('dateDeclaration');
+            $statut = $request->request->get('statut');
+            $gravite = $request->request->get('gravite');
+            $numeroAffaire = $request->request->get('numeroAffaire');
+            $procureurResponsable = $request->request->get('procureurResponsable');
+            $politiciensIds = $request->request->all('politiciens');
+            $partenairesIds = $request->request->all('partenaires');
+            
+            // Mettre à jour les propriétés
+            $delit->setDescription($description);
+            $delit->setDate(new \DateTime($date));
+            if ($dateDeclaration) {
+                $delit->setDateDeclaration(new \DateTime($dateDeclaration));
+            }
+            $delit->setStatut(DelitStatutEnum::from($statut));
+            $delit->setGravite(DelitGraviteEnum::from($gravite));
+            $delit->setNumeroAffaire($numeroAffaire);
+            $delit->setProcureurResponsable($procureurResponsable);
+            
+            // Vider les collections existantes
+            $delit->getPoliticiens()->clear();
+            $delit->getPartenaires()->clear();
+            
+            // Ajouter les nouveaux politiciens
+            foreach ($politiciensIds as $politicienId) {
+                if ($politicienId) {
+                    $politicien = $em->getRepository(Politicien::class)->find($politicienId);
+                    if ($politicien) {
+                        $delit->addPoliticien($politicien);
+                    }
+                }
+            }
+            
+            // Ajouter les nouveaux partenaires
+            foreach ($partenairesIds as $partenaireId) {
+                if ($partenaireId) {
+                    $partenaire = $em->getRepository(Partenaire::class)->find($partenaireId);
+                    if ($partenaire) {
+                        $delit->addPartenaire($partenaire);
+                    }
+                }
+            }
+            
+            $em->flush();
+            
+            return new JsonResponse(['success' => true]);
+            
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Récupère les politiciens pour le template
+     */
+    private function getPoliticiansForTemplate(EntityManagerInterface $em): array
+    {
+        $politiciens = $em->getRepository(Politicien::class)->findAll();
+        
+        $politicians = [];
+        foreach ($politiciens as $politicien) {
+            $politicians[] = [
+                'id' => $politicien->getId(),
+                'name' => $politicien->getFirstName() . ' ' . $politicien->getLastName(),
+                'email' => $politicien->getEmail(),
+            ];
+        }
+        
+        return $politicians;
+    }
+
+    /**
+     * Récupère les partenaires pour le template
+     */
+    private function getPartnersForTemplate(EntityManagerInterface $em): array
+    {
+        $partenaires = $em->getRepository(Partenaire::class)->findAll();
+        
+        $partners = [];
+        foreach ($partenaires as $partenaire) {
+            if ($partenaire instanceof PartenairePhysique) {
+                $partners[] = [
+                    'id' => $partenaire->getId(),
+                    'name' => $partenaire->getPrenom() . ' ' . $partenaire->getNomFamille(),
+                    'type' => 'Individuel',
+                ];
+            } elseif ($partenaire instanceof PartenaireMoral) {
+                $partners[] = [
+                    'id' => $partenaire->getId(),
+                    'name' => $partenaire->getRaisonSociale(),
+                    'type' => 'Entreprise',
+                ];
+            }
+        }
+        
+        return $partners;
+    }
+
+    private function getTimeAgo(\DateTime $date): string
+    {
+        $now = new \DateTime();
+        $diff = $now->diff($date);
+        
+        if ($diff->y > 0) {
+            return $diff->y . ' an' . ($diff->y > 1 ? 's' : '') . ' ago';
+        } elseif ($diff->m > 0) {
+            return $diff->m . ' mois ago';
+        } elseif ($diff->d > 0) {
+            return $diff->d . ' jour' . ($diff->d > 1 ? 's' : '') . ' ago';
+        } elseif ($diff->h > 0) {
+            return $diff->h . ' heure' . ($diff->h > 1 ? 's' : '') . ' ago';
+        } elseif ($diff->i > 0) {
+            return $diff->i . ' minute' . ($diff->i > 1 ? 's' : '') . ' ago';
+        } else {
+            return 'À l\'instant';
+        }
     }
 } 

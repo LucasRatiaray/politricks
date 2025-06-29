@@ -1,0 +1,213 @@
+<form id="add-partner-form" class="space-y-4" novalidate>
+    <!-- Type de partenaire -->
+    <div>
+        <label class="block text-gray-300 text-sm mb-1" for="type">Type de partenaire *</label>
+        <select id="type" name="type" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            <option value="">Sélectionner un type</option>
+            <option value="physique">Personne physique</option>
+            <option value="moral">Personne morale</option>
+        </select>
+    </div>
+
+    <!-- Champs communs -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="email">Email *</label>
+            <input type="email" id="email" name="email" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="telephone">Téléphone</label>
+            <input type="text" id="telephone" name="telephone" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="niveauRisque">Niveau de risque *</label>
+            <select id="niveauRisque" name="niveauRisque" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+                <option value="">Sélectionner</option>
+                <option value="tres_faible">Très faible</option>
+                <option value="faible">Faible</option>
+                <option value="modere">Modéré</option>
+                <option value="eleve">Élevé</option>
+                <option value="tres_eleve">Très élevé</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="datePremiereCollaboration">Date première collaboration</label>
+            <input type="date" id="datePremiereCollaboration" name="datePremiereCollaboration" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+        </div>
+    </div>
+
+    <div>
+        <label class="block text-gray-300 text-sm mb-1" for="adresse">Adresse</label>
+        <textarea id="adresse" name="adresse" rows="2" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500"></textarea>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="ville">Ville</label>
+            <input type="text" id="ville" name="ville" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="codePostal">Code postal</label>
+            <input type="text" id="codePostal" name="codePostal" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="pays">Pays</label>
+            <input type="text" id="pays" name="pays" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="siteWeb">Site web</label>
+            <input type="url" id="siteWeb" name="siteWeb" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+            <label class="block text-gray-300 text-sm mb-1" for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="2" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500"></textarea>
+        </div>
+    </div>
+
+    <!-- Champs spécifiques aux personnes physiques -->
+    <div id="physique-fields" class="space-y-4 border-t border-gray-600 pt-4">
+        <h3 class="text-white font-semibold text-lg">Informations personnelles</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="prenom">Prénom *</label>
+                <input type="text" id="prenom" name="prenom" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="nomFamille">Nom de famille *</label>
+                <input type="text" id="nomFamille" name="nomFamille" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="dateNaissance">Date de naissance</label>
+                <input type="date" id="dateNaissance" name="dateNaissance" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="lieuNaissance">Lieu de naissance</label>
+                <input type="text" id="lieuNaissance" name="lieuNaissance" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="nationalite">Nationalité</label>
+                <input type="text" id="nationalite" name="nationalite" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="profession">Profession</label>
+                <input type="text" id="profession" name="profession" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="numeroSecu">Numéro de sécurité sociale</label>
+                <input type="text" id="numeroSecu" name="numeroSecu" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="numeroCNI">Numéro CNI</label>
+                <input type="text" id="numeroCNI" name="numeroCNI" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="situationFamiliale">Situation familiale</label>
+                <input type="text" id="situationFamiliale" name="situationFamiliale" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="fortuneEstimee">Fortune estimée</label>
+                <input type="text" id="fortuneEstimee" name="fortuneEstimee" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+
+        <div>
+            <label class="flex items-center">
+                <input type="checkbox" id="casierJudiciaire" name="casierJudiciaire" class="mr-2">
+                <span class="text-gray-300 text-sm">Casier judiciaire</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Champs spécifiques aux personnes morales -->
+    <div id="moral-fields" class="space-y-4 border-t border-gray-600 pt-4">
+        <h3 class="text-white font-semibold text-lg">Informations entreprise</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="raisonSociale">Raison sociale *</label>
+                <input type="text" id="raisonSociale" name="raisonSociale" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="formeJuridique">Forme juridique *</label>
+                <input type="text" id="formeJuridique" name="formeJuridique" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="siret">SIRET</label>
+                <input type="text" id="siret" name="siret" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="secteurActivite">Secteur d'activité</label>
+                <input type="text" id="secteurActivite" name="secteurActivite" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="dirigeantPrincipal">Dirigeant principal</label>
+                <input type="text" id="dirigeantPrincipal" name="dirigeantPrincipal" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="nombreEmployes">Nombre d'employés</label>
+                <input type="number" id="nombreEmployes" name="nombreEmployes" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="chiffreAffaires">Chiffre d'affaires</label>
+                <input type="text" id="chiffreAffaires" name="chiffreAffaires" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="capitalSocial">Capital social</label>
+                <input type="text" id="capitalSocial" name="capitalSocial" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="paysFiscal">Pays fiscal</label>
+                <input type="text" id="paysFiscal" name="paysFiscal" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="dateCreationEntreprise">Date création entreprise</label>
+                <input type="date" id="dateCreationEntreprise" name="dateCreationEntreprise" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-4 border-t border-gray-600">
+        <button type="button" data-close-modal="add-partner-modal" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors">
+            Annuler
+        </button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+            Ajouter
+        </button>
+    </div>
+</form>
+
+<script>
+// Plus besoin de toggleFields() car tous les champs sont visibles
+// La validation se fait côté serveur selon le type sélectionné
+</script> 

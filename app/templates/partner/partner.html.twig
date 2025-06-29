@@ -2,7 +2,11 @@
 
 {% block content %}
 <div class="flex min-h-screen bg-slate-900">
-    <aside class="w-80 bg-gray-900 p-6 flex flex-col gap-6 max-h-screen overflow-y-auto">
+    <aside class="w-80 bg-gray-900 p-6 flex flex-col gap-6 overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-white text-lg font-semibold">Partenaires</h2>
+            {% include 'layout/components/add_button.html.twig' with {modal_id: 'add-partner-modal'} %}
+        </div>
         <input type="text" placeholder="Rechercher des partenaires" class="mb-4 w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
         <div class="flex flex-col gap-2 overflow-y-auto">
             {% for partner in partners %}
@@ -18,4 +22,114 @@
         </div>
     </main>
 </div>
+
+{# Modal d'ajout de partenaire #}
+<div id="add-partner-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden p-4">
+    <div class="bg-[#101c2b] rounded-lg shadow-lg p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4 sticky top-0 bg-[#101c2b] pb-4 border-b border-gray-600">
+            <h2 class="text-white text-lg font-semibold">Ajouter un partenaire</h2>
+            <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="add-partner-modal">&times;</button>
+        </div>
+        <div class="text-gray-300">
+            {% include 'partner/components/add_partner_form.html.twig' %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des modals
+    document.querySelectorAll('[data-open-modal]').forEach(button => {
+        button.addEventListener('click', function() {
+            const modalId = this.dataset.openModal;
+            document.getElementById(modalId).classList.remove('hidden');
+        });
+    });
+    
+    document.querySelectorAll('[data-close-modal]').forEach(button => {
+        button.addEventListener('click', function() {
+            const modalId = this.dataset.closeModal;
+            document.getElementById(modalId).classList.add('hidden');
+        });
+    });
+    
+    // Fermer la modal en cliquant à l'extérieur
+    document.querySelectorAll('[id$="-modal"]').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+    });
+    
+    // Gestion du formulaire d'ajout de partenaire
+    const addForm = document.getElementById('add-partner-form');
+    if (addForm) {
+        addForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validation côté client
+            const type = document.getElementById('type').value;
+            let isValid = true;
+            let errorMessage = '';
+            
+            if (!type) {
+                errorMessage = 'Veuillez sélectionner un type de partenaire';
+                isValid = false;
+            } else if (type === 'physique') {
+                if (!document.getElementById('prenom').value.trim()) {
+                    errorMessage = 'Le prénom est obligatoire pour une personne physique';
+                    isValid = false;
+                } else if (!document.getElementById('nomFamille').value.trim()) {
+                    errorMessage = 'Le nom de famille est obligatoire pour une personne physique';
+                    isValid = false;
+                }
+            } else if (type === 'moral') {
+                if (!document.getElementById('raisonSociale').value.trim()) {
+                    errorMessage = 'La raison sociale est obligatoire pour une personne morale';
+                    isValid = false;
+                } else if (!document.getElementById('formeJuridique').value.trim()) {
+                    errorMessage = 'La forme juridique est obligatoire pour une personne morale';
+                    isValid = false;
+                }
+            }
+            
+            if (!document.getElementById('email').value.trim()) {
+                errorMessage = 'L\'email est obligatoire';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                alert(errorMessage);
+                return;
+            }
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            fetch('/partners/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // Fermer la modal et recharger la page
+                    document.getElementById('add-partner-modal').classList.add('hidden');
+                    window.location.reload();
+                } else {
+                    alert('Erreur: ' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors de l\'ajout du partenaire');
+            });
+        });
+    }
+});
+</script>
 {% endblock %} 

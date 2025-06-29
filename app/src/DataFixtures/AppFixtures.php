@@ -503,7 +503,19 @@ class AppFixtures extends Fixture
     private function createPartenaires(ObjectManager $manager): void
     {
         for ($i = 1; $i <= 10; $i++) {
-            $partenaire = new Partenaire();
+            if ($i % 2 === 0) {
+                // Partenaire Physique
+                $partenaire = new \App\Entity\PartenairePhysique();
+                $partenaire->setPrenom("Prénom{$i}");
+                $partenaire->setNomFamille("NomFamille{$i}");
+                $partenaire->setDateNaissance(new \DateTime('-' . rand(20, 60) . ' years'));
+            } else {
+                // Partenaire Moral
+                $partenaire = new \App\Entity\PartenaireMoral();
+                $partenaire->setRaisonSociale("Entreprise{$i}");
+                $partenaire->setSiret(strval(rand(10000000000000, 99999999999999)));
+                $partenaire->setSecteurActivite('Secteur ' . $i);
+            }
             $partenaire->setNom("Partenaire {$i}");
             $partenaire->setEmail("partenaire{$i}@example.com");
             $partenaire->setTelephone("+33" . rand(100000000, 999999999));
@@ -511,7 +523,7 @@ class AppFixtures extends Fixture
             $partenaire->setSiteWeb("https://partenaire{$i}.fr");
             $partenaire->setNotes("Notes sur le partenaire {$i}");
             $partenaire->setDateCreation(new \DateTime('-' . rand(1, 60) . ' months'));
-            $partenaire->setNiveauRisque(PartenaireNiveauRisqueEnum::cases()[array_rand(PartenaireNiveauRisqueEnum::cases())]);
+            $partenaire->setNiveauRisque(\App\Enum\PartenaireNiveauRisqueEnum::cases()[array_rand(\App\Enum\PartenaireNiveauRisqueEnum::cases())]);
             $partenaire->setVille("Ville {$i}");
             $partenaire->setCodePostal(rand(10000, 99999));
             $partenaire->setPays('France');
@@ -519,7 +531,6 @@ class AppFixtures extends Fixture
             $partenaire->setNombreDelitsImplique(rand(0, 5));
             $partenaire->setEstActif(true);
             $partenaire->setCommentairesInternes("Commentaires internes partenaire {$i}");
-            
             $manager->persist($partenaire);
         }
     }
