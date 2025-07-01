@@ -61,8 +61,11 @@ clean: ## Nettoie tout
 	docker-compose down -v
 	docker system prune -f
 
-console: ## Console Symfony - Usage: make console d:m:m
-	docker-compose exec app php bin/console $(ARGS)
+console: ## Console Symfony - Usage: make console cache:clear
+	docker-compose exec app php bin/console $(filter-out $@,$(MAKECMDGOALS))
+
+%:
+	@:
 
 # === Raccourcis Symfony ===
 migrate: ## Appliquer les migrations

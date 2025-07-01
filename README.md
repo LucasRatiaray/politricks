@@ -39,9 +39,9 @@ make routes        # Afficher les routes
 **Console avancée :**
 ```bash
 # Pour commandes non-couvertes par les raccourcis
-make console ARGS="make:form"         # Créer un formulaire
-make console ARGS="make:voter"        # Créer un voter
-make console ARGS="debug:container"   # Debug container
+make console make:form         # Créer un formulaire
+make console make:voter        # Créer un voter
+make console debug:container   # Debug container
 ```
 
 ### Commandes Symfony dans Docker
@@ -115,7 +115,7 @@ make shell          # 🐚 Accès shell conteneur app
 make test           # 🧪 Lancer tests PHPUnit
 make composer       # 📦 Installer dépendances Composer
 make npm            # 📦 Installer dépendances NPM
-make console        # 🎯 Console Symfony avancée
+make console        # 🎯 Console Symfony - Usage: make console cache:clear
 ```
 
 ### Shell d'accès rapide
