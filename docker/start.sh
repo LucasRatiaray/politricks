@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Clear and warm up cache first (with real env vars)
 echo "Clearing cache..."
