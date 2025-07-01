@@ -72,9 +72,41 @@ class HomeController extends AbstractController
         $partenairesLastMonth = $qb->getQuery()->getSingleScalarResult();
         
         $delitsVariation = $delitsLastMonth > 0 ? round((($totalDelits - $delitsLastMonth) / $delitsLastMonth) * 100) : 0;
-        $politiciensVariation = $politiciensLastMonth > 0 ? round((($totalPoliticiens - $politiciensLastMonth) / $politiciensLastMonth) * 100) : 0;
+        // Cards %
+        $now = new \DateTime();
+        $thirtyDaysAgo = (clone $now)->modify('-30 days');
+        $sqlTotalPolitician = "SELECT COUNT(*) FROM users WHERE roles::text LIKE '%ROLE_POLITICIAN%'";
+        $totalPoliticiens = $connection->executeQuery($sqlTotalPolitician)->fetchOne();
+        // Nombre total de partenaires
+        $totalPartners = $em->getRepository(Partenaire::class)->count([]);
+        // Partenaires créés dans les 30 derniers jours
+        $qb = $em->createQueryBuilder();
+        $qb->select('COUNT(p.id)')
+           ->from(Partenaire::class, 'p')
+           ->where('p.dateCreation >= :since')
+           ->setParameter('since', $thirtyDaysAgo);
+        $recentPartners = $qb->getQuery()->getSingleScalarResult();
+        // 30 derniers jours politiciens
+        $sqlRecentPolitic = "SELECT COUNT(*) FROM users WHERE roles::text LIKE '%ROLE_POLITICIAN%' AND date_creation >= :since";
+        $recentPoliticiens = $connection->executeQuery($sqlRecentPolitic, ['since' => $thirtyDaysAgo->format('Y-m-d H:i:s')])->fetchOne();
+
+        if ($recentPoliticiens > 0 && $totalPoliticiens > 0) {
+            $politiciensVariation = round(($recentPoliticiens / $totalPoliticiens) * 100);
+            $politiciensVariationDisplay = ($politiciensVariation > 0 ? '+' : '') . $politiciensVariation . '%';
+        } else {
+            $politiciensVariationDisplay = '';
+        }
+
+        if ($recentPartners > 0 && $totalPartners > 0) {
+            $partnersVariation = round(($recentPartners / $totalPartners) * 100);
+            $partnersVariationDisplay = ($partnersVariation > 0 ? '+' : '') . $partnersVariation . '%';
+        } else {
+            $partnersVariationDisplay = '';
+        }
+
+        $variationColor = '#22c55e';
         $partenairesVariation = $partenairesLastMonth > 0 ? round((($totalPartenaires - $partenairesLastMonth) / $partenairesLastMonth) * 100) : 0;
-        
+
         // Activités récentes de l'utilisateur connecté (7 derniers jours)
         $recentActivities = [];
         $sevenDaysAgo = new \DateTime('-7 days');
@@ -83,12 +115,12 @@ class HomeController extends AbstractController
             // Commentaires créés par l'utilisateur
             $qb = $em->createQueryBuilder();
             $qb->select('c')
-               ->from(Commentaire::class, 'c')
-               ->where('c.dateCreation >= :sevenDaysAgo')
-               ->andWhere('c.auteur = :user')
-               ->orderBy('c.dateCreation', 'DESC')
-               ->setParameter('sevenDaysAgo', $sevenDaysAgo)
-               ->setParameter('user', $user);
+                ->from(Commentaire::class, 'c')
+                ->where('c.dateCreation >= :sevenDaysAgo')
+                ->andWhere('c.auteur = :user')
+                ->orderBy('c.dateCreation', 'DESC')
+                ->setParameter('sevenDaysAgo', $sevenDaysAgo)
+                ->setParameter('user', $user);
             
             $recentCommentaires = $qb->getQuery()->getResult();
             
@@ -105,12 +137,12 @@ class HomeController extends AbstractController
             // Documents uploadés par l'utilisateur
             $qb = $em->createQueryBuilder();
             $qb->select('d')
-               ->from(Document::class, 'd')
-               ->where('d.dateCreation >= :sevenDaysAgo')
-               ->andWhere('d.auteur = :user')
-               ->orderBy('d.dateCreation', 'DESC')
-               ->setParameter('sevenDaysAgo', $sevenDaysAgo)
-               ->setParameter('user', $user);
+                ->from(Document::class, 'd')
+                ->where('d.dateCreation >= :sevenDaysAgo')
+                ->andWhere('d.auteur = :user')
+                ->orderBy('d.dateCreation', 'DESC')
+                ->setParameter('sevenDaysAgo', $sevenDaysAgo)
+                ->setParameter('user', $user);
             
             $recentDocuments = $qb->getQuery()->getResult();
             
@@ -137,8 +169,8 @@ class HomeController extends AbstractController
             'totalPoliticiens' => $totalPoliticiens,
             'totalPartenaires' => $totalPartenaires,
             'delitsVariation' => $delitsVariation,
-            'politiciensVariation' => $politiciensVariation,
-            'partenairesVariation' => $partenairesVariation,
+            'politiciensVariation' => $politiciensVariationDisplay,
+            'partenairesVariation' => $partnersVariationDisplay,
             'recentActivities' => $recentActivities,
         ]);
     }
@@ -562,7 +594,7 @@ class HomeController extends AbstractController
                 'email' => $politician->getEmail(),
                 'role' => $this->getPoliticianRole($politician),
                 'offenses' => [],
-                'timeline' => [], // À implémenter plus tard
+                'timeline' => [],
                 'bio' => $this->generateBio($politician),
                 'image' => $placeholderImage,
                 'telephone' => $politician->getTelephone(),
@@ -696,7 +728,7 @@ class HomeController extends AbstractController
         }
         
         // Créer le nouvel utilisateur
-        $user = new User();
+        $user = new Politicien();
         $user->setFirstName($data['firstName']);
         $user->setLastName($data['lastName']);
         $user->setEmail($data['email']);
@@ -716,7 +748,10 @@ class HomeController extends AbstractController
         if (!empty($data['dateNaissance'])) {
             $user->setDateNaissance(new \DateTime($data['dateNaissance']));
         }
-        
+        if (!empty($data['dateEntreePolitique'])) {
+            $user->setDateEntreePolitique(new \DateTime($data['dateEntreePolitique']));
+        }
+
         try {
             $em->persist($user);
             $em->flush();

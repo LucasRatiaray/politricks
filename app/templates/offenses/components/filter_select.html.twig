@@ -1,8 +1,11 @@
-<div>
+<div class="relative w-full">
     <label class="block text-gray-300 text-sm mb-2" for="{{ name }}">{{ label }}</label>
-    <select id="{{ name }}" name="{{ name }}" class="filter-select w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+    <select id="{{ name }}" name="{{ name }}" class="appearance-none w-full bg-gray-800 text-gray-200 rounded px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500">
         {% for option in options %}
             <option>{{ option }}</option>
         {% endfor %}
     </select>
-</div> 
+    <svg class="pointer-events-none absolute right-2 top-9 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+</div>

@@ -7,20 +7,20 @@
                 {% include 'layout/components/card.html.twig' with { 
                     title: 'Délits', 
                     value: totalDelits|number_format(0, ',', ' '), 
-                    variation: (delitsVariation > 0 ? '+' : '') ~ delitsVariation ~ '%', 
-                    variation_color: delitsVariation >= 0 ? '#22c55e' : '#ef4444'
+                    variation: (delitsVariation > 0 ?? '') ~ delitsVariation,
+                    variation_color: '#22c55e'
                 } %}
                 {% include 'layout/components/card.html.twig' with { 
                     title: 'Politiciens', 
                     value: totalPoliticiens|number_format(0, ',', ' '), 
-                    variation: (politiciensVariation > 0 ? '+' : '') ~ politiciensVariation ~ '%', 
-                    variation_color: politiciensVariation >= 0 ? '#22c55e' : '#ef4444'
+                    variation: (politiciensVariation > 0 ?? '') ~ politiciensVariation, 
+                    variation_color: '#22c55e'
                 } %}
                 {% include 'layout/components/card.html.twig' with { 
                     title: 'Partenaires', 
                     value: totalPartenaires|number_format(0, ',', ' '), 
-                    variation: (partenairesVariation > 0 ? '+' : '') ~ partenairesVariation ~ '%', 
-                    variation_color: partenairesVariation >= 0 ? '#22c55e' : '#ef4444'
+                    variation: (partenairesVariation > 0 ?? '') ~ partenairesVariation,
+                    variation_color: '#22c55e'
                 } %}
             </div>
             
