@@ -95,13 +95,10 @@ RUN mkdir -p /app/var/cache /app/var/log /var/log/supervisor /var/run \
     && chown -R www-data:www-data /app/var /app/public \
     && chmod -R 755 /app/var /app/public
 
-# Nettoyage et warmup cache avec variables temporaires
-RUN rm -rf /app/node_modules && echo "Node modules removed"
-
-RUN composer dump-autoload --optimize && echo "Composer autoload dumped"
-
-# Skip cache operations during build - will be done at runtime
-RUN echo "Cache operations skipped during build - will be handled at runtime"
+# Production optimizations
+COPY .env.example /app/.env
+RUN rm -rf /app/node_modules \
+    && composer dump-autoload --optimize --no-dev
 
 # Pas de script externe - commandes directes
 
