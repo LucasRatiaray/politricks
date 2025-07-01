@@ -14,11 +14,13 @@ chmod -R 755 /app/var /app/public
   # Run as www-data to avoid permission issues
   su www-data -s /bin/sh -c "php bin/console doctrine:migrations:migrate --no-interaction" || echo "Migration error"
   
-  # Check if users table exists  
-  if su www-data -s /bin/sh -c "php bin/console doctrine:query:sql 'SELECT 1 FROM users LIMIT 1'" 2>/dev/null; then
-    echo "Database tables exist"
+  # Check if users table has data and load fixtures if needed
+  USER_COUNT=$(su www-data -s /bin/sh -c "php bin/console doctrine:query:sql 'SELECT COUNT(*) FROM users'" 2>/dev/null | tail -1 | tr -d ' ' || echo "0")
+  if [ "$USER_COUNT" = "0" ]; then
+    echo "Loading fixtures..."
+    su www-data -s /bin/sh -c "php bin/console doctrine:fixtures:load --no-interaction" || echo "Fixtures error"
   else
-    echo "Database setup complete - fixtures not available in prod"
+    echo "Database has $USER_COUNT users - fixtures already loaded"
   fi
   
   # Warm up cache as www-data
