@@ -2,25 +2,28 @@
 
 echo "Starting Politricks application..."
 
-# Ensure proper permissions for cache
-rm -rf /app/var/cache/*
-chown -R www-data:www-data /app/var
-chmod -R 755 /app/var
+# Ensure proper permissions
+chown -R www-data:www-data /app/var /app/public
+chmod -R 755 /app/var /app/public
 
-# Wait for database and setup
+# Wait for database and setup as www-data user
 (
   sleep 10
   echo "Setting up database..."
   
-  # Try migrations with detailed output
-  php bin/console doctrine:migrations:migrate --no-interaction || echo "Migration error"
+  # Run as www-data to avoid permission issues
+  su www-data -s /bin/sh -c "php bin/console doctrine:migrations:migrate --no-interaction" || echo "Migration error"
   
   # Check if users table exists  
-  if php bin/console doctrine:query:sql "SELECT 1 FROM users LIMIT 1" 2>/dev/null; then
+  if su www-data -s /bin/sh -c "php bin/console doctrine:query:sql 'SELECT 1 FROM users LIMIT 1'" 2>/dev/null; then
     echo "Database tables exist"
   else
     echo "Database setup complete - fixtures not available in prod"
   fi
+  
+  # Warm up cache as www-data
+  echo "Warming up cache..."
+  su www-data -s /bin/sh -c "php bin/console cache:warmup --no-interaction" || echo "Cache warmup error"
 ) &
 
 # Start supervisor
