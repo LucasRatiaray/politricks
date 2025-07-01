@@ -2,9 +2,10 @@
 
 echo "Starting Politricks application..."
 
-# Ensure proper permissions
+# Ensure proper permissions for cache
+rm -rf /app/var/cache/*
 chown -R www-data:www-data /app/var
-chmod -R 777 /app/var
+chmod -R 755 /app/var
 
 # Wait for database and setup
 (
