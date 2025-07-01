@@ -101,7 +101,6 @@ RUN mkdir -p /app/var/cache /app/var/log /var/log/supervisor /var/run \
 # Production optimizations
 COPY .env.example /app/.env
 RUN rm -rf /app/node_modules \
-    && composer install --optimize-autoloader \
     && composer dump-autoload --optimize
 
 # Pas de script externe - commandes directes
