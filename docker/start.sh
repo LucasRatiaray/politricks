@@ -2,19 +2,24 @@
 
 echo "Starting Politricks application..."
 
-# Wait a bit for database to be ready
-sleep 5
+# Ensure proper permissions
+chown -R www-data:www-data /app/var
+chmod -R 777 /app/var
 
-# Run migrations in background to avoid blocking startup
+# Wait for database and setup
 (
-  echo "Running database setup..."
-  php bin/console doctrine:migrations:migrate --no-interaction 2>/dev/null || echo "Migrations failed or already applied"
+  sleep 10
+  echo "Setting up database..."
   
-  # Load fixtures if tables are empty
-  USER_COUNT=$(php bin/console doctrine:query:sql "SELECT COUNT(*) FROM users" 2>/dev/null | tail -1 || echo "0")
-  if [ "$USER_COUNT" = "0" ]; then
+  # Try migrations with detailed output
+  php bin/console doctrine:migrations:migrate --no-interaction || echo "Migration error"
+  
+  # Check if users table exists and load fixtures
+  if php bin/console doctrine:query:sql "SELECT 1 FROM users LIMIT 1" 2>/dev/null; then
+    echo "Database tables exist"
+  else
     echo "Loading fixtures..."
-    php bin/console doctrine:fixtures:load --no-interaction 2>/dev/null || echo "Fixtures failed"
+    php bin/console doctrine:fixtures:load --no-interaction || echo "Fixtures error"
   fi
 ) &
 

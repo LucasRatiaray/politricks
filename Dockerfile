@@ -93,7 +93,8 @@ RUN chmod +x /start.sh && ls -la /start.sh
 # Création et permissions des dossiers Symfony + Supervisor
 RUN mkdir -p /app/var/cache /app/var/log /var/log/supervisor /var/run \
     && chown -R www-data:www-data /app/var /app/public \
-    && chmod -R 755 /app/var /app/public
+    && chmod -R 777 /app/var \
+    && chmod -R 755 /app/public
 
 # Production optimizations
 COPY .env.example /app/.env
