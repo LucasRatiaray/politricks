@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Clear and warm up cache first (with real env vars)
+echo "Clearing cache..."
+php bin/console cache:clear --no-interaction
+echo "Warming up cache..."
+php bin/console cache:warmup --no-interaction
+
 # Attendre que la base de données soit prête
 until php bin/console doctrine:query:sql "SELECT 1" 2>/dev/null; do
     echo "Waiting for database..."

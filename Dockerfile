@@ -100,16 +100,8 @@ RUN rm -rf /app/node_modules && echo "Node modules removed"
 
 RUN composer dump-autoload --optimize && echo "Composer autoload dumped"
 
-# Variables temporaires pour le build seulement
-RUN APP_ENV=prod \
-    APP_SECRET=build_temp_secret_12345 \
-    DATABASE_URL="sqlite:///var/tmp/build.db" \
-    php bin/console cache:clear --no-interaction && echo "Cache cleared"
-
-RUN APP_ENV=prod \
-    APP_SECRET=build_temp_secret_12345 \
-    DATABASE_URL="sqlite:///var/tmp/build.db" \
-    php bin/console cache:warmup --no-interaction && echo "Cache warmed up"
+# Skip cache operations during build - will be done at runtime
+RUN echo "Cache operations skipped during build - will be handled at runtime"
 
 # Pas de script externe - commandes directes
 
