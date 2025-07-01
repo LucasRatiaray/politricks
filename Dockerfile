@@ -88,7 +88,7 @@ COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Script de démarrage avec fixtures
 COPY docker/start.sh /start.sh
-RUN chmod +x /start.sh
+RUN chmod +x /start.sh && ls -la /start.sh
 
 # Création et permissions des dossiers Symfony + Supervisor
 RUN mkdir -p /app/var/cache /app/var/log /var/log/supervisor /var/run \
@@ -109,4 +109,4 @@ RUN echo "Cache operations skipped during build - will be handled at runtime"
 EXPOSE 8080
 
 # Démarrage avec fixtures automatiques
-CMD ["/start.sh"]
+CMD ["/bin/bash", "/start.sh"]
