@@ -4,14 +4,16 @@ namespace App\Enum;
 
 enum DelitTypeEnum: string
 {
-    case Vol = 'vol';
-    case Agression = 'agression';
-    case Fraude = 'fraude';
-    case Homicide = 'homicide';
-    case Vandalism = 'vandalism';
-    case TraficDrogue = 'trafic_drogue';
-    case Cybercriminalite = 'cybercriminalite';
-    case Harcelement = 'harcelement';
-    case Escroquerie = 'escroquerie';
-    case Contrebande = 'contreband';
+    case Vol = 'Vol';
+    case Agression = 'Agression';
+    case IllegalInterests = "Prise d'intérêts illégaux";
+    case Fraude = 'Fraude';
+    case Homicide = 'Homicide';
+    case Vandalism = 'Vandalisme';
+    case TraficDrogue = 'Trafic de drogue';
+    case Cybercriminalite = 'Cybercriminalité';
+    case Harcelement = 'Harcèlement';
+    case Escroquerie = 'Escroquerie';
+    case Contrebande = 'Contrebande';
+    case CorruptionOfAMinor = 'Corruption de mineur';
 }

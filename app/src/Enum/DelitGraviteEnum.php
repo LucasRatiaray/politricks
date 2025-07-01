@@ -4,9 +4,9 @@ namespace App\Enum;
 
 enum DelitGraviteEnum: string
 {
-    case Mineur = 'mineur';
-    case Modere = 'modere';
-    case Grave = 'grave';
-    case TresGrave = 'tres_grave';
-    case ExtremementGrave = 'extremement_grave';
+    case Mineur = 'Mineur';
+    case Modere = 'Modéré';
+    case Grave = 'Grave';
+    case TresGrave = "Ça va piquer";
+    case ExtremementGrave = "C'est chaud 💀";
 }

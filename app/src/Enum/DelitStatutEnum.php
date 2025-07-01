@@ -4,11 +4,10 @@ namespace App\Enum;
 
 enum DelitStatutEnum: string
 {
-    case EnCours = 'en_cours';
-    case Termine = 'termine';
-    case ClasseSansSuite = 'classe_sans_suite';
-    case Rejete = 'rejete';
-    case EnInstruction = 'en_instruction';
-    case Condamne = 'condamne';
-    case Acquitte = 'acquitte';
+    case EnCours = 'En cours';
+    case ClasseSansSuite = 'Classé sans suite';
+    case Rejete = 'Rejeté';
+    case EnInstruction = 'En instruction';
+    case Condamne = 'Condamné';
+    case Acquitte = 'Acquitté';
 }

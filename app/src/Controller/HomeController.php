@@ -274,6 +274,32 @@ class HomeController extends AbstractController
                 'partenaires' => $partenaires,
                 'commentaires' => $commentaires,
                 'documents' => $documents,
+                'typeFraude' => null,
+                'documentsManipules' => null,
+                'nombreVictimes' => null,
+                'prejudiceEstime' => null,
+                'methodeFraude' => null,
+                'complicesIdentifies' => null,
+                'systemeInformatique' => null,
+                'fraudeOrganisee' => null,
+                'biensDerobes' => null,
+                'valeurEstimee' => null,
+                'biensRecuperes' => null,
+                'pourcentageRecupere' => null,
+                'lieuStockage' => null,
+                'methodeDerriereVol' => null,
+                'receleurs' => null,
+                'volPremedite' => null,
+                'montantEstime' => null,
+                'devise' => null,
+                'methodePaiement' => null,
+                'compteBancaire' => null,
+                'paradissFiscal' => null,
+                'blanchimentSoupçonne' => null,
+                'institutionsImpliquees' => null,
+                'circuitFinancier' => null,
+                'montantRecupere' => null,
+                'argentRecupere' => null,
             ];
             
             // Ajouter les données spécifiques selon le type
@@ -444,6 +470,32 @@ class HomeController extends AbstractController
             'partenaires' => $partenaires,
             'commentaires' => $commentaires,
             'documents' => $documents,
+            'typeFraude' => null,
+            'documentsManipules' => null,
+            'nombreVictimes' => null,
+            'prejudiceEstime' => null,
+            'methodeFraude' => null,
+            'complicesIdentifies' => null,
+            'systemeInformatique' => null,
+            'fraudeOrganisee' => null,
+            'biensDerobes' => null,
+            'valeurEstimee' => null,
+            'biensRecuperes' => null,
+            'pourcentageRecupere' => null,
+            'lieuStockage' => null,
+            'methodeDerriereVol' => null,
+            'receleurs' => null,
+            'volPremedite' => null,
+            'montantEstime' => null,
+            'devise' => null,
+            'methodePaiement' => null,
+            'compteBancaire' => null,
+            'paradissFiscal' => null,
+            'blanchimentSoupçonne' => null,
+            'institutionsImpliquees' => null,
+            'circuitFinancier' => null,
+            'montantRecupere' => null,
+            'argentRecupere' => null,
         ];
         
         // Ajouter les données spécifiques selon le type
@@ -509,7 +561,7 @@ class HomeController extends AbstractController
                 'lastName' => $politician->getLastName(),
                 'email' => $politician->getEmail(),
                 'role' => $this->getPoliticianRole($politician),
-                'offenses' => [], // À implémenter plus tard avec les vraies données
+                'offenses' => [],
                 'timeline' => [], // À implémenter plus tard
                 'bio' => $this->generateBio($politician),
                 'image' => $placeholderImage,
@@ -539,21 +591,18 @@ class HomeController extends AbstractController
             throw $this->createNotFoundException('Politicien non trouvé');
         }
 
-        // Récupérer les délits associés au politicien (3 dernières années)
-        $threeYearsAgo = new \DateTime('-3 years');
+        // Récupérer les délits associés au politicien
         $qb = $em->createQueryBuilder();
-        $qb->select('d')
-        ->from(Delit::class, 'd')
-        ->join('d.politiciens', 'p')
-        ->where('p.id = :politicianId')
-        ->andWhere('d.date >= :threeYearsAgo')
-        ->orderBy('d.date', 'DESC')
-        ->setParameter('politicianId', $politician->getId())
-        ->setParameter('threeYearsAgo', $threeYearsAgo);
+        $qb->select('delit')
+        ->from(Delit::class, 'delit')
+        ->join('delit.politiciens', 'politic')
+        ->where('politic.id = :politicianId')
+        ->orderBy('delit.date', 'DESC')
+        ->setParameter('politicianId', $politician->getId());
         
         $offenses = $qb->getQuery()->getResult();
         
-        // Formater les offenses pour l'affichage
+        // Formattage
         $offensesData = [];
         foreach ($offenses as $offense) {
             $offensesData[] = [
@@ -566,7 +615,7 @@ class HomeController extends AbstractController
             ];
         }
 
-        // Générer la timeline basée sur les délits et événements
+        // Générer la timeline
         $timelineData = [];
         
         // Ajouter les délits à la timeline
@@ -580,18 +629,16 @@ class HomeController extends AbstractController
                 'gravite' => $offense->getGravite()->value,
             ];
         }
-        
-        // Ajouter la date d'entrée en politique (si disponible)
-        if ($politician->getDateCreation()) {
+
+        if ($politician->getDateEntreePolitique()) {
             $timelineData[] = [
-                'date' => $politician->getDateCreation()->format('d/m/Y'),
+                'date' => $politician->getDateEntreePolitique()->format('d/m/Y'),
                 'title' => 'Entrée en politique',
                 'description' => 'Début de carrière politique',
                 'type' => 'carriere',
             ];
         }
-        
-        // Ajouter la date de naissance (si disponible)
+
         if ($politician->getDateNaissance()) {
             $timelineData[] = [
                 'date' => $politician->getDateNaissance()->format('d/m/Y'),
@@ -1170,85 +1217,14 @@ class HomeController extends AbstractController
         }
     }
 
-    #[Route('/medias', name: 'app_media')]
-    public function media(): Response
-    {
-        $media = [
-            [
-                'title' => 'Image of a protest',
-                'type' => 'Image',
-                'date' => '2023-08-15',
-                'offense' => 'Public Disorder',
-                'confidentiality' => 'Public',
-            ],
-            [
-                'title' => 'Video of a speech',
-                'type' => 'Video',
-                'date' => '2023-07-22',
-                'offense' => 'Incitement',
-                'confidentiality' => 'Confidential',
-            ],
-            [
-                'title' => 'Audio recording of a meeting',
-                'type' => 'Audio',
-                'date' => '2023-06-10',
-                'offense' => 'Conspiracy',
-                'confidentiality' => 'Secret',
-            ],
-            [
-                'title' => 'PDF document of financial records',
-                'type' => 'PDF',
-                'date' => '2023-05-01',
-                'offense' => 'Corruption',
-                'confidentiality' => 'Top Secret',
-            ],
-            [
-                'title' => 'Image of a rally',
-                'type' => 'Image',
-                'date' => '2023-04-18',
-                'offense' => 'Public Disorder',
-                'confidentiality' => 'Public',
-            ],
-            [
-                'title' => 'Video of a debate',
-                'type' => 'Video',
-                'date' => '2023-05-25',
-                'offense' => 'Incitement',
-                'confidentiality' => 'Confidential',
-            ],
-            [
-                'title' => 'Audio recording of a phone call',
-                'type' => 'Audio',
-                'date' => '2023-02-12',
-                'offense' => 'Conspiracy',
-                'confidentiality' => 'Secret',
-            ],
-            [
-                'title' => 'PDF document of legal filings',
-                'type' => 'PDF',
-                'date' => '2023-01-05',
-                'offense' => 'Obstruction of Justice',
-                'confidentiality' => 'Top Secret',
-            ],
-            [
-                'title' => 'Image of a press conference',
-                'type' => 'Image',
-                'date' => '2022-12-20',
-                'offense' => 'Public Disorder',
-                'confidentiality' => 'Public',
-            ],
-            [
-                'title' => 'Video of a town hall',
-                'type' => 'Video',
-                'date' => '2022-11-10',
-                'offense' => 'Incitement',
-                'confidentiality' => 'Confidential',
-            ],
-        ];
-        return $this->render('media/media.html.twig', [
-            'media' => $media,
-        ]);
-    }
+//    #[Route('/medias', name: 'app_media')]
+//    public function media(): Response
+//    {
+//        $media = [];
+//        return $this->render('media/media.html.twig', [
+//            'media' => $media,
+//        ]);
+//    }
 
     #[Route('/profile', name: 'app_profile')]
     public function profile(): Response
@@ -1497,11 +1473,13 @@ class HomeController extends AbstractController
     {
         $email = $politician->getEmail();
         
-        if (str_contains($email, 'elysee')) {
+        if (str_contains($email, 'president.fr')) {
             return 'Président de la République';
-        } elseif (str_contains($email, 'rn.fr')) {
+        } elseif (str_contains($email, 'chefpolitique.fr')) {
             return 'Chef de parti politique';
-        } elseif (str_contains($email, 'politicien')) {
+        } elseif (str_contains($email, 'gouv.fr')) {
+            return 'Membre du gouvernement';
+        } elseif (str_contains($email, 'politicien.fr')) {
             return 'Politicien';
         } else {
             return 'Représentant politique';
@@ -1528,7 +1506,7 @@ class HomeController extends AbstractController
             $bio .= " spécialisé dans {$profession}";
         }
         
-        $bio .= ". Il/elle s'engage activement dans la vie politique et représente les intérêts de ses concitoyens.";
+        $bio .= ". Elle s'engage activement dans la vie politique et représente les intérêts de ses concitoyens.";
         
         return $bio;
     }

@@ -37,17 +37,20 @@ class AppFixtures extends Fixture
         // Créer les lieux
         $lieux = $this->createLieux($manager);
         
-        // Créer les délits
-        $delits = $this->createDelits($manager, $lieux);
+        // Créer les partenaires (on récupère le tableau)
+        $partenaires = $this->createPartenaires($manager);
+        
+        // Créer les délits (ajout de délits spécifiques liés à des politiciens et partenaires)
+        $delits = $this->createDelits($manager, $lieux, $politiciens, $partenaires);
+        
+        // Lier politiciens et délits (remplir la table de jointure)
+        $this->linkPoliticiensToDelits($manager, $politiciens, $delits);
         
         // Créer les commentaires
         $this->createCommentaires($manager, $politiciens, $delits);
         
         // Créer les documents
         $this->createDocuments($manager, $politiciens, $delits);
-        
-        // Créer les partenaires
-        $this->createPartenaires($manager);
 
         $manager->flush();
     }
@@ -89,7 +92,7 @@ class AppFixtures extends Fixture
         $users[] = $moderator;
 
         // Utilisateurs normaux
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 3; $i++) {
             $user = new User();
             $user->setEmail("user{$i}@example.com");
             $user->setRoles(['ROLE_USER']);
@@ -203,10 +206,39 @@ class AppFixtures extends Fixture
     {
         $politiciens = [];
 
+        // Bruno Retailleau
+        $retailleau = new Politicien();
+        $retailleau->setEmail('bruno.retailleau@gouv.fr');
+        $retailleau->setRoles(['ROLE_POLITICIAN']);
+        $retailleau->setPassword($passwordHash);
+        $retailleau->setFirstName('Bruno');
+        $retailleau->setLastName('Retailleau');
+        $retailleau->setDateCreation(new \DateTime());
+        $retailleau->setEstActif(true);
+        $retailleau->setTelephone('+33944747000');
+        $retailleau->setDateNaissance(new \DateTime('1960-11-20'));
+        $retailleau->setNationalite('Française');
+        $retailleau->setProfession("Ministre de l'intérieur");
+        $retailleau->setBiographie("Ministre de l'intérieur de la République française d'Emmanuel Macron");
+        $retailleau->setFonction("Ministre de l'intérieur");
+        $retailleau->setDateEntreePolitique(new \DateTime('1988-05-15'));
+        $retailleau->setMandatActuel("Ministre de l'intérieur (2022-2027)");
+        $retailleau->setCirconscription('National');
+        $retailleau->setSalaireMensuel('15000');
+        $retailleau->setDeclarationPatrimoine([
+            'immobilier' => 1000000,
+            'mobilier' => 500000,
+            'comptes' => 150000
+        ]);
+        $retailleau->setCasierJudiciaire('Vierge');
+        $retailleau->setParti($partis[1]); // LR
+        $manager->persist($retailleau);
+        $politiciens[] = $retailleau;
+
         // Emmanuel Macron
         $macron = new Politicien();
-        $macron->setEmail('emmanuel.macron@elysee.fr');
-        $macron->setRoles(['ROLE_POLITICIAN', 'ROLE_USER']);
+        $macron->setEmail('emmanuel.macron@president.fr');
+        $macron->setRoles(['ROLE_POLITICIAN']);
         $macron->setPassword($passwordHash);
         $macron->setFirstName('Emmanuel');
         $macron->setLastName('Macron');
@@ -232,10 +264,97 @@ class AppFixtures extends Fixture
         $manager->persist($macron);
         $politiciens[] = $macron;
 
+        // Marlène Schiappa
+        $schiappa = new Politicien();
+        $schiappa->setEmail('marlene.schiappa@politicien.fr');
+        $schiappa->setRoles(['ROLE_POLITICIAN']);
+        $schiappa->setPassword($passwordHash);
+        $schiappa->setFirstName('Marlène');
+        $schiappa->setLastName('Schiappa');
+        $schiappa->setDateCreation(new \DateTime());
+        $schiappa->setEstActif(true);
+        $schiappa->setTelephone('+33123456789');
+        $schiappa->setDateNaissance(new \DateTime('1982-11-18'));
+        $schiappa->setNationalite('Française');
+        $schiappa->setProfession('Ex-secrétaire d\'État');
+        $schiappa->setBiographie('Ancienne secrétaire d\'État, impliquée dans plusieurs polémiques dont le fonds Marianne.');
+        $schiappa->setFonction('Ancienne secrétaire d\'État à la Citoyenneté');
+        $schiappa->setDateEntreePolitique(new \DateTime('2017-05-17'));
+        $schiappa->setMandatActuel('Aucun');
+        $schiappa->setCirconscription('N/A');
+        $schiappa->setSalaireMensuel('7200');
+        $schiappa->setDeclarationPatrimoine([
+            'immobilier' => 500000,
+            'mobilier' => 150000,
+            'comptes' => 70000
+        ]);
+        $schiappa->setCasierJudiciaire('Vierge');
+        $schiappa->setParti($partis[0]); // LREM
+        $manager->persist($schiappa);
+        $politiciens[] = $schiappa;
+
+        // Alexandre Benalla
+        $benalla = new Politicien();
+        $benalla->setEmail('alexandre.benalla@politicien.fr');
+        $benalla->setRoles(['ROLE_POLITICIAN']);
+        $benalla->setPassword($passwordHash);
+        $benalla->setFirstName('Alexandre');
+        $benalla->setLastName('Benalla');
+        $benalla->setDateCreation(new \DateTime());
+        $benalla->setEstActif(false);
+        $benalla->setTelephone('+33666666666');
+        $benalla->setDateNaissance(new \DateTime('1991-09-08'));
+        $benalla->setNationalite('Française');
+        $benalla->setProfession('Ex-chargé de mission');
+        $benalla->setBiographie('Chargé de mission à l\'Élysée, connu pour l\'affaire des violences du 1er mai 2018.');
+        $benalla->setFonction('Ex-chargé de mission');
+        $benalla->setDateEntreePolitique(new \DateTime('2017-05-15'));
+        $benalla->setMandatActuel('Aucun');
+        $benalla->setCirconscription('N/A');
+        $benalla->setSalaireMensuel('5000');
+        $benalla->setDeclarationPatrimoine([
+            'immobilier' => 0,
+            'mobilier' => 30000,
+            'comptes' => 10000
+        ]);
+        $benalla->setCasierJudiciaire('Condamné à 3 ans dont un ferme (affaire Benalla)');
+        $benalla->setParti($partis[0]); // LREM
+        $manager->persist($benalla);
+        $politiciens[] = $benalla;
+
+        // Éric Dupond-Moretti
+        $moretti = new Politicien();
+        $moretti->setEmail('eric.dupond-moretti@justice.gouv.fr');
+        $moretti->setRoles(['ROLE_POLITICIAN']);
+        $moretti->setPassword($passwordHash);
+        $moretti->setFirstName('Éric');
+        $moretti->setLastName('Dupond-Moretti');
+        $moretti->setDateCreation(new \DateTime());
+        $moretti->setEstActif(true);
+        $moretti->setTelephone('+33111223344');
+        $moretti->setDateNaissance(new \DateTime('1961-04-20'));
+        $moretti->setNationalite('Française');
+        $moretti->setProfession('Ministre de la Justice');
+        $moretti->setBiographie('Ancien avocat pénaliste, nommé ministre, mis en examen pour prise illégale d\'intérêt.');
+        $moretti->setFonction('Ministre de la Justice');
+        $moretti->setDateEntreePolitique(new \DateTime('2020-07-06'));
+        $moretti->setMandatActuel('Ministre de la Justice');
+        $moretti->setCirconscription('National');
+        $moretti->setSalaireMensuel('10000');
+        $moretti->setDeclarationPatrimoine([
+            'immobilier' => 800000,
+            'mobilier' => 200000,
+            'comptes' => 50000
+        ]);
+        $moretti->setCasierJudiciaire('Mis en examen en 2021 pour prise illégale d\'intérêt');
+        $moretti->setParti($partis[0]); // LREM
+        $manager->persist($moretti);
+        $politiciens[] = $moretti;
+
         // Marine Le Pen
         $lepen = new Politicien();
-        $lepen->setEmail('marine.lepen@rn.fr');
-        $lepen->setRoles(['ROLE_POLITICIAN', 'ROLE_USER']);
+        $lepen->setEmail('marine.lepen@chefpolitique.fr');
+        $lepen->setRoles(['ROLE_POLITICIAN']);
         $lepen->setPassword($passwordHash);
         $lepen->setFirstName('Marine');
         $lepen->setLastName('Le Pen');
@@ -262,10 +381,10 @@ class AppFixtures extends Fixture
         $politiciens[] = $lepen;
 
         // Politiciens fictifs
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 2; $i++) {
             $politicien = new Politicien();
             $politicien->setEmail("politicien{$i}@example.com");
-            $politicien->setRoles(['ROLE_POLITICIAN', 'ROLE_USER']);
+            $politicien->setRoles(['ROLE_POLITICIAN']);
             $politicien->setPassword($passwordHash);
             $politicien->setFirstName("Prénom{$i}");
             $politicien->setLastName("Nom{$i}");
@@ -368,7 +487,7 @@ class AppFixtures extends Fixture
         }
 
         // Lieux fictifs
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 2; $i++) {
             $lieu = new Lieu();
             $lieu->setAdresse("Adresse {$i}");
             $lieu->setVille("Ville {$i}");
@@ -391,7 +510,7 @@ class AppFixtures extends Fixture
         return $lieux;
     }
 
-    private function createDelits(ObjectManager $manager, array $lieux): array
+    private function createDelits(ObjectManager $manager, array $lieux, array $politiciens = [], array $partenaires = []): array
     {
         $delits = [];
 
@@ -413,6 +532,96 @@ class AppFixtures extends Fixture
                 'lieu' => $lieux[1]
             ]
         ];
+
+        // Ajout de délits "célèbres" pour les politiciens connus
+        if (!empty($politiciens)) {
+            // Délit pour Macron
+            $delitMacron = new Delit();
+            $delitMacron->setType(DelitTypeEnum::Fraude);
+            $delitMacron->setDescription('Financement illégal de campagne présidentielle');
+            $delitMacron->setDate(new \DateTime('-3 years'));
+            $delitMacron->setStatut(DelitStatutEnum::EnInstruction);
+            $delitMacron->setGravite(DelitGraviteEnum::Grave);
+            $delitMacron->setDateDeclaration(new \DateTime('-3 years'));
+            $delitMacron->setNumeroAffaire('AF' . rand(100000, 999999));
+            $delitMacron->setProcureurResponsable('Procureur 7');
+            $delitMacron->setTemoinsPrincipaux(['Témoin A', 'Témoin B']);
+            $delitMacron->setPreuvesPrincipales(['Factures', 'Transferts bancaires']);
+            $delitMacron->setLieu($lieux[0]);
+            // Ajout d'un partenaire pour tester la jointure
+            if (!empty($partenaires)) {
+                $delitMacron->addPartenaire($partenaires[0]);
+            }
+            $manager->persist($delitMacron);
+            $delits[] = $delitMacron;
+
+            // Délit pour Benalla
+            $delitBenalla = new Delit();
+            $delitBenalla->setType(DelitTypeEnum::Agression);
+            $delitBenalla->setDescription('Violences lors du 1er mai');
+            $delitBenalla->setDate(new \DateTime('-5 years'));
+            $delitBenalla->setStatut(DelitStatutEnum::Condamne);
+            $delitBenalla->setGravite(DelitGraviteEnum::Grave);
+            $delitBenalla->setDateDeclaration(new \DateTime('-5 years'));
+            $delitBenalla->setNumeroAffaire('AF' . rand(100000, 999999));
+            $delitBenalla->setProcureurResponsable('Procureur 2');
+            $delitBenalla->setTemoinsPrincipaux(['Policier', 'Manifestant']);
+            $delitBenalla->setPreuvesPrincipales(['Vidéo', 'Rapport police']);
+            $delitBenalla->setLieu($lieux[0]);
+            // Ajout d'un partenaire pour tester la jointure
+            if (!empty($partenaires)) {
+                $delitBenalla->addPartenaire($partenaires[1 % count($partenaires)]);
+            }
+            $manager->persist($delitBenalla);
+            $delits[] = $delitBenalla;
+
+            // Délit pour Le Pen
+            $delitLePen = new Delit();
+            $delitLePen->setType(DelitTypeEnum::Fraude);
+            $delitLePen->setDescription('Emplois fictifs au Parlement européen');
+            $delitLePen->setDate(new \DateTime('-7 years'));
+            $delitLePen->setStatut(DelitStatutEnum::EnInstruction);
+            $delitLePen->setGravite(DelitGraviteEnum::Grave);
+            $delitLePen->setDateDeclaration(new \DateTime('-7 years'));
+            $delitLePen->setNumeroAffaire('AF' . rand(100000, 999999));
+            $delitLePen->setProcureurResponsable('Procureur 3');
+            $delitLePen->setTemoinsPrincipaux(['Assistant', 'Député']);
+            $delitLePen->setPreuvesPrincipales(['Contrats', 'Relevés bancaires']);
+            $delitLePen->setLieu($lieux[2]);
+            // Ajout de deux partenaires pour tester la jointure
+            if (!empty($partenaires)) {
+                $delitLePen->addPartenaire($partenaires[2 % count($partenaires)]);
+                $delitLePen->addPartenaire($partenaires[3 % count($partenaires)]);
+            }
+            $manager->persist($delitLePen);
+            $delits[] = $delitLePen;
+
+            // Nouveau délit impliquant 2 politiciens et 2 partenaires
+            $delitCollusion = new Delit();
+            $delitCollusion->setType(DelitTypeEnum::Fraude);
+            $delitCollusion->setDescription('Affaire de collusion entre deux politiciens et des partenaires privés');
+            $delitCollusion->setDate(new \DateTime('-2 years'));
+            $delitCollusion->setStatut(DelitStatutEnum::EnInstruction);
+            $delitCollusion->setGravite(DelitGraviteEnum::Grave);
+            $delitCollusion->setDateDeclaration(new \DateTime('-2 years'));
+            $delitCollusion->setNumeroAffaire('AF' . rand(100000, 999999));
+            $delitCollusion->setProcureurResponsable('Procureur 8');
+            $delitCollusion->setTemoinsPrincipaux(['Témoin X', 'Témoin Y']);
+            $delitCollusion->setPreuvesPrincipales(['Emails', 'Factures']);
+            $delitCollusion->setLieu($lieux[1]);
+            // Ajout de 2 politiciens
+            if (count($politiciens) > 2) {
+                $delitCollusion->addPoliticien($politiciens[0]);
+                $delitCollusion->addPoliticien($politiciens[1]);
+            }
+            // Ajout de 2 partenaires
+            if (count($partenaires) > 3) {
+                $delitCollusion->addPartenaire($partenaires[0]);
+                $delitCollusion->addPartenaire($partenaires[1]);
+            }
+            $manager->persist($delitCollusion);
+            $delits[] = $delitCollusion;
+        }
 
         foreach ($delitData as $data) {
             $delit = new Delit();
@@ -500,8 +709,9 @@ class AppFixtures extends Fixture
         }
     }
 
-    private function createPartenaires(ObjectManager $manager): void
+    private function createPartenaires(ObjectManager $manager): array
     {
+        $partenaires = [];
         for ($i = 1; $i <= 10; $i++) {
             if ($i % 2 === 0) {
                 // Partenaire Physique
@@ -532,6 +742,53 @@ class AppFixtures extends Fixture
             $partenaire->setEstActif(true);
             $partenaire->setCommentairesInternes("Commentaires internes partenaire {$i}");
             $manager->persist($partenaire);
+            $partenaires[] = $partenaire;
+        }
+        return $partenaires;
+    }
+
+    // Ajout : Lier politiciens et délits (ManyToMany)
+    private function linkPoliticiensToDelits(ObjectManager $manager, array $politiciens, array $delits): void
+    {
+        // Exemples de liens pertinents
+        // Emmanuel Macron (index 1) → Délit "Financement illégal de campagne" (dernier délit ajouté)
+        if (isset($politiciens[1], $delits[12])) {
+            $politiciens[1]->addDelit($delits[12]);
+        }
+        // Alexandre Benalla (index 3) → Délit "Violences lors du 1er mai" (avant-dernier délit ajouté)
+        if (isset($politiciens[3], $delits[11])) {
+            $politiciens[3]->addDelit($delits[11]);
+        }
+        // Marine Le Pen (index 5) → Délit "Emplois fictifs au Parlement européen" (délit 10)
+        if (isset($politiciens[5], $delits[10])) {
+            $politiciens[5]->addDelit($delits[10]);
+        }
+        // Politicien fictif 1 (index 6) → Délit fictif 1
+        if (isset($politiciens[6], $delits[2])) {
+            $politiciens[6]->addDelit($delits[2]);
+        }
+        // Politicien fictif 2 (index 7) → Délit fictif 2
+        if (isset($politiciens[7], $delits[3])) {
+            $politiciens[7]->addDelit($delits[3]);
+        }
+        // Bruno Retailleau (index 0) → Délit fictif 3
+        if (isset($politiciens[0], $delits[4])) {
+            $politiciens[0]->addDelit($delits[4]);
+        }
+        // Marlène Schiappa (index 2) → Délit fictif 4
+        if (isset($politiciens[2], $delits[5])) {
+            $politiciens[2]->addDelit($delits[5]);
+        }
+        // Éric Dupond-Moretti (index 4) → Délit fictif 5
+        if (isset($politiciens[4], $delits[6])) {
+            $politiciens[4]->addDelit($delits[6]);
+        }
+        // On peut aussi faire des liens multiples
+        if (isset($politiciens[1], $delits[0])) {
+            $politiciens[1]->addDelit($delits[0]);
+        }
+        if (isset($politiciens[5], $delits[1])) {
+            $politiciens[5]->addDelit($delits[1]);
         }
     }
 }

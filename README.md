@@ -328,3 +328,18 @@ Si vous rencontrez des problèmes avec l'application :
 ## Identifiants de connexion Administrateur
 - Email : `admin@politricks.com`
 - Mot de passe : `password`
+
+## Commandes utiles pour la base de données
+
+### Supprimer le schéma de la base de données (toutes les tables)
+   ```bash
+   docker exec politricks-php-1 php bin/console doctrine:schema:drop --force --full-database
+   ```
+### Recréer le schéma (toutes les tables vides)
+   ```bash
+   docker exec politricks-php-1 php bin/console doctrine:schema:create
+   ```
+### Charger les fixtures PHP (remplir la base avec les données de AppFixtures.php)
+   ```bash
+   docker exec politricks-php-1 php bin/console doctrine:fixtures:load --no-interaction
+   ```
