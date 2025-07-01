@@ -95,15 +95,14 @@ RUN mkdir -p /app/var/cache /app/var/log /var/log/supervisor /var/run \
     && chown -R www-data:www-data /app/var /app/public \
     && chmod -R 755 /app/var /app/public
 
-# Nettoyage et warmup cache (garder dev deps pour fixtures)
-RUN rm -rf /app/node_modules \
-    && echo "Node modules removed" \
-    && composer dump-autoload --optimize \
-    && echo "Composer autoload dumped" \
-    && APP_ENV=prod php bin/console cache:clear --no-interaction \
-    && echo "Cache cleared" \
-    && APP_ENV=prod php bin/console cache:warmup --no-interaction \
-    && echo "Cache warmed up"
+# Nettoyage et warmup cache (séparé pour debug)
+RUN rm -rf /app/node_modules && echo "Node modules removed"
+
+RUN composer dump-autoload --optimize && echo "Composer autoload dumped"
+
+RUN APP_ENV=prod php bin/console cache:clear --no-interaction && echo "Cache cleared"
+
+RUN APP_ENV=prod php bin/console cache:warmup --no-interaction && echo "Cache warmed up"
 
 # Pas de script externe - commandes directes
 
