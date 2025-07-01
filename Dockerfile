@@ -54,7 +54,7 @@ COPY app/composer.json app/composer.lock ./
 COPY app/package.json ./
 
 # Installation des dépendances Composer et NPM (avec dev pour fixtures)
-RUN composer update --optimize-autoloader --no-scripts || composer install --optimize-autoloader --no-scripts --ignore-platform-reqs
+RUN composer install --optimize-autoloader --no-scripts
 RUN npm install
 
 # Stage 3: Assets build
