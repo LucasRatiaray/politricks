@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+docs/
+
+# Docker
+Dockerfile.dev
+docker-compose.yml
+.dockerignore
+
+# Development
+.env.local
+.env.local.example
+Makefile
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Composer
+/vendor/
+
+# Symfony
+app/var/
+app/public/bundles/
+app/public/build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+tests/
+phpunit.xml.dist
+
+# Logs
+*.log

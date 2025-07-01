@@ -1,0 +1,50 @@
+# Dockerfile pour développement local
+FROM php:8.3-fpm-alpine
+
+# Variables d'environnement
+ENV COMPOSER_ALLOW_SUPERUSER=1 \
+    NODE_VERSION=20
+
+# Installation des dépendances système avec retry et DNS fixes
+RUN apk update && apk add --no-cache \
+    postgresql-dev \
+    libzip-dev \
+    oniguruma-dev \
+    curl \
+    git \
+    unzip \
+    nodejs \
+    npm \
+    bash \
+    && docker-php-ext-install \
+    pdo_pgsql \
+    zip \
+    && rm -rf /var/cache/apk/*
+
+# Installation de Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Installation de Symfony CLI
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.alpine.sh' | bash \
+    && apk add symfony-cli
+
+WORKDIR /app
+
+# Copie des fichiers de dépendances pour cache Docker
+COPY app/composer.json app/composer.lock app/package.json app/package-lock.json ./
+
+# Installation des dépendances
+RUN composer install --optimize-autoloader --no-scripts
+RUN npm install
+
+# Copie du code source
+COPY app/ .
+
+# Permissions
+RUN chown -R www-data:www-data /app
+
+# Exposition du port Symfony CLI
+EXPOSE 8000
+
+# Commande par défaut pour démarrer le serveur Symfony
+CMD ["symfony", "server:start", "--listen-ip=0.0.0.0", "--port=8000", "--no-tls"]
