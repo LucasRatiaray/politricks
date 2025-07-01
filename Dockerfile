@@ -109,4 +109,4 @@ RUN echo "Cache operations skipped during build - will be handled at runtime"
 EXPOSE 8080
 
 # Démarrage avec fixtures automatiques
-CMD ["/bin/bash", "/start.sh"]
+ENTRYPOINT ["/start.sh"]
