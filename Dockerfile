@@ -50,10 +50,10 @@ FROM base AS dependencies
 WORKDIR /app
 
 # Copie des fichiers de dépendances depuis le dossier app
-COPY app/composer.json app/composer.lock ./
+COPY app/composer.json ./
 COPY app/package.json ./
 
-# Installation des dépendances Composer et NPM (avec dev pour fixtures)
+# Installation des dépendances Composer et NPM (avec dev pour fixtures)  
 RUN composer install --optimize-autoloader --no-scripts
 RUN npm install
 
