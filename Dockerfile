@@ -15,6 +15,7 @@ RUN apk add --no-cache \
     postgresql-dev \
     libzip-dev \
     oniguruma-dev \
+    icu-dev \
     curl \
     git \
     unzip \
@@ -24,6 +25,7 @@ RUN apk add --no-cache \
     pdo_pgsql \
     zip \
     opcache \
+    intl \
     && rm -rf /var/cache/apk/*
 
 # Configuration OPcache pour production
