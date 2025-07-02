@@ -177,6 +177,36 @@ class AppFixtures extends Fixture
                 'budgetAnnuel' => 10000000,
                 'nombreAdherents' => 100000,
                 'partiActif' => true
+            ],
+            [
+                'nom' => 'La France Insoumise',
+                'couleur' => '#FF0000',
+                'slogan' => 'Ensemble, nous sommes plus forts',
+                'description' => 'Parti politique d\'extrême gauche français',
+                'dateCreation' => new \DateTime('2016-02-10'),
+                'siteWeb' => 'https://lafranceinsoumise.fr',
+                'adresseSiege' => '21 rue de la République, 75002 Paris',
+                'telephoneContact' => '01 42 33 00 00',
+                'emailContact' => 'contact@lfi.fr',
+                'orientationPolitique' => 'Extrême gauche',
+                'budgetAnnuel' => 8000000,
+                'nombreAdherents' => 120000,
+                'partiActif' => true
+            ],
+            [
+                'nom' => 'Reconquête',
+                'couleur' => '#FF4500',
+                'slogan' => 'Pour la France, pour les Français',
+                'description' => 'Parti politique d\'extrême droite français',
+                'dateCreation' => new \DateTime('2021-07-05'),
+                'siteWeb' => 'https://reconquete.fr',
+                'adresseSiege' => '12 rue de la République, 75001 Paris',
+                'telephoneContact' => '01 42 00 00 00',
+                'emailContact' => 'contact@reconquete.fr',
+                'orientationPolitique' => 'Extrême droite',
+                'budgetAnnuel' => 10000000,
+                'nombreAdherents' => 50000,
+                'partiActif' => true
             ]
         ];
 
@@ -235,6 +265,65 @@ class AppFixtures extends Fixture
         $retailleau->setParti($partis[1]); // LR
         $manager->persist($retailleau);
         $politiciens[] = $retailleau;
+
+        // Éric Zemmour
+        $zemmour = new Politicien();
+        $zemmour->setEmail('eric.zemmour@gouv.fr');
+        $zemmour->setRoles(['ROLE_POLITICIAN']);
+        $zemmour->setPassword($passwordHash);
+        $zemmour->setFirstName('Éric');
+        $zemmour->setLastName('Zemmour');
+        $zemmour->setDateCreation(new \DateTime());
+        $zemmour->setEstActif(true);
+        $zemmour->setTelephone('+33944747003');
+        $zemmour->setDateNaissance(new \DateTime('1958-08-31'));
+        $zemmour->setNationalite('Française');
+        $zemmour->setProfession('Essayiste et homme politique');
+        $zemmour->setBiographie("Ancien journaliste et polémiste, Éric Zemmour est le fondateur du parti Reconquête!. Il défend des positions nationalistes, identitaires et conservatrices, axées sur l'immigration, la sécurité et l'identité française.");
+        $zemmour->setFonction('Président de Reconquête!');
+        $zemmour->setDateEntreePolitique(new \DateTime('2021-12-05'));
+        $zemmour->setMandatActuel("Président du parti Reconquête! (2021 - présent)");
+        $zemmour->setCirconscription('National');
+        $zemmour->setSalaireMensuel('6000');
+        $zemmour->setDeclarationPatrimoine([
+            'immobilier' => 1800000,
+            'mobilier' => 250000,
+            'comptes' => 90000
+        ]);
+        $zemmour->setCasierJudiciaire('Condamnations pour provocation à la haine raciale');
+        $zemmour->setParti($partis[5]); // Reconquête!
+        $manager->persist($zemmour);
+        $politiciens[] = $zemmour;
+
+
+        // Jean-Luc Mélenchon
+        $melenchon = new Politicien();
+        $melenchon->setEmail('jean-luc.melenchon@gouv.fr');
+        $melenchon->setRoles(['ROLE_POLITICIAN']);
+        $melenchon->setPassword($passwordHash);
+        $melenchon->setFirstName('Jean-Luc');
+        $melenchon->setLastName('Mélenchon');
+        $melenchon->setDateCreation(new \DateTime());
+        $melenchon->setEstActif(true);
+        $melenchon->setTelephone('+33944747004');
+        $melenchon->setDateNaissance(new \DateTime('1951-08-19'));
+        $melenchon->setNationalite('Française');
+        $melenchon->setProfession('Homme politique');
+        $melenchon->setBiographie("Fondateur de La France insoumise, Jean-Luc Mélenchon est une figure majeure de la gauche radicale française. Il défend une 6e République, la planification écologique et une rupture avec l'ordre néolibéral.");
+        $melenchon->setFonction('Député (ancien)');
+        $melenchon->setDateEntreePolitique(new \DateTime('1976-01-01'));
+        $melenchon->setMandatActuel("Leader de La France insoumise");
+        $melenchon->setCirconscription('Bouches-du-Rhône (anciennement)');
+        $melenchon->setSalaireMensuel('7000');
+        $melenchon->setDeclarationPatrimoine([
+            'immobilier' => 800000,
+            'mobilier' => 300000,
+            'comptes' => 100000
+        ]);
+        $melenchon->setCasierJudiciaire('Vierge');
+        $melenchon->setParti($partis[4]); // LFI
+        $manager->persist($melenchon);
+        $politiciens[] = $melenchon;
 
         // Emmanuel Macron
         $macron = new Politicien();
@@ -676,7 +765,7 @@ class AppFixtures extends Fixture
             "Haha, tu crois que ça passera inaperçu ? Classique.",
             "Encore mieux : j’ai fait voter une loi pour légaliser le truc.",
             "Faut vraiment qu’on échange nos astuces, c’est brillant.",
-            "{$faker->firstName()} m’a soufflé cette combine, faut le remercier.",
+            "{$faker->firstName()} m’a soufflé cette combine, faudra remercier.",
             "T’as pensé à effacer les mails ? On ne sait jamais.",
             "Bravo, on sent l’expérience du Sénat là 😏.",
             "J’aurais pas osé... respect !",
