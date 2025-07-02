@@ -20,7 +20,7 @@ echo "Checking if fixtures are needed..."
 USER_COUNT=$(su www-data -s /bin/sh -c "php bin/console doctrine:query:sql 'SELECT COUNT(*) FROM user'" 2>/dev/null | tail -1 | awk '{print $1}')
 if [ "$USER_COUNT" = "0" ] || [ -z "$USER_COUNT" ]; then
   echo "No users found, loading fixtures..."
-  su www-data -s /bin/sh -c "php bin/console doctrine:fixtures:load --no-interaction --purge-with-truncate" && echo "Fixtures loaded successfully" || echo "Fixtures error"
+  su www-data -s /bin/sh -c "php bin/console app:load-data" && echo "Fixtures loaded successfully" || echo "Fixtures error"
 else
   echo "Users already exist ($USER_COUNT users), skipping fixtures"
 fi
