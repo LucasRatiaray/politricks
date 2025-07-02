@@ -18,7 +18,7 @@
         </div>
     </div>
     <div class="flex flex-1 overflow-hidden">
-        <div class="w-1/3 max-w-md min-w-[280px] bg-gray-900 p-6 border-r border-gray-800 overflow-y-auto max-h-screen">
+        <div class="w-1/4 max-w-sm min-w-[250px] bg-gray-900 p-6 border-r border-gray-800 overflow-y-auto max-h-screen">
             <div class="space-y-3">
                 {% for offense in offenses %}
                     <div class="offense-card bg-gray-800 rounded-lg p-4 cursor-pointer transition-colors hover:bg-gray-700 border-l-4
@@ -59,7 +59,7 @@
                 {% endfor %}
             </div>
         </div>
-        <div class="flex-1 p-6 overflow-y-auto">
+        <div class="w-1/2 p-6 overflow-y-auto border-r border-gray-800">
             <div id="offense-details">
                 {% if selected %}
                     {% include 'offenses/components/offense_detail.html.twig' with {selected: selected} %}
@@ -68,6 +68,92 @@
                         <div class="text-center">
                             <div class="text-gray-400 text-lg mb-2">Sélectionnez un délit pour voir les détails</div>
                             <div class="text-gray-500 text-sm">Cliquez sur un délit dans la liste à gauche</div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- commentaires -->
+        <div class="w-1/3 min-w-[320px] bg-gray-900 p-6 overflow-hidden border-l border-gray-800 flex flex-col h-full">
+            <div id="comments-section" class="flex flex-col h-full">
+                {% if selected %}
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                <span class="text-blue-200 text-sm font-semibold">💬</span>
+                            </div>
+                            <h2 class="text-white text-lg font-semibold">Commentaires</h2>
+                        </div>
+                        <span class="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded-full font-medium">
+                            {{ selected.nombreCommentaires|default(0) }}
+                        </span>
+                    </div>
+                    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-6">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <h3 class="text-white text-sm font-semibold">Ajouter un commentaire</h3>
+                        </div>
+                        <form id="add-comment-form" class="space-y-4">
+                            <div>
+                                <textarea
+                                    id="comment-content"
+                                    name="contenu"
+                                    rows="3"
+                                    required
+                                    class="w-full bg-gray-700 text-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                    placeholder="Partagez votre point de vue sur ce délit..."
+                                ></textarea>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 text-xs">Commentaire public</span>
+                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center space-x-2">
+                                    <span>Publier</span>
+                                    <span class="text-xs">→</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="flex-1 overflow-y-auto">
+                        {% if selected.commentaires and selected.commentaires|length > 0 %}
+                            <div class="space-y-4 mb-6 pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                                {% for commentaire in selected.commentaires %}
+                                    <div class="bg-gray-800 rounded-lg p-4 border-l-4 border-blue-500 hover:bg-gray-750 transition-colors">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <span class="text-blue-200 text-xs font-semibold">
+                                                    {{ commentaire.auteur|split(' ')|first|first|upper }}{{ commentaire.auteur|split(' ')|last|first|upper }}
+                                                </span>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center space-x-2 mb-2">
+                                                    <span class="text-white font-medium text-sm">{{ commentaire.auteur }}</span>
+                                                    <span class="text-gray-500 text-xs">•</span>
+                                                    <span class="text-gray-400 text-xs">{{ commentaire.dateCreation }}</span>
+                                                </div>
+                                                <div class="text-gray-300 text-sm leading-relaxed">{{ commentaire.contenu }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="mb-6 text-center py-8">
+                                <div class="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <span class="text-gray-400 text-2xl">💬</span>
+                                </div>
+                                <p class="text-gray-400 text-sm mb-2">Aucun commentaire pour le moment</p>
+                                <p class="text-gray-500 text-xs">Soyez le premier à partager votre avis !</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="flex items-center justify-center h-full">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-gray-500 text-3xl">💬</span>
+                            </div>
+                            <div class="text-gray-400 text-lg mb-2 font-medium">Sélectionnez un délit</div>
+                            <div class="text-gray-500 text-sm">pour voir et ajouter des commentaires</div>
                         </div>
                     </div>
                 {% endif %}
@@ -304,9 +390,12 @@
         if (offense) {
             selectedOffense = offense;
             
-            // Générer le HTML directement en JavaScript
+            // Générer le HTML des détails
             const detailsHtml = generateOffenseDetailsHtml(offense);
             document.getElementById('offense-details').innerHTML = detailsHtml;
+            
+            // Update section commentaires
+            updateCommentsSection(offense);
             
             // Mettre à jour la sélection visuelle
             document.querySelectorAll('.offense-card').forEach(card => {
@@ -314,6 +403,121 @@
             });
             document.querySelector(`[data-offense-id="${offenseId}"]`).classList.add('ring-2', 'ring-blue-500');
         }
+    }
+
+    // Update section commentaires
+    function updateCommentsSection(offense) {
+        const commentsSection = document.getElementById('comments-section');
+        
+        if (!offense) {
+            commentsSection.innerHTML = `
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-gray-500 text-3xl">💬</span>
+                        </div>
+                        <div class="text-gray-400 text-lg mb-2 font-medium">Sélectionnez un délit</div>
+                        <div class="text-gray-500 text-sm">pour voir et ajouter des commentaires</div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        // Si les commentaires ne sont pas chargés on les charge
+        if (!offense.commentaires && offense.nombreCommentaires > 0) {
+            fetch(`/offenses/${offense.id}/comments`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        offense.commentaires = data.commentaires;
+                        renderCommentsSection(offense);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des commentaires:', error);
+                    renderCommentsSection(offense);
+                });
+        } else {
+            renderCommentsSection(offense);
+        }
+    }
+
+    function renderCommentsSection(offense) {
+        const commentsSection = document.getElementById('comments-section');
+        let commentsHtml = `
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                        <span class="text-blue-200 text-sm font-semibold">💬</span>
+                    </div>
+                    <h2 class="text-white text-lg font-semibold">Commentaires</h2>
+                </div>
+                <span class="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded-full font-medium">
+                    ${offense.nombreCommentaires || 0}
+                </span>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-6">
+                <div class="flex items-center space-x-2 mb-4">
+                    <h3 class="text-white text-sm font-semibold">Ajouter un commentaire</h3>
+                </div>
+                <form id="add-comment-form" class="space-y-4">
+                    <div>
+                        <textarea id="comment-content" name="contenu" rows="3" required class="w-full bg-gray-700 text-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" placeholder="Partagez votre point de vue sur ce délit..." ></textarea>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-xs">Commentaire public</span>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center space-x-2">
+                            <span>Publier</span>
+                            <span class="text-xs">→</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        // List en scrollable
+        commentsHtml += `<div class="flex-1 overflow-y-auto">`;
+        if (offense.commentaires && offense.commentaires.length > 0) {
+            commentsHtml += `<div class="space-y-4 mb-6 pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">`;
+            offense.commentaires.forEach(commentaire => {
+                // Initiales de l'auteur
+                const authorName = commentaire.auteur;
+                const initials = authorName.split(' ').map(name => name.charAt(0).toUpperCase()).join('');
+                
+                commentsHtml += `
+                    <div class="bg-gray-800 rounded-lg p-4 border-l-4 border-blue-500 hover:bg-gray-750 transition-colors">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="text-blue-200 text-xs font-semibold">${initials}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <span class="text-white font-medium text-sm">${commentaire.auteur}</span>
+                                    <span class="text-gray-500 text-xs">•</span>
+                                    <span class="text-gray-400 text-xs">${commentaire.dateCreation}</span>
+                                </div>
+                                <div class="text-gray-300 text-sm leading-relaxed">${commentaire.contenu}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            commentsHtml += `</div>`;
+        } else {
+            commentsHtml += `
+                <div class="mb-6 text-center py-8">
+                    <div class="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-gray-400 text-2xl">💬</span>
+                    </div>
+                    <p class="text-gray-400 text-sm mb-2">Aucun commentaire pour le moment</p>
+                    <p class="text-gray-500 text-xs">Soyez le premier à partager votre avis !</p>
+                </div>
+            `;
+        }
+        commentsHtml += `</div>`;
+        
+        commentsSection.innerHTML = commentsHtml;
     }
 
     // Fonction pour générer le HTML des détails d'une offense
@@ -406,19 +610,7 @@
                 </div>
                 ` : ''}
 
-                ${offense.commentaires && offense.commentaires.length > 0 ? `
-                <h2 class="text-white text-lg font-semibold mb-4">Commentaires (${offense.nombreCommentaires})</h2>
-                <div class="space-y-4 border-b border-slate-800 pb-6 mb-6">
-                    ${offense.commentaires.map(commentaire => `
-                        <div class="bg-gray-800 rounded p-4">
-                            <div class="text-white mb-2">${commentaire.contenu}</div>
-                            <div class="text-gray-400 text-sm">
-                                Par ${commentaire.auteur} le ${commentaire.dateCreation}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-                ` : ''}
+
 
                 ${offense.documents && offense.documents.length > 0 ? `
                 <h2 class="text-white text-lg font-semibold mb-4">Documents (${offense.nombreDocuments})</h2>
@@ -532,11 +724,57 @@
             });
     }
 
+    // Fonctions pour afficher les messages toast
+    function showSuccessMessage(message) {
+        showToast(message, 'success');
+    }
+
+    function showErrorMessage(message) {
+        showToast(message, 'error');
+    }
+
+    function showToast(message, type = 'info') {
+        // Supprimer les toasts existants
+        const existingToasts = document.querySelectorAll('.toast-message');
+        existingToasts.forEach(toast => toast.remove());
+
+        // Créer le toast
+        const toast = document.createElement('div');
+        toast.className = `toast-message fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
+        
+        const bgColor = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600';
+        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+        
+        toast.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <span class="text-white text-sm">${icon}</span>
+                <span class="text-white text-sm font-medium">${message}</span>
+            </div>
+        `;
+        
+        toast.classList.add(bgColor);
+        document.body.appendChild(toast);
+        
+        // Animer l'entrée
+        setTimeout(() => {
+            toast.classList.remove('translate-x-full');
+        }, 100);
+        
+        // Supprimer après 3 secondes
+        setTimeout(() => {
+            toast.classList.add('translate-x-full');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
     // Initialisation quand le DOM est chargé
     document.addEventListener('DOMContentLoaded', function() {
         // Initialiser la première offense sélectionnée
         if (selectedOffense) {
             showOffenseDetails(selectedOffense.id);
+        } else {
+            // Si aucune offense n'est sélectionnée, afficher le message dans la section commentaires
+            updateCommentsSection(null);
         }
 
         // Gestion des clics sur les cartes de délits
@@ -674,6 +912,96 @@
                 submitButton.textContent = originalText;
                 submitButton.disabled = false;
             });
+        });
+
+        // Gestion du formulaire d'ajout de commentaire
+        document.addEventListener('submit', function(e) {
+            if (e.target.id === 'add-comment-form') {
+                e.preventDefault();
+                
+                if (!selectedOffense) {
+                    alert('Aucun délit sélectionné');
+                    return;
+                }
+                
+                const form = e.target;
+                const submitButton = form.querySelector('button[type="submit"]');
+                const originalText = submitButton.textContent;
+                const textarea = form.querySelector('textarea[name="contenu"]');
+                const content = textarea.value.trim();
+                
+                if (!content) {
+                    alert('Le contenu du commentaire est requis');
+                    return;
+                }
+                
+                // Afficher l'état de chargement
+                submitButton.innerHTML = `
+                    <span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>
+                    <span>Publication...</span>
+                `;
+                submitButton.disabled = true;
+                
+                const formData = new FormData();
+                formData.append('contenu', content);
+                
+                fetch(`/offenses/${selectedOffense.id}/comment`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Ajouter le nouveau commentaire à la liste
+                        if (!selectedOffense.commentaires) {
+                            selectedOffense.commentaires = [];
+                        }
+                        selectedOffense.commentaires.push(data.commentaire);
+                        selectedOffense.nombreCommentaires = (selectedOffense.nombreCommentaires || 0) + 1;
+                        
+                        // Mettre à jour la section commentaires
+                        renderCommentsSection(selectedOffense);
+                        
+                        // Vider le formulaire
+                        textarea.value = '';
+                        
+                        // Effet de highlight sur le nouveau commentaire
+                        setTimeout(() => {
+                            const newComment = document.querySelector('.bg-gray-800.rounded-lg:last-child');
+                            if (newComment) {
+                                newComment.style.transform = 'scale(1.02)';
+                                newComment.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.3)';
+                                setTimeout(() => {
+                                    newComment.style.transform = 'scale(1)';
+                                    newComment.style.boxShadow = 'none';
+                                }, 500);
+                            }
+                        }, 100);
+                        
+                        // Message de succès avec toast style
+                        showSuccessMessage('Commentaire ajouté avec succès !');
+                    } else {
+                        showErrorMessage('Erreur lors de l\'ajout du commentaire: ' + (data.error || 'Erreur inconnue'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors de l\'ajout du commentaire: ' + error.message);
+                })
+                .finally(() => {
+                    // Restaurer le bouton
+                    submitButton.innerHTML = `
+                        <span>Publier</span>
+                        <span class="text-xs">→</span>
+                    `;
+                    submitButton.disabled = false;
+                });
+            }
         });
     });
 </script>
