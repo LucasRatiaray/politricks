@@ -45,16 +45,17 @@ RUN echo "listen = 127.0.0.1:9000" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Stage 2: Dependencies
+# Stage 2: Dependencies
 FROM base AS dependencies
 
 WORKDIR /app
 
-# Copie des fichiers de dépendances depuis le dossier app
-COPY app/composer.json ./
+# Copie des fichiers de dépendances
+COPY app/composer.json app/composer.lock ./
 COPY app/package.json ./
 
-# Installation des dépendances Composer et NPM (avec dev pour fixtures)  
-RUN composer install --optimize-autoloader --no-scripts
+# Installation des dépendances Composer et NPM, AVEC "require-dev"
+RUN COMPOSER_NO_DEV= composer install --no-scripts --prefer-dist
 RUN npm install
 
 # Stage 3: Assets build
