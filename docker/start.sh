@@ -14,18 +14,9 @@ chmod -R 755 /app/var /app/public
   # Run as www-data to avoid permission issues
   su www-data -s /bin/sh -c "php bin/console doctrine:migrations:migrate --no-interaction" || echo "Migration error"
   
-  # Check if users table has data and load fixtures if needed
-  echo "Checking user count..."
-  USER_COUNT=$(su www-data -s /bin/sh -c "php bin/console doctrine:query:sql 'SELECT COUNT(*) FROM users'" 2>/dev/null | tail -1 | tr -d ' ' || echo "0")
-  echo "Found $USER_COUNT users in database"
-  
-  # Load fixtures if no users exist
-  if [ "$USER_COUNT" = "0" ] || [ -z "$USER_COUNT" ]; then
-    echo "Loading fixtures..."
-    su www-data -s /bin/sh -c "php bin/console doctrine:fixtures:load --no-interaction" && echo "Fixtures loaded successfully" || echo "Fixtures error"
-  else
-    echo "Database has $USER_COUNT users - fixtures already loaded"
-  fi
+  # Load fixtures on every build (purge existing data)
+  echo "Loading fixtures..."
+  su www-data -s /bin/sh -c "php bin/console doctrine:fixtures:load --no-interaction --purge-with-truncate" && echo "Fixtures loaded successfully" || echo "Fixtures error"
   
   # Warm up cache as www-data
   echo "Warming up cache..."
