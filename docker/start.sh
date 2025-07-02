@@ -21,7 +21,7 @@ chmod -R 755 /app/var /app/public
   # Warm up cache as www-data
   echo "Warming up cache..."
   su www-data -s /bin/sh -c "php bin/console cache:warmup --no-interaction" || echo "Cache warmup error"
-) &
+)
 
 # Start supervisor
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
