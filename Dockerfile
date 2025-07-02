@@ -39,7 +39,7 @@ WORKDIR /app
 
 # Copie des fichiers de dépendances
 COPY app/composer.json app/composer.lock ./
-COPY app/package.json ./
+COPY app/package.json app/package-lock.json* ./
 
 # Installation des dépendances Composer et NPM, AVEC "require-dev"
 RUN COMPOSER_NO_DEV= composer install --no-scripts --prefer-dist
