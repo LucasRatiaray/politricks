@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile optimisé pour Railway
+# Multi-stage Dockerfile optimisé pour Railway - force rebuild
 # Stage 1: Base avec PHP 8.3 + extensions
 FROM php:8.3-fpm-alpine AS base
 
