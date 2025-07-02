@@ -11,7 +11,10 @@ chmod -R 755 /app/var /app/public
   sleep 10
   echo "Setting up database..."
   
-  # Run as www-data to avoid permission issues
+  # Create database if it doesn't exist
+  su www-data -s /bin/sh -c "php bin/console doctrine:database:create --if-not-exists --no-interaction" || echo "Database creation error"
+  
+  # Run migrations as www-data to avoid permission issues
   su www-data -s /bin/sh -c "php bin/console doctrine:migrations:migrate --no-interaction" || echo "Migration error"
   
   # Load fixtures on every build (purge existing data)
