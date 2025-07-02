@@ -4,7 +4,6 @@ FROM php:8.3-fpm-alpine AS base
 
 # Variables d'environnement
 ENV COMPOSER_ALLOW_SUPERUSER=1 \
-    COMPOSER_NO_DEV=1 \
     APP_ENV=prod \
     NODE_VERSION=20
 
@@ -42,7 +41,7 @@ COPY app/composer.json app/composer.lock ./
 COPY app/package.json app/package-lock.json* ./
 
 # Installation des dépendances Composer et NPM, AVEC "require-dev"
-RUN COMPOSER_NO_DEV= composer install --no-scripts --prefer-dist
+RUN composer install --no-scripts --prefer-dist
 RUN npm install
 
 # Stage 3: Assets build
