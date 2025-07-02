@@ -6,25 +6,24 @@ echo "Starting Politricks application..."
 chown -R www-data:www-data /app/var /app/public
 chmod -R 755 /app/var /app/public
 
-# Wait for database and setup as www-data user (background process)
-(
-  sleep 10
-  echo "Setting up database..."
-  
-  # Create database if it doesn't exist
-  su www-data -s /bin/sh -c "php bin/console doctrine:database:create --if-not-exists --no-interaction" || echo "Database creation error"
-  
-  # Run migrations as www-data to avoid permission issues
-  su www-data -s /bin/sh -c "php bin/console doctrine:migrations:migrate --no-interaction" || echo "Migration error"
-  
-  # Load fixtures on every build (purge existing data)
-  echo "Loading fixtures..."
-  su www-data -s /bin/sh -c "php bin/console doctrine:fixtures:load --no-interaction --purge-with-truncate" && echo "Fixtures loaded successfully" || echo "Fixtures error"
-  
-  # Warm up cache as www-data
-  echo "Warming up cache..."
-  su www-data -s /bin/sh -c "php bin/console cache:warmup --no-interaction" || echo "Cache warmup error"
-) > /var/log/setup.log 2>&1 &
+# Setup database synchronously to see errors
+echo "Setting up database..."
 
-# Start supervisor immediately
+# Create database if it doesn't exist
+su www-data -s /bin/sh -c "php bin/console doctrine:database:create --if-not-exists --no-interaction" || echo "Database creation error"
+
+# Run migrations as www-data to avoid permission issues  
+su www-data -s /bin/sh -c "php bin/console doctrine:migrations:migrate --no-interaction" || echo "Migration error"
+
+# Load fixtures on every build (purge existing data)
+echo "Loading fixtures..."
+su www-data -s /bin/sh -c "php bin/console doctrine:fixtures:load --no-interaction --purge-with-truncate" && echo "Fixtures loaded successfully" || echo "Fixtures error"
+
+# Warm up cache as www-data
+echo "Warming up cache..."
+su www-data -s /bin/sh -c "php bin/console cache:warmup --no-interaction" || echo "Cache warmup error"
+
+echo "Setup completed, starting services..."
+
+# Start supervisor
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
