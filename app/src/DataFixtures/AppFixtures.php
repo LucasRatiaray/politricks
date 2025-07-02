@@ -18,6 +18,7 @@ use App\Enum\DocumentNiveauConfidentialiteEnum;
 use App\Enum\PartenaireNiveauRisqueEnum;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Faker\Factory;
 
 class AppFixtures extends Fixture
 {
@@ -665,21 +666,70 @@ class AppFixtures extends Fixture
 
     private function createCommentaires(ObjectManager $manager, array $politiciens, array $delits): void
     {
+        $faker = Factory::create('fr_FR');
+
+        $phrasesComplices = [
+            "Chapeau bas pour l'évasion fiscale, tu m'expliqueras !",
+            "J’ai fait pareil avec une société écran à {$faker->country()}, nickel.",
+            "Attention, {$faker->firstName()} commence à trop parler...",
+            "Pas mal pour un amateur. Moi j’ai planqué le tout dans une ONG.",
+            "Haha, tu crois que ça passera inaperçu ? Classique.",
+            "Encore mieux : j’ai fait voter une loi pour légaliser le truc.",
+            "Faut vraiment qu’on échange nos astuces, c’est brillant.",
+            "{$faker->firstName()} m’a soufflé cette combine, faut le remercier.",
+            "T’as pensé à effacer les mails ? On ne sait jamais.",
+            "Bravo, on sent l’expérience du Sénat là 😏.",
+            "J’aurais pas osé... respect !",
+            "On dirait presque que t’as une conscience professionnelle.",
+            "Tu bluffes, c’était pas possible sans une taupe chez {$faker->company()} !",
+            "Ils n’ont encore rien vu... attends la suite.",
+            "Tu veux que je t’envoie mon notaire ? Il est discret.",
+            "Même la Cour des Comptes n’a rien pigé, bien joué.",
+            "J’ai utilisé une fondation bidon au Luxembourg, tip top.",
+            "Tu crois qu’ils vont remonter jusqu’à toi ? Haha.",
+            "Trop visible. Moi j’aurais utilisé un consultant offshore.",
+            "Planquer ça dans un contrat de conseil ? Faut oser.",
+            "{$faker->firstName()} t’as couvert, non ?",
+            "T'as pensé à changer de SIM après ça ?",
+            "Le coup de la fausse facture, c’est du grand art.",
+            "Tu pourrais faire un tuto sur la corruption.",
+            "Même les journalistes n’ont pas capté. Respect.",
+            "On est entre nous ici, balance tes secrets.",
+            "T’as bien mérité ton poste chez {$faker->company()} après ça.",
+            "J’ai noté l’astuce. Je teste ça sur le prochain appel d’offre.",
+            "C’est discret... mais pas trop. Gaffe à {$faker->firstName()} !",
+            "T’aurais dû breveter ta technique, sérieux.",
+            "Encore un coup de maître signé {$faker->lastName()} !",
+            "Un petit rappel de mandat fictif, ça fait toujours plaisir.",
+            "T’as bien appris depuis l’affaire de 2012, hein 😏.",
+            "J’ai tout vu, j’ai rien dit. Comme d’hab.",
+            "Si ça sort, je te couvre. Mais tu me dois un truc.",
+        ];
+
+        $domainesExpertise = [
+            'Droit pénal', 'Droit civil', 'Droit administratif', 'Droit constitutionnel',
+            'Droit fiscal', 'Droit des affaires', 'Droit international', 'Droit européen',
+            'Criminologie', 'Sociologie politique', 'Économie', 'Journalisme d\'investigation',
+            'Sciences politiques', 'Histoire', 'Philosophie du droit'
+        ];
+
+        $typesCommentaire = ['public', 'expert', 'journaliste', 'citoyen', 'analyste'];
+
         for ($i = 1; $i <= 20; $i++) {
             $commentaire = new Commentaire();
-            $commentaire->setContenu("Contenu du commentaire {$i}");
-            $commentaire->setDateCreation(new \DateTime('-' . rand(1, 12) . ' months'));
+            $commentaire->setContenu($faker->randomElement($phrasesComplices));
+            $commentaire->setDateCreation($faker->dateTimeBetween('-1 year', 'now'));
             $commentaire->setEstModere(false);
-            $commentaire->setScoreCredibilite(rand(1, 10));
-            $commentaire->setTypeCommentaire('public');
-            $commentaire->setDomaineExpertise('Droit');
+            $commentaire->setScoreCredibilite($faker->numberBetween(1, 10));
+            $commentaire->setTypeCommentaire($faker->randomElement($typesCommentaire));
+            $commentaire->setDomaineExpertise($faker->randomElement($domainesExpertise));
             $commentaire->setEstPublic(true);
-            $commentaire->setNombreLikes(rand(0, 50));
-            $commentaire->setNombreDislikes(rand(0, 20));
+            $commentaire->setNombreLikes($faker->numberBetween(0, 150));
+            $commentaire->setNombreDislikes($faker->numberBetween(0, 50));
             $commentaire->setEstSignale(false);
-            $commentaire->setAuteur($politiciens[array_rand($politiciens)]);
-            $commentaire->setDelit($delits[array_rand($delits)]);
-            
+            $commentaire->setAuteur($faker->randomElement($politiciens));
+            $commentaire->setDelit($faker->randomElement($delits));
+
             $manager->persist($commentaire);
         }
     }

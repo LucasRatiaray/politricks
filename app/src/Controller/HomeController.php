@@ -253,10 +253,19 @@ class HomeController extends AbstractController
         // Si on a un délit sélectionné, récupérer les données complètes
         if ($selected) {
             $delit = $em->getRepository(Delit::class)->find($selected['id']);
+
+            // trier par ordre croissant
+            $qb = $em->createQueryBuilder();
+            $qb->select('c')
+                ->from(Commentaire::class, 'c')
+                ->where('c.delit = :delit')
+                ->orderBy('c.dateCreation', 'DESC')
+                ->setParameter('delit', $delit);
             
-            // Récupérer les commentaires
+            $commentairesEntities = $qb->getQuery()->getResult();
+            
             $commentaires = [];
-            foreach ($delit->getCommentaires() as $commentaire) {
+            foreach ($commentairesEntities as $commentaire) {
                 $commentaires[] = [
                     'id' => $commentaire->getId(),
                     'contenu' => $commentaire->getContenu(),
@@ -450,9 +459,18 @@ class HomeController extends AbstractController
             }
         }
         
-        // Récupérer les commentaires
+        // Récupérer les commentaires (croissants)
+        $qb = $em->createQueryBuilder();
+        $qb->select('c')
+            ->from(Commentaire::class, 'c')
+            ->where('c.delit = :delit')
+            ->orderBy('c.dateCreation', 'DESC')
+            ->setParameter('delit', $delit);
+        
+        $commentairesEntities = $qb->getQuery()->getResult();
+        
         $commentaires = [];
-        foreach ($delit->getCommentaires() as $commentaire) {
+        foreach ($commentairesEntities as $commentaire) {
             $commentaires[] = [
                 'id' => $commentaire->getId(),
                 'contenu' => $commentaire->getContenu(),
@@ -1772,8 +1790,18 @@ class HomeController extends AbstractController
                 return new JsonResponse(['success' => false, 'error' => 'Délit non trouvé'], 404);
             }
 
+            // Récupérer les commentaires (croissants)
+            $qb = $em->createQueryBuilder();
+            $qb->select('c')
+                ->from(Commentaire::class, 'c')
+                ->where('c.delit = :delit')
+                ->orderBy('c.dateCreation', 'DESC')
+                ->setParameter('delit', $delit);
+            
+            $commentairesEntities = $qb->getQuery()->getResult();
+            
             $commentaires = [];
-            foreach ($delit->getCommentaires() as $commentaire) {
+            foreach ($commentairesEntities as $commentaire) {
                 $auteur = $commentaire->getAuteur();
                 $nomAuteur = 'Anonyme';
                 if ($auteur instanceof User) {
