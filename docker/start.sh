@@ -6,7 +6,7 @@ echo "Starting Politricks application..."
 chown -R www-data:www-data /app/var /app/public
 chmod -R 755 /app/var /app/public
 
-# Wait for database and setup as www-data user
+# Wait for database and setup as www-data user (background process)
 (
   sleep 10
   echo "Setting up database..."
@@ -21,7 +21,7 @@ chmod -R 755 /app/var /app/public
   # Warm up cache as www-data
   echo "Warming up cache..."
   su www-data -s /bin/sh -c "php bin/console cache:warmup --no-interaction" || echo "Cache warmup error"
-)
+) > /var/log/setup.log 2>&1 &
 
-# Start supervisor
+# Start supervisor immediately
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
