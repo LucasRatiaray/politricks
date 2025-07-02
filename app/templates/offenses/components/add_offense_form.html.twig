@@ -1,0 +1,94 @@
+<form id="add-offense-form" class="space-y-6">
+    <!-- Type de délit -->
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="type">Type de délit *</label>
+        <select id="type" name="type" required class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Sélectionner un type</option>
+            {% for type in delitTypes %}
+                <option value="{{ type }}">{{ type|title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Description -->
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="description">Description *</label>
+        <textarea id="description" name="description" required rows="3" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Description du délit..."></textarea>
+    </div>
+
+    <!-- Date du délit -->
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="date">Date du délit *</label>
+        <input type="date" id="date" name="date" required class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+
+    <!-- Date de déclaration -->
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="dateDeclaration">Date de déclaration</label>
+        <input type="date" id="dateDeclaration" name="dateDeclaration" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+
+    <!-- Statut -->
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="statut">Statut</label>
+        <select id="statut" name="statut" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            {% for statut in delitStatuts %}
+                <option value="{{ statut }}">{{ statut|title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Gravité -->
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="gravite">Gravité</label>
+        <select id="gravite" name="gravite" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            {% for gravite in delitGravites %}
+                <option value="{{ gravite }}">{{ gravite|title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Numéro d'affaire -->
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="numeroAffaire">Numéro d'affaire</label>
+        <input type="text" id="numeroAffaire" name="numeroAffaire" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Numéro d'affaire...">
+    </div>
+
+    <!-- Procureur responsable -->
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="procureurResponsable">Procureur responsable</label>
+        <input type="text" id="procureurResponsable" name="procureurResponsable" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nom du procureur...">
+    </div>
+
+    <!-- Politiciens impliqués -->
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="politiciens">Politiciens impliqués</label>
+        <select id="politiciens" name="politiciens[]" multiple class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" size="4">
+            {% for politician in politicians %}
+                <option value="{{ politician.id }}">{{ politician.name }}</option>
+            {% endfor %}
+        </select>
+        <p class="text-xs text-gray-400 mt-1">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs politiciens</p>
+    </div>
+
+    <!-- Partenaires impliqués -->
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="partenaires">Partenaires impliqués</label>
+        <select id="partenaires" name="partenaires[]" multiple class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" size="4">
+            {% for partner in partners %}
+                <option value="{{ partner.id }}">{{ partner.name }} ({{ partner.type }})</option>
+            {% endfor %}
+        </select>
+        <p class="text-xs text-gray-400 mt-1">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs partenaires</p>
+    </div>
+
+    <!-- Boutons -->
+    <div class="flex justify-end gap-3 pt-4">
+        <button type="button" class="px-4 py-2 bg-gray-600 text-gray-200 rounded hover:bg-gray-700 transition-colors" data-close-modal="add-offense-modal">
+            Annuler
+        </button>
+        <button type="submit" class="px-4 py-2 bg-blue-700 text-blue-200 rounded hover:bg-blue-800 transition-colors">
+            Ajouter le délit
+        </button>
+    </div>
+</form> 

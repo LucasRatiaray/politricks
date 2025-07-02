@@ -23,18 +23,13 @@
     </main>
 </div>
 
-{# Modal d'ajout de partenaire #}
-<div id="add-partner-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden p-4">
-    <div class="bg-[#101c2b] rounded-lg shadow-lg p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4 sticky top-0 bg-[#101c2b] pb-4 border-b border-gray-600">
-            <h2 class="text-white text-lg font-semibold">Ajouter un partenaire</h2>
-            <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="add-partner-modal">&times;</button>
-        </div>
-        <div class="text-gray-300">
-            {% include 'partner/components/add_partner_form.html.twig' %}
-        </div>
-    </div>
-</div>
+<!-- Modal d'ajout -->
+{% include 'layout/components/crud_modal.html.twig' with {
+    modal_id: 'add-partner-modal',
+    title: 'Ajouter un partenaire',
+    form_template: 'partner/components/add_partner_form.html.twig',
+    max_width: '4xl'
+} %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

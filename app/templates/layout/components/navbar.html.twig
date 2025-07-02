@@ -1,19 +1,51 @@
 <nav class="bg-slate-900 px-6 py-3 flex items-center justify-between border-b border-slate-800">
     <div class="flex items-center gap-4">
-        <a href="/" class="text-gray-200 hover:bg-slate-800 rounded px-3 py-2 transition-colors"><span class="text-white text-lg font-semibold">PoliTricks</span></a>
-        <a href="/offenses" class="text-gray-200 hover:bg-slate-800 rounded px-3 py-2 transition-colors">Délits</a>
-        <a href="/politics" class="text-gray-200 hover:bg-slate-800 rounded px-3 py-2 transition-colors">Politiciens</a>
-        <a href="/partners" class="text-gray-200 hover:bg-slate-800 rounded px-3 py-2 transition-colors">Partenaires</a>
-        <a href="/medias" class="text-gray-200 hover:bg-slate-800 rounded px-3 py-2 transition-colors">Médias</a>
-        <a href="/partis" class="text-gray-200 hover:bg-slate-800 rounded px-3 py-2 transition-colors">Partis</a>
+        {% include 'layout/components/nav_link.html.twig' with {
+            'href': '/',
+            'text': 'PoliTricks',
+            'isBrand': true
+        } %}
+        {% include 'layout/components/nav_link.html.twig' with {
+            'href': '/offenses',
+            'text': 'Délits'
+        } %}
+        {% include 'layout/components/nav_link.html.twig' with {
+            'href': '/politics',
+            'text': 'Politiciens'
+        } %}
+        {% include 'layout/components/nav_link.html.twig' with {
+            'href': '/partis',
+            'text': 'Partis'
+        } %}
+        {% include 'layout/components/nav_link.html.twig' with {
+            'href': '/partners',
+            'text': 'Partenaires'
+        } %}
+        {% include 'layout/components/nav_link.html.twig' with {
+            'href': '/medias',
+            'text': 'Médias'
+        } %}
     </div>
     <div class="flex items-center gap-4">
         {% if app.user %}
-            <a href="/profile" class="text-gray-200 hover:bg-slate-800 rounded px-3 py-2 transition-colors"><span class="text-white font-semibold">{{ app.user.firstName }}</span></a>
-            <a href="/logout" class="text-gray-200 hover:bg-slate-800 rounded px-3 py-2 transition-colors">Déconnexion</a>
+            {% include 'layout/components/nav_link.html.twig' with {
+                'href': '/profile',
+                'text': app.user.firstName,
+                'isUser': true
+            } %}
+            {% include 'layout/components/nav_link.html.twig' with {
+                'href': '/logout',
+                'text': 'Déconnexion'
+            } %}
         {% else %}
-            <a href="/login" class="text-gray-200 hover:bg-slate-800 rounded px-3 py-2 transition-colors">Login</a>
-            <a href="/register" class="text-gray-200 hover:bg-slate-800 rounded px-3 py-2 transition-colors">Register</a>
+            {% include 'layout/components/nav_link.html.twig' with {
+                'href': '/login',
+                'text': 'Login'
+            } %}
+            {% include 'layout/components/nav_link.html.twig' with {
+                'href': '/register',
+                'text': 'Register'
+            } %}
         {% endif %}
     </div>
 </nav> 
