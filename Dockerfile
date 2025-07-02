@@ -1,21 +1,29 @@
 # Multi-stage Dockerfile optimisé pour Railway
-# Stage 1: Base avec PHP 8.3 + extensions (utilise une image pré-construite)
-FROM thecodingmachine/php:8.3-v4-fpm-alpine AS base
+# Stage 1: Base avec PHP 8.3 + extensions
+FROM php:8.3-fpm-alpine AS base
 
 # Variables d'environnement
 ENV COMPOSER_ALLOW_SUPERUSER=1 \
     COMPOSER_NO_DEV=1 \
     APP_ENV=prod \
-    NODE_VERSION=20 \
-    PHP_EXTENSIONS="pdo_pgsql zip opcache intl"
+    NODE_VERSION=20
 
-# Installation des dépendances système seulement
+# Installation des dépendances système et extensions PHP
 RUN apk add --no-cache \
     nginx \
     supervisor \
     nodejs \
     npm \
+    postgresql-dev \
+    libzip-dev \
+    icu-dev \
+    zip \
+    unzip \
+    && docker-php-ext-install pdo_pgsql intl opcache zip \
     && rm -rf /var/cache/apk/*
+
+# Installation de Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Configuration PHP optimisée pour Railway
 ENV PHP_INI_OPCACHE__ENABLE=1 \
