@@ -38,11 +38,11 @@ FROM base AS dependencies
 WORKDIR /app
 
 # Copie des fichiers de dépendances
-COPY app/composer.json app/composer.lock ./
+COPY app/composer.json ./
 COPY app/package.json app/package-lock.json* ./
 
 # Installation des dépendances Composer et NPM, AVEC "require-dev"
-RUN composer update --lock --no-scripts && composer install --no-scripts --prefer-dist
+RUN composer install --no-scripts --prefer-dist
 RUN npm install
 
 # Stage 3: Assets build
