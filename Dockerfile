@@ -42,7 +42,7 @@ COPY app/composer.json app/composer.lock ./
 COPY app/package.json app/package-lock.json* ./
 
 # Installation des dépendances Composer et NPM, AVEC "require-dev"
-RUN composer install --no-scripts --prefer-dist
+RUN composer update --lock --no-scripts && composer install --no-scripts --prefer-dist
 RUN npm install
 
 # Stage 3: Assets build
