@@ -1,0 +1,75 @@
+{% extends "layout/dashboard.html.twig" %}
+
+{% block content %}
+<div class="flex min-h-screen bg-slate-900">
+    <aside class="w-80 bg-gray-900 p-6 flex flex-col gap-6 overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-white text-lg font-semibold">Partis</h2>
+        </div>
+        <input type="text" id="search-partis" placeholder="Rechercher des partis" class="mb-4 w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <div class="flex flex-col gap-2 overflow-y-auto" id="partis-list">
+            {% for parti in partis %}
+                <div class="parti-card" data-parti-id="{{ parti.id }}" data-parti-name="{{ parti.nom|lower }}" data-parti-slogan="{{ parti.slogan|lower }}">
+                    {% include 'partis/components/parti_card.html.twig' with {parti: parti, selected: parti.id == selected.id} %}
+                </div>
+            {% endfor %}
+        </div>
+    </aside>
+    <main class="flex-1 p-10">
+        <div id="parti-detail-container">
+            {% include 'partis/components/parti_detail.html.twig' with {selected: selected} %}
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const partiCards = document.querySelectorAll('.parti-card');
+    const detailContainer = document.getElementById('parti-detail-container');
+    const searchInput = document.getElementById('search-partis');
+    const partisList = document.getElementById('partis-list');
+
+    // Recherche dynamique
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        let visibleCount = 0;
+        partiCards.forEach(card => {
+            const name = card.dataset.partiName || '';
+            const slogan = card.dataset.partiSlogan || '';
+            const cardDiv = card.querySelector('div');
+            if (searchTerm === '' || name.includes(searchTerm) || slogan.includes(searchTerm)) {
+                card.style.display = 'block';
+                cardDiv.classList.remove('opacity-50');
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+                cardDiv.classList.add('opacity-50');
+            }
+        });
+        let noResults = document.getElementById('no-results');
+        if (visibleCount === 0 && searchTerm !== '') {
+            if (!noResults) {
+                noResults = document.createElement('div');
+                noResults.id = 'no-results';
+                noResults.className = 'text-gray-400 text-center py-4';
+                noResults.textContent = 'Aucun parti trouvé';
+                partisList.appendChild(noResults);
+            }
+        } else if (noResults) {
+            noResults.remove();
+        }
+    });
+
+    partiCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const partiId = this.getAttribute('data-parti-id');
+            fetch(`/partis/${partiId}`)
+                .then(response => response.text())
+                .then(html => {
+                    detailContainer.innerHTML = html;
+                });
+        });
+    });
+});
+</script>
+{% endblock %} 

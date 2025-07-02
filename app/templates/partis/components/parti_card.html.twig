@@ -1,0 +1,15 @@
+<div class="bg-gray-800 rounded-lg p-4 shadow cursor-pointer border-2 {{ selected ? 'border-blue-500' : 'border-transparent' }} hover:border-blue-400 transition">
+    <div class="flex items-center gap-3">
+        {% if parti.logo is defined and parti.logo %}
+            <img src="{{ parti.logo }}" alt="Logo {{ parti.nom|default('') }}" class="w-10 h-10 rounded-full object-cover bg-white" />
+        {% else %}
+            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background: {{ parti.couleur is defined and parti.couleur ? parti.couleur : '#444' }};">
+                {{ parti.nom is defined and parti.nom ? parti.nom|first|upper : '?' }}
+            </div>
+        {% endif %}
+        <div>
+            <div class="text-white font-semibold">{{ parti.nom is defined and parti.nom ? parti.nom : 'Nom inconnu' }}</div>
+            {% if parti.slogan is defined and parti.slogan %}<div class="text-gray-400 text-xs">{{ parti.slogan }}</div>{% endif %}
+        </div>
+    </div>
+</div> 
