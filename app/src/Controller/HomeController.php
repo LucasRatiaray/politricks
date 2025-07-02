@@ -1435,9 +1435,8 @@ class HomeController extends AbstractController
     }
 
     #[Route('/api/politicians', name: 'api_politicians')]
-    public function getPoliticians(): JsonResponse
+    public function getPoliticians(EntityManagerInterface $em): JsonResponse
     {
-        $em = $this->getDoctrine()->getManager();
         $users = $em->getRepository(User::class)->findAll();
         
         error_log('API Politicians - Total users found: ' . count($users));
@@ -1460,9 +1459,8 @@ class HomeController extends AbstractController
     }
 
     #[Route('/api/partners', name: 'api_partners')]
-    public function getPartners(): JsonResponse
+    public function getPartners(EntityManagerInterface $em): JsonResponse
     {
-        $em = $this->getDoctrine()->getManager();
         $partenaires = $em->getRepository(Partenaire::class)->findAll();
         
         error_log('API Partners - Total partners found: ' . count($partenaires));
@@ -1714,6 +1712,88 @@ class HomeController extends AbstractController
             return $diff->i . ' minute' . ($diff->i > 1 ? 's' : '') . ' ago';
         } else {
             return 'À l\'instant';
+        }
+    }
+
+    #[Route('/offenses/{id}/comment', name: 'offenses_add_comment', methods: ['POST'])]
+    public function addComment(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        try {
+            $delit = $em->getRepository(Delit::class)->find($id);
+            if (!$delit) {
+                return new JsonResponse(['success' => false, 'error' => 'Délit non trouvé'], 404);
+            }
+
+            $contenu = $request->request->get('contenu');
+            if (!$contenu) {
+                return new JsonResponse(['success' => false, 'error' => 'Le contenu du commentaire est requis'], 400);
+            }
+
+            // Récupérer l'utilisateur connecté
+            $user = $this->getUser();
+            if (!$user) {
+                return new JsonResponse(['success' => false, 'error' => 'Utilisateur non connecté'], 401);
+            }
+
+            // Créer le commentaire
+            $commentaire = new Commentaire();
+            $commentaire->setContenu($contenu);
+            $commentaire->setDateCreation(new \DateTime());
+            $commentaire->setDelit($delit);
+            $commentaire->setAuteur($user);
+            $commentaire->setEstPublic(true);
+
+            $em->persist($commentaire);
+            $em->flush();
+
+            // Retourner les données du commentaire créé
+            $commentaireData = [
+                'id' => $commentaire->getId(),
+                'contenu' => $commentaire->getContenu(),
+                'dateCreation' => $commentaire->getDateCreation()->format('d/m/Y H:i'),
+                'auteur' => $user->getFirstName() . ' ' . $user->getLastName(),
+            ];
+
+            return new JsonResponse([
+                'success' => true,
+                'commentaire' => $commentaireData
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    #[Route('/offenses/{id}/comments', name: 'offenses_get_comments', methods: ['GET'])]
+    public function getComments(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        try {
+            $delit = $em->getRepository(Delit::class)->find($id);
+            if (!$delit) {
+                return new JsonResponse(['success' => false, 'error' => 'Délit non trouvé'], 404);
+            }
+
+            $commentaires = [];
+            foreach ($delit->getCommentaires() as $commentaire) {
+                $auteur = $commentaire->getAuteur();
+                $nomAuteur = 'Anonyme';
+                if ($auteur instanceof User) {
+                    $nomAuteur = $auteur->getFirstName() . ' ' . $auteur->getLastName();
+                }
+                
+                $commentaires[] = [
+                    'id' => $commentaire->getId(),
+                    'contenu' => $commentaire->getContenu(),
+                    'dateCreation' => $commentaire->getDateCreation() ? $commentaire->getDateCreation()->format('d/m/Y H:i') : null,
+                    'auteur' => $nomAuteur,
+                ];
+            }
+
+            return new JsonResponse([
+                'success' => true,
+                'commentaires' => $commentaires
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
 } 

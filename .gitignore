@@ -5,7 +5,7 @@
 .DS_Store
 
 ###>
-.env
+app/.env
 
 ###> symfony/framework-bundle ###
 app/.env.local

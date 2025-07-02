@@ -52,8 +52,8 @@ class Commentaire
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $raisonSignalement = null;
 
-    #[ORM\ManyToOne(inversedBy: 'commentaires')]
-    private ?Politicien $auteur = null;
+    #[ORM\ManyToOne]
+    private ?User $auteur = null;
 
     #[ORM\ManyToOne(inversedBy: 'commentaires')]
     private ?Delit $delit = null;
@@ -221,12 +221,12 @@ class Commentaire
         return $this;
     }
 
-    public function getAuteur(): ?Politicien
+    public function getAuteur(): ?User
     {
         return $this->auteur;
     }
 
-    public function setAuteur(?Politicien $auteur): static
+    public function setAuteur(?User $auteur): static
     {
         $this->auteur = $auteur;
 
