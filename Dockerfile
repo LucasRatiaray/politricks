@@ -4,6 +4,7 @@ FROM php:8.3-fpm-alpine AS base
 
 # Variables d'environnement
 ENV COMPOSER_ALLOW_SUPERUSER=1 \
+    COMPOSER_NO_DEV=1 \
     APP_ENV=prod \
     NODE_VERSION=20
 
