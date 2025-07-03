@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         filterForm.dispatchEvent(new Event('submit'));
-      }, 500); 
+      }, 500);
     });
   }
 
@@ -94,12 +94,28 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.getElementById('edit-document-id').value = data.id;
         document.getElementById('edit-nom').value = data.nom;
-        document.getElementById('edit-type').value = data.type;
         document.getElementById('edit-confidentialite').value = data.niveauConfidentialite;
         document.getElementById('edit-langue').value = data.langueDocument;
         
+        const delitSelect = document.getElementById('edit-delit');
+        delitSelect.innerHTML = '<option value="">-- Sélectionner un délit --</option>';
+        
+        data.delits.forEach(delit => {
+          const option = document.createElement('option');
+          option.value = delit.id;
+          option.textContent = delit.label;
+          
+          if (data.delitId && data.delitId == delit.id) {
+            option.selected = true;
+          }
+          
+          delitSelect.appendChild(option);
+        });
+        
         document.getElementById('edit-media-modal').classList.remove('hidden');
+        
       } catch (err) {
+        console.error('Erreur:', err);
         alert('Erreur lors du chargement des données');
       }
     });
@@ -112,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const id = document.getElementById('edit-document-id').value;
       const formData = new FormData();
       formData.append('nom', document.getElementById('edit-nom').value);
-      formData.append('type', document.getElementById('edit-type').value);
+      formData.append('delit_id', document.getElementById('edit-delit').value);
       formData.append('confidentialite', document.getElementById('edit-confidentialite').value);
       formData.append('langue', document.getElementById('edit-langue').value);
       
@@ -124,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const result = await response.json();
         if (result.success) {
           document.getElementById('edit-media-modal').classList.add('hidden');
-          window.location.reload();
+          window.location.href = window.location.href + '?t=' + Date.now();
         } else {
           alert('Erreur lors de la modification');
         }

@@ -4,8 +4,8 @@
 <div class="min-h-screen bg-slate-900 flex flex-col">
     <div class="flex-1 flex flex-col items-center w-full">
         <div class="w-full max-w-5xl mx-auto mt-8">
-            <h1 class="text-3xl font-bold text-white mb-2">Media Management</h1>
-            <p class="text-gray-400 mb-6">Manage and organize media files and evidence related to political offenses.</p>
+            <h1 class="text-3xl font-bold text-white mb-2">Gestion des médias</h1>
+            <p class="text-gray-400 mb-6">Gérer et organiser les dossiers médiatiques et les preuves liés aux infractions politiques.Gérer et organiser les dossiers médiatiques et les preuves liés aux infractions politiques.</p>
             
             <form id="filter-form" class="mb-6">
                 <div class="mb-4">
@@ -66,7 +66,7 @@
     </div>
 </div>
 <div id="edit-media-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-    <div class="bg-slate-800 rounded-lg shadow-lg p-8 min-w-80 max-w-full">
+    <div class="bg-slate-800 rounded-lg shadow-lg p-8 min-w-96 max-w-2xl">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-white text-lg font-semibold">Modifier le document</h2>
             <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="edit-media-modal">&times;</button>
@@ -75,31 +75,28 @@
             <form id="edit-media-form">
                 <input type="hidden" id="edit-document-id">
                 <div class="mb-4">
-                    <label class="block text-white mb-2">Nom du fichier</label>
-                    <input type="text" id="edit-nom" class="w-full bg-slate-700 text-white rounded p-2">
+                    <label class="block text-white mb-2 font-medium">Nom du fichier</label>
+                    <input type="text" id="edit-nom" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-white mb-2">Type de document</label>
-                    <select id="edit-type" class="w-full bg-slate-700 text-white rounded p-2">
-                        <option value="document">Document</option>
-                        <option value="image">Image</option>
-                        <option value="video">Vidéo</option>
-                        <option value="audio">Audio</option>
-                        <option value="fichier">Fichier</option>
+                    <label class="block text-white mb-2 font-medium">Délit associé</label>
+                    <select id="edit-delit" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Sélectionner un délit --</option>
                     </select>
+                    <p class="text-gray-400 text-sm mt-1">Choisissez le délit auquel associer ce document</p>
                 </div>
                 <div class="mb-4">
-                    <label class="block text-white mb-2">Confidentialité</label>
-                    <select id="edit-confidentialite" class="w-full bg-slate-700 text-white rounded p-2">
+                    <label class="block text-white mb-2 font-medium">Confidentialité</label>
+                    <select id="edit-confidentialite" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="public">Public</option>
                         <option value="interne">Interne</option>
                         <option value="restreint">Restreint</option>
                         <option value="secret">Secret</option>
                     </select>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-white mb-2">Langue</label>
-                    <select id="edit-langue" class="w-full bg-slate-700 text-white rounded p-2">
+                <div class="mb-6">
+                    <label class="block text-white mb-2 font-medium">Langue</label>
+                    <select id="edit-langue" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="français">Français</option>
                         <option value="anglais">Anglais</option>
                         <option value="espagnol">Espagnol</option>
@@ -107,7 +104,14 @@
                         <option value="autre">Autre</option>
                     </select>
                 </div>
-                <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded">Modifier</button>
+                <div class="flex gap-3">
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded font-medium">
+                        Modifier
+                    </button>
+                    <button type="button" class="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded font-medium" data-close-modal="edit-media-modal">
+                        Annuler
+                    </button>
+                </div>
             </form>
         </div>
     </div>
