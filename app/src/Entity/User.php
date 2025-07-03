@@ -166,6 +166,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getNom(): ?string
+    {
+        return $this->firstName . ' ' . $this->lastName;
+    }
+
     public function getDateCreation(): ?\DateTime
     {
         return $this->dateCreation;
