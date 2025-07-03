@@ -6,14 +6,41 @@
         <div class="w-full max-w-5xl mx-auto mt-8">
             <h1 class="text-3xl font-bold text-white mb-2">Media Management</h1>
             <p class="text-gray-400 mb-6">Manage and organize media files and evidence related to political offenses.</p>
-            <div class="mb-4">
-                <input type="text" placeholder="Rechercher des fichiers" class="w-full bg-slate-800 text-gray-200 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div class="flex gap-2 mb-6">
-                {% include 'media/components/filter_select.html.twig' with {label: 'Type', name: 'type', options: ['Type']} %}
-                {% include 'media/components/filter_select.html.twig' with {label: 'Date', name: 'date', options: ['Date']} %}
-                {% include 'media/components/filter_select.html.twig' with {label: 'Confidentiality', name: 'confidentiality', options: ['Confidentiality']} %}
-            </div>
+            
+            <form id="filter-form" class="mb-6">
+                <div class="mb-4">
+                    <input type="text" name="search" value="{{ search }}" placeholder="Rechercher des fichiers" 
+                           class="w-full bg-slate-800 text-gray-200 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div class="flex gap-2 mb-6">
+                    <select name="type" class="bg-slate-800 text-gray-200 rounded px-4 py-2">
+                        <option value="">Tous les types</option>
+                        <option value="image" {{ typeFilter == 'image' ? 'selected' : '' }}>Images</option>
+                        <option value="document" {{ typeFilter == 'document' ? 'selected' : '' }}>Documents</option>
+                        <option value="video" {{ typeFilter == 'video' ? 'selected' : '' }}>Vidéos</option>
+                    </select>
+                    <select name="date" class="bg-slate-800 text-gray-200 rounded px-4 py-2">
+                        <option value="">Toutes les dates</option>
+                        <option value="today" {{ dateFilter == 'today' ? 'selected' : '' }}>Aujourd'hui</option>
+                        <option value="week" {{ dateFilter == 'week' ? 'selected' : '' }}>Cette semaine</option>
+                        <option value="month" {{ dateFilter == 'month' ? 'selected' : '' }}>Ce mois</option>
+                    </select>
+                    <select name="confidentiality" class="bg-slate-800 text-gray-200 rounded px-4 py-2">
+                        <option value="">Toutes confidentialités</option>
+                        <option value="public" {{ confidentialityFilter == 'public' ? 'selected' : '' }}>Public</option>
+                        <option value="interne" {{ confidentialityFilter == 'interne' ? 'selected' : '' }}>Interne</option>
+                        <option value="restreint" {{ confidentialityFilter == 'restreint' ? 'selected' : '' }}>Restreint</option>
+                        <option value="secret" {{ confidentialityFilter == 'secret' ? 'selected' : '' }}>Secret</option>
+                    </select>
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded">
+                        Filtrer
+                    </button>
+                    <button type="button" id="clear-filters" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded">
+                        Effacer
+                    </button>
+                </div>
+            </form>
+
             <div class="flex gap-2 mb-6 justify-end">
                 {% include 'layout/components/add_button.html.twig' with {modal_id: 'add-media-modal'} %}
             </div>
@@ -23,5 +50,66 @@
         </div>
     </div>
 </div>
-{% include 'layout/components/modal.html.twig' with {id: 'add-media-modal', title: '/media'} %}
-{% endblock %} 
+
+<div id="add-media-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-slate-800 rounded-lg shadow-lg p-8 min-w-80 max-w-full">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-white text-lg font-semibold">Ajouter un document</h2>
+            <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="add-media-modal">&times;</button>
+        </div>
+        <div class="text-gray-300">
+            <form action="{{ path('media_add') }}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="file" accept="*/*" required class="mb-4 block w-full text-white bg-slate-700 rounded p-2">
+                <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded">Ajouter</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div id="edit-media-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-slate-800 rounded-lg shadow-lg p-8 min-w-80 max-w-full">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-white text-lg font-semibold">Modifier le document</h2>
+            <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="edit-media-modal">&times;</button>
+        </div>
+        <div class="text-gray-300">
+            <form id="edit-media-form">
+                <input type="hidden" id="edit-document-id">
+                <div class="mb-4">
+                    <label class="block text-white mb-2">Nom du fichier</label>
+                    <input type="text" id="edit-nom" class="w-full bg-slate-700 text-white rounded p-2">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-white mb-2">Type de document</label>
+                    <select id="edit-type" class="w-full bg-slate-700 text-white rounded p-2">
+                        <option value="document">Document</option>
+                        <option value="image">Image</option>
+                        <option value="video">Vidéo</option>
+                        <option value="audio">Audio</option>
+                        <option value="fichier">Fichier</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-white mb-2">Confidentialité</label>
+                    <select id="edit-confidentialite" class="w-full bg-slate-700 text-white rounded p-2">
+                        <option value="public">Public</option>
+                        <option value="interne">Interne</option>
+                        <option value="restreint">Restreint</option>
+                        <option value="secret">Secret</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-white mb-2">Langue</label>
+                    <select id="edit-langue" class="w-full bg-slate-700 text-white rounded p-2">
+                        <option value="français">Français</option>
+                        <option value="anglais">Anglais</option>
+                        <option value="espagnol">Espagnol</option>
+                        <option value="allemand">Allemand</option>
+                        <option value="autre">Autre</option>
+                    </select>
+                </div>
+                <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded">Modifier</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

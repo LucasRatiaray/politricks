@@ -12,29 +12,58 @@
     <tbody class="divide-y divide-slate-800">
         {% for item in media %}
             <tr>
-                <td class="px-4 py-2 text-white">{{ item.title }}</td>
-                <td class="px-4 py-2 text-gray-300">{{ item.type }}</td>
-                <td class="px-4 py-2 text-gray-300">{{ item.date }}</td>
-                <td class="px-4 py-2 text-gray-300">{{ item.offense }}</td>
+                <td class="px-4 py-2 text-white">{{ item.nom }}</td>
+                <td class="px-4 py-2 text-gray-300">
+                    {% set extension = item.nom|split('.')|last|lower %}
+                    {% if extension in ['jpg', 'jpeg', 'png', 'gif'] %}
+                        <span class="px-2 py-1 bg-green-700 text-green-200 rounded text-xs">Image</span>
+                    {% elseif extension in ['mp4', 'avi', 'mov'] %}
+                        <span class="px-2 py-1 bg-purple-700 text-purple-200 rounded text-xs">Vidéo</span>
+                    {% elseif extension in ['mp3', 'wav', 'm4a'] %}
+                        <span class="px-2 py-1 bg-blue-700 text-blue-200 rounded text-xs">Audio</span>
+                    {% elseif extension in ['pdf', 'doc', 'docx'] %}
+                        <span class="px-2 py-1 bg-red-700 text-red-200 rounded text-xs">Document</span>
+                    {% else %}
+                        <span class="px-2 py-1 bg-gray-700 text-gray-200 rounded text-xs">Fichier</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-2 text-gray-300">
+                    {{ item.dateCreation ? item.dateCreation|date('Y-m-d H:i') : 'N/A' }}
+                </td>
+                <td class="px-4 py-2 text-gray-300">
+                    {% if item.delit %}
+                        {{ item.delit.type ? item.delit.type.value : 'N/A' }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
                 <td class="px-4 py-2">
                     <span class="px-3 py-1 rounded-full text-xs font-semibold
-                        {% if item.confidentiality == 'Public' %}bg-blue-700 text-blue-200
-                        {% elseif item.confidentiality == 'Confidential' %}bg-gray-700 text-gray-300
-                        {% elseif item.confidentiality == 'Secret' %}bg-yellow-700 text-yellow-200
-                        {% elseif item.confidentiality == 'Top Secret' %}bg-red-700 text-red-200
+                        {% if item.niveauConfidentialite.value == 'public' %}bg-blue-700 text-blue-200
+                        {% elseif item.niveauConfidentialite.value == 'interne' %}bg-gray-700 text-gray-300
+                        {% elseif item.niveauConfidentialite.value == 'restreint' %}bg-yellow-700 text-yellow-200
+                        {% elseif item.niveauConfidentialite.value == 'secret' %}bg-red-700 text-red-200
                         {% else %}bg-gray-700 text-gray-300{% endif %}">
-                        {{ item.confidentiality }}
+                        {{ item.niveauConfidentialite.value|title }}
                     </span>
                 </td>
                 <td class="px-4 py-2 flex gap-2">
-                    {% include 'layout/components/button.html.twig' with {label: 'Modifier', color: 'blue'} %}
-                    {% include 'layout/components/button.html.twig' with {label: 'Supprimer', color: 'red'} %}
+                    <button type="button"
+                        class="bg-blue-700 hover:bg-blue-800 text-white px-2 py-1 rounded"
+                        data-edit-id="{{ item.id }}">
+                        Modifier
+                    </button>
+                    <button type="button"
+                        class="delete-media-btn bg-red-700 hover:bg-red-800 text-white px-2 py-1 rounded"
+                        data-id="{{ item.id }}">
+                        Supprimer
+                    </button>
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="6" class="px-4 py-2 text-gray-500 italic text-center">No media found</td>
+                <td colspan="6" class="px-4 py-2 text-gray-500 italic text-center">Aucun document trouvé</td>
             </tr>
         {% endfor %}
     </tbody>
-</table> 
+</table>
