@@ -825,7 +825,7 @@ class AppFixtures extends Fixture
 
     private function createDocuments(ObjectManager $manager, array $politiciens, array $delits): void
     {
-        for ($i = 1; $i <= 15; $i++) {
+        for ($i = 1; $i <= 3; $i++) {
             $document = new Document();
             $document->setNom("Document {$i}");
             $document->setChemin("/documents/document_{$i}.pdf");

@@ -72,8 +72,8 @@ class Document
     #[ORM\Column(enumType: DocumentLangueDocumentEnum::class)]
     private ?DocumentLangueDocumentEnum $langueDocument = null;
 
-    #[ORM\ManyToOne(inversedBy: 'documentsAuteur')]
-    private ?Politicien $auteur = null;
+    #[ORM\ManyToOne]
+    private ?User $auteur = null;
 
     #[ORM\ManyToOne(inversedBy: 'documents')]
     private ?Delit $delit = null;
@@ -278,12 +278,12 @@ class Document
         return $this;
     }
 
-    public function getAuteur(): ?Politicien
+    public function getAuteur(): ?User
     {
         return $this->auteur;
     }
 
-    public function setAuteur(?Politicien $auteur): static
+    public function setAuteur(?User $auteur): static
     {
         $this->auteur = $auteur;
 
