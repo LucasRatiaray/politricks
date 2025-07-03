@@ -1,5 +1,5 @@
 <form id="add-politician-form" class="space-y-4">
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
             <label class="block text-gray-300 text-sm mb-1" for="firstName">Prénom *</label>
             <input type="text" id="firstName" name="firstName" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
@@ -20,7 +20,7 @@
         <input type="password" id="password" name="password" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
     </div>
     
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
             <label class="block text-gray-300 text-sm mb-1" for="telephone">Téléphone</label>
             <input type="text" id="telephone" name="telephone" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
@@ -31,7 +31,7 @@
         </div>
     </div>
     
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
             <label class="block text-gray-300 text-sm mb-1" for="dateEntreePolitique">Date d'entrée en politique</label>
             <input type="date" id="dateEntreePolitique" name="dateEntreePolitique" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
@@ -45,7 +45,7 @@
         <label class="block text-gray-300 text-sm mb-1" for="profession">Profession</label>
         <input type="text" id="profession" name="profession" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
     </div>
-    <div class="flex justify-end gap-3 pt-4">
+    <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4">
         <button type="button" data-close-modal="add-politician-modal" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors">
             Annuler
         </button>
@@ -53,4 +53,4 @@
             Ajouter
         </button>
     </div>
-</form> 
+</form>
