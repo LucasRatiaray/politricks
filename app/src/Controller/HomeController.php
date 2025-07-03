@@ -656,11 +656,10 @@ class HomeController extends AbstractController
         ->setParameter('politicianId', $politician->getId())
         ->setParameter('threeYearsAgo', $threeYearsAgo);
         
-        $offenses = $qb->getQuery()->getResult();
-        
-        // Formattage
+        $recentOffenses = $qb->getQuery()->getResult();
+
         $offensesData = [];
-        foreach ($offenses as $offense) {
+        foreach ($recentOffenses as $offense) {
             $offensesData[] = [
                 'id' => $offense->getId(),
                 'type' => $offense->getType()->value,
@@ -671,11 +670,22 @@ class HomeController extends AbstractController
             ];
         }
 
+        // Récupérer TOUS les délits pour la timeline
+        $qbAll = $em->createQueryBuilder();
+        $qbAll->select('delit')
+        ->from(Delit::class, 'delit')
+        ->join('delit.politiciens', 'politic')
+        ->where('politic.id = :politicianId')
+        ->orderBy('delit.date', 'DESC')
+        ->setParameter('politicianId', $politician->getId());
+        
+        $allOffenses = $qbAll->getQuery()->getResult();
+
         // Générer la timeline
         $timelineData = [];
         
-        // Ajouter les délits à la timeline
-        foreach ($offenses as $offense) {
+        // Ajouter tous les délits à la timeline
+        foreach ($allOffenses as $offense) {
             $timelineData[] = [
                 'date' => $offense->getDate()->format('d/m/Y'),
                 'title' => 'Délit: ' . $offense->getType()->value,
@@ -789,6 +799,11 @@ class HomeController extends AbstractController
     #[Route('/politics/{id}/delete', name: 'app_politics_delete', methods: ['DELETE'])]
     public function politicsDelete(int $id, EntityManagerInterface $em): JsonResponse
     {
+        $user = $this->getUser();
+        if (!$user || !$user instanceof User || !in_array('ROLE_ADMIN', $user->getRoles())) {
+            return new JsonResponse(['success' => false, 'message' => 'Accès refusé']);
+        }
+        
         try {
             $politician = $em->getRepository(User::class)->find($id);
             
@@ -827,7 +842,7 @@ class HomeController extends AbstractController
     public function politicsEdit(int $id, EntityManagerInterface $em): JsonResponse
     {
         $user = $this->getUser();
-        if (!$user || !$user instanceof User || !in_array('ROLE_ADMIN', $user->getRoles())) {
+        if (!$user || !$user instanceof User || (!in_array('ROLE_ADMIN', $user->getRoles()) && !in_array('ROLE_MODERATOR', $user->getRoles()))) {
             return new JsonResponse(['success' => false, 'message' => 'Accès refusé']);
         }
 
@@ -859,7 +874,7 @@ class HomeController extends AbstractController
     public function politicsUpdate(int $id, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $user = $this->getUser();
-        if (!$user || !$user instanceof User || !in_array('ROLE_ADMIN', $user->getRoles())) {
+        if (!$user || !$user instanceof User || (!in_array('ROLE_ADMIN', $user->getRoles()) && !in_array('ROLE_MODERATOR', $user->getRoles()))) {
             return new JsonResponse(['success' => false, 'message' => 'Accès refusé']);
         }
 
@@ -1571,12 +1586,32 @@ class HomeController extends AbstractController
     #[Route('/offenses/{id}/edit', name: 'offenses_edit', methods: ['GET'])]
     public function editOffense(int $id, EntityManagerInterface $em): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['success' => false, 'message' => 'Accès refusé']);
+        }
         
         $delit = $em->getRepository(Delit::class)->find($id);
         
         if (!$delit) {
             return new JsonResponse(['success' => false, 'message' => 'Délit non trouvé']);
+        }
+        
+        $isAdmin = in_array('ROLE_ADMIN', $user->getRoles());
+        $isModerator = in_array('ROLE_MODERATOR', $user->getRoles());
+        $isPoliticianInvolved = false;
+        
+        if (in_array('ROLE_POLITICIAN', $user->getRoles())) {
+            foreach ($delit->getPoliticiens() as $politicien) {
+                if ($politicien->getId() === $user->getId()) {
+                    $isPoliticianInvolved = true;
+                    break;
+                }
+            }
+        }
+        
+        if (!$isAdmin && !$isModerator && !$isPoliticianInvolved) {
+            return new JsonResponse(['success' => false, 'message' => 'Accès refusé']);
         }
         
         // Récupérer les IDs des politiciens et partenaires
@@ -1610,12 +1645,32 @@ class HomeController extends AbstractController
     #[Route('/offenses/{id}/update', name: 'offenses_update', methods: ['POST'])]
     public function updateOffense(int $id, Request $request, EntityManagerInterface $em): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['success' => false, 'error' => 'Accès refusé']);
+        }
         
         $delit = $em->getRepository(Delit::class)->find($id);
         
         if (!$delit) {
             return new JsonResponse(['success' => false, 'error' => 'Délit non trouvé']);
+        }
+        
+        $isAdmin = in_array('ROLE_ADMIN', $user->getRoles());
+        $isModerator = in_array('ROLE_MODERATOR', $user->getRoles());
+        $isPoliticianInvolved = false;
+        
+        if (in_array('ROLE_POLITICIAN', $user->getRoles())) {
+            foreach ($delit->getPoliticiens() as $politicien) {
+                if ($politicien->getId() === $user->getId()) {
+                    $isPoliticianInvolved = true;
+                    break;
+                }
+            }
+        }
+        
+        if (!$isAdmin && !$isModerator && !$isPoliticianInvolved) {
+            return new JsonResponse(['success' => false, 'error' => 'Accès refusé']);
         }
         
         try {

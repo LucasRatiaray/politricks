@@ -446,6 +446,9 @@
     const offenses = {{ offenses|json_encode|raw }};
     let selectedOffense = {{ selected|json_encode|raw }};
     const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
+    const isModerator = {{ is_granted('ROLE_MODERATOR') ? 'true' : 'false' }};
+    const isPolitician = {{ app.user and app.user.roles is defined and 'ROLE_POLITICIAN' in app.user.roles ? 'true' : 'false' }};
+    const currentUserId = {{ app.user ? app.user.id : 'null' }};
     const politicians = {{ politicians|json_encode|raw }};
     const partners = {{ partners|json_encode|raw }};
 
@@ -590,7 +593,7 @@
             <div class="bg-[#101c2b] rounded-lg shadow-lg p-6 h-full overflow-y-auto">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-white text-xl font-semibold">Détails du délit</h2>
-                    ${isAdmin ? `<button type="button" class="px-3 py-1 rounded text-xs font-semibold transition-colors focus:outline-none bg-blue-700 text-blue-200 hover:bg-blue-800" onclick="editOffense(${offense.id})">
+                    ${isAdmin || isModerator || (isPolitician && currentUserId && offense.politiciens && offense.politiciens.some(p => p.id === currentUserId)) ? `<button type="button" class="px-3 py-1 rounded text-xs font-semibold transition-colors focus:outline-none bg-blue-700 text-blue-200 hover:bg-blue-800" onclick="editOffense(${offense.id})">
                         Modifier
                     </button>` : ''}
                 </div>
