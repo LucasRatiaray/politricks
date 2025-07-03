@@ -1,0 +1,65 @@
+<div id="add-media-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden p-4">
+    <div class="bg-slate-800 rounded-lg shadow-lg p-4 sm:p-8 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-white text-lg font-semibold">Ajouter un document</h2>
+            <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="add-media-modal">&times;</button>
+        </div>
+        <div class="text-gray-300">
+            <form action="{{ path('media_add') }}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="file" accept="*/*" required class="mb-4 block w-full text-white bg-slate-700 rounded p-2 text-sm">
+                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded">Ajouter</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="edit-media-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden p-4">
+    <div class="bg-slate-800 rounded-lg shadow-lg p-4 sm:p-8 w-full max-w-lg max-h-full overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-white text-lg font-semibold">Modifier le document</h2>
+            <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="edit-media-modal">&times;</button>
+        </div>
+        <div class="text-gray-300">
+            <form id="edit-media-form" class="space-y-4">
+                <input type="hidden" id="edit-document-id">
+                <div>
+                    <label class="block text-white mb-2 font-medium text-sm">Nom du fichier</label>
+                    <input type="text" id="edit-nom" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-white mb-2 font-medium text-sm">Délit associé</label>
+                    <select id="edit-delit" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                        <option value="">-- Sélectionner un délit --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-white mb-2 font-medium text-sm">Confidentialité</label>
+                    <select id="edit-confidentialite" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                        <option value="public">Public</option>
+                        <option value="interne">Interne</option>
+                        <option value="restreint">Restreint</option>
+                        <option value="secret">Secret</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-white mb-2 font-medium text-sm">Langue</label>
+                    <select id="edit-langue" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                        <option value="français">Français</option>
+                        <option value="anglais">Anglais</option>
+                        <option value="espagnol">Espagnol</option>
+                        <option value="allemand">Allemand</option>
+                        <option value="autre">Autre</option>
+                    </select>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                    <button type="submit" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded font-medium text-sm">
+                        Modifier
+                    </button>
+                    <button type="button" class="flex-1 bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded font-medium text-sm" data-close-modal="edit-media-modal">
+                        Annuler
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
