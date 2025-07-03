@@ -1,29 +1,55 @@
 {% extends "layout/dashboard.html.twig" %}
 
 {% block content %}
-<div class="flex min-h-screen bg-slate-900">
-    <aside class="w-80 bg-gray-900 p-6 flex flex-col gap-6 max-h-screen overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-white text-lg font-semibold">Politiciens</h2>
+<div class="flex flex-col lg:flex-row min-h-screen bg-slate-900">
+    <aside class="w-full lg:w-80 bg-gray-900 p-4 sm:p-6 flex flex-col gap-4 sm:gap-6 max-h-80 lg:max-h-screen overflow-y-auto border-b lg:border-b-0 lg:border-r border-gray-800">
+        <div class="flex flex-col sm:flex-row lg:flex-col justify-between items-start sm:items-center lg:items-start mb-4">
+            <h2 class="text-white text-lg font-semibold mb-2 sm:mb-0 lg:mb-2">Politiciens</h2>
             {% include 'layout/components/add_button.html.twig' with {modal_id: 'add-politician-modal'} %}
         </div>
-        <input type="text" id="search-politicians" placeholder="Rechercher" class="mb-4 w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <div class="flex flex-col gap-4 overflow-y-auto" id="politicians-list">
+        <input type="text" id="search-politicians" placeholder="Rechercher" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4 overflow-y-auto" id="politicians-list">
             {% for politician in politicians %}
-                <div class="politician-card" data-politician-id="{{ politician.id }}" data-politician-name="{{ politician.firstName|lower }} {{ politician.lastName|lower }}">
+                <div class="politician-card cursor-pointer" data-politician-id="{{ politician.id }}" data-politician-name="{{ politician.firstName|lower }} {{ politician.lastName|lower }}">
                     {% include 'politics/components/politician_card.html.twig' with {politician: politician, selected: politician.id == selected.id} %}
                 </div>
             {% endfor %}
         </div>
     </aside>
-    <main class="flex-1 p-10 flex flex-col items-center">
-        <div id="politician-detail">
+    
+    <main class="hidden lg:block lg:flex-1 p-4 sm:p-6 lg:p-10 flex flex-col items-center">
+        <div id="politician-detail" class="w-full">
             {% include 'politics/components/politician_detail.html.twig' with {selected: selected} %}
         </div>
     </main>
+    
+    <div class="lg:hidden">
+        <div id="mobile-politician-details" class="bg-gray-900 border-t border-gray-800">
+            {% if selected %}
+                <div class="p-4">
+                    {% include 'politics/components/politician_detail.html.twig' with {selected: selected} %}
+                </div>
+            {% else %}
+                <div class="p-4 text-center">
+                    <div class="text-gray-400 text-sm mb-1">Sélectionnez un politicien</div>
+                    <div class="text-gray-500 text-xs">pour voir les détails</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 
-<!-- Modal d'ajout -->
+<div id="mobile-detail-modal" class="lg:hidden fixed inset-0 z-50 bg-slate-900 hidden">
+    <div class="flex flex-col h-full">
+        <div class="flex items-center justify-between p-4 border-b border-gray-800">
+            <h2 class="text-white text-lg font-semibold">Détails du politicien</h2>
+            <button type="button" id="close-mobile-detail" class="text-gray-400 hover:text-white text-2xl">×</button>
+        </div>
+        <div id="mobile-detail-content" class="flex-1 overflow-y-auto p-4">
+        </div>
+    </div>
+</div>
+
 {% include 'layout/components/crud_modal.html.twig' with {
     modal_id: 'add-politician-modal',
     title: 'Ajouter un politicien',
@@ -32,15 +58,14 @@
 } %}
 
 <script>
-// Stock les data des politics
 const politiciansData = {{ politicians|json_encode|raw }};
 
 document.addEventListener('DOMContentLoaded', function() {
     const politicianCards = document.querySelectorAll('.politician-card');
     const detailContainer = document.getElementById('politician-detail');
+    const mobileDetailContainer = document.getElementById('mobile-politician-details');
     const searchInput = document.getElementById('search-politicians');
     
-    // recherche
     searchInput.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase().trim();
         const politiciansList = document.getElementById('politicians-list');
@@ -58,7 +83,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // pas de resultat
         const visibleCards = Array.from(politicianCards).filter(card => card.style.display !== 'none');
         if (visibleCards.length === 0 && searchTerm !== '') {
             if (!document.getElementById('no-results')) {
@@ -80,7 +104,6 @@ document.addEventListener('DOMContentLoaded', function() {
         card.addEventListener('click', function() {
             const politicianId = this.dataset.politicianId;
             
-            // update le visuel
             politicianCards.forEach(c => {
                 const cardDiv = c.querySelector('div');
                 cardDiv.classList.remove('bg-gray-800', 'border-l-4', 'border-blue-600');
@@ -91,19 +114,36 @@ document.addEventListener('DOMContentLoaded', function() {
             currentCardDiv.classList.remove('hover:bg-gray-800');
             currentCardDiv.classList.add('bg-gray-800', 'border-l-4', 'border-blue-600');
             
-            // Charger les détails via AJAX
-            fetch(`/politics/${politicianId}/partial`)
-                .then(response => response.text())
-                .then(html => {
-                    detailContainer.innerHTML = html;
-                })
-                .catch(error => {
-                    console.error('Erreur lors du chargement des détails:', error);
-                });
+            if (window.innerWidth < 1024) {
+                fetch(`/politics/${politicianId}/partial`)
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('mobile-detail-content').innerHTML = html;
+                        document.getElementById('mobile-detail-modal').classList.remove('hidden');
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors du chargement des détails:', error);
+                    });
+            } else {
+                fetch(`/politics/${politicianId}/partial`)
+                    .then(response => response.text())
+                    .then(html => {
+                        detailContainer.innerHTML = html;
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors du chargement des détails:', error);
+                    });
+            }
         });
     });
     
-    // Gestion des modals
+    const closeMobileBtn = document.getElementById('close-mobile-detail');
+    if (closeMobileBtn) {
+        closeMobileBtn.addEventListener('click', function() {
+            document.getElementById('mobile-detail-modal').classList.add('hidden');
+        });
+    }
+    
     document.querySelectorAll('[data-open-modal]').forEach(button => {
         button.addEventListener('click', function() {
             const modalId = this.dataset.openModal;
@@ -118,7 +158,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Fermer la modal en cliquant à l'extérieur
     document.querySelectorAll('[id$="-modal"]').forEach(modal => {
         modal.addEventListener('click', function(e) {
             if (e.target === this) {
@@ -127,7 +166,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Gestion du formulaire d'ajout de politicien
     const addForm = document.getElementById('add-politician-form');
     if (addForm) {
         addForm.addEventListener('submit', function(e) {
@@ -146,7 +184,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(result => {
                 if (result.success) {
-                    // Fermer la modal et recharger la page
                     document.getElementById('add-politician-modal').classList.add('hidden');
                     window.location.reload();
                 } else {
@@ -161,4 +198,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-{% endblock %} 
+{% endblock %}

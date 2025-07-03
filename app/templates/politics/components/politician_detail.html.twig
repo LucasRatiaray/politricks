@@ -1,113 +1,115 @@
-<h1 class="text-2xl font-bold text-white mb-6">Profil Politicien: {{ selected.name }}</h1>
-<div class="bg-gray-900 rounded-lg p-8 shadow-lg relative">
-    <div class="absolute top-4 right-4 flex gap-2">
-        {% if app.user and 'ROLE_ADMIN' in app.user.roles %}
+<div class="w-full max-w-4xl mx-auto">
+    <h1 class="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Profil Politicien: {{ selected.name }}</h1>
+    <div class="bg-gray-900 rounded-lg p-4 sm:p-6 lg:p-8 shadow-lg relative">
+        <div class="absolute top-3 right-3 sm:top-4 sm:right-4 flex gap-2">
+            {% if app.user and 'ROLE_ADMIN' in app.user.roles %}
+                <button type="button" 
+                        class="px-2 sm:px-3 py-1 rounded text-xs font-semibold transition-colors focus:outline-none bg-blue-700 text-blue-200 hover:bg-blue-800"
+                        onclick="editPolitician({{ selected.id }})">
+                    Modifier
+                </button>
+            {% endif %}
             <button type="button" 
-                    class="px-3 py-1 rounded text-xs font-semibold transition-colors focus:outline-none bg-blue-700 text-blue-200 hover:bg-blue-800"
-                    onclick="editPolitician({{ selected.id }})">
-                Modifier
+                    class="px-2 sm:px-3 py-1 rounded text-xs font-semibold transition-colors focus:outline-none bg-red-700 text-red-200 hover:bg-red-800"
+                    onclick="deletePolitician({{ selected.id }})">
+                Supprimer
             </button>
-        {% endif %}
-        <button type="button" 
-                class="px-3 py-1 rounded text-xs font-semibold transition-colors focus:outline-none bg-red-700 text-red-200 hover:bg-red-800"
-                onclick="deletePolitician({{ selected.id }})">
-            Supprimer
-        </button>
-    </div>
-    
-    <div class="flex items-center gap-6 mb-6">
-        <img src="{{ selected.image }}" alt="{{ selected.name }}" class="w-24 h-24 rounded-full object-cover" />
-        <div>
-            <h2 class="text-white text-xl font-semibold mb-2">{{ selected.name }}</h2>
-            <div class="text-blue-400 font-medium">{{ selected.role }}</div>
         </div>
-    </div>
-    
-    <div class="grid grid-cols-2 gap-6 border-b border-slate-800 pb-6 mb-6">
-        <div>
-            <div class="text-gray-400 text-xs mb-1">Email</div>
-            <div class="text-white">{{ selected.email|default('-') }}</div>
+        
+        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-6 pr-20 sm:pr-24">
+            <img src="{{ selected.image }}" alt="{{ selected.name }}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover flex-shrink-0" />
+            <div class="text-center sm:text-left min-w-0 flex-1">
+                <h2 class="text-white text-lg sm:text-xl font-semibold mb-2">{{ selected.name }}</h2>
+                <div class="text-blue-400 font-medium text-sm sm:text-base">{{ selected.role }}</div>
+            </div>
         </div>
-        <div>
-            <div class="text-gray-400 text-xs mb-1">Téléphone</div>
-            <div class="text-white">{{ selected.telephone|default('-') }}</div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 border-b border-slate-800 pb-4 sm:pb-6 mb-4 sm:mb-6">
+            <div>
+                <div class="text-gray-400 text-xs mb-1">Email</div>
+                <div class="text-white text-sm sm:text-base break-all">{{ selected.email|default('-') }}</div>
+            </div>
+            <div>
+                <div class="text-gray-400 text-xs mb-1">Téléphone</div>
+                <div class="text-white text-sm sm:text-base">{{ selected.telephone|default('-') }}</div>
+            </div>
+            <div>
+                <div class="text-gray-400 text-xs mb-1">Nationalité</div>
+                <div class="text-white text-sm sm:text-base">{{ selected.nationalite|default('-') }}</div>
+            </div>
+            <div>
+                <div class="text-gray-400 text-xs mb-1">Profession</div>
+                <div class="text-white text-sm sm:text-base">{{ selected.profession|default('-') }}</div>
+            </div>
+            <div>
+                <div class="text-gray-400 text-xs mb-1">Date de naissance</div>
+                <div class="text-white text-sm sm:text-base">{{ selected.dateNaissance ? selected.dateNaissance|date('d/m/Y') : '-' }}</div>
+            </div>
+            <div>
+                <div class="text-gray-400 text-xs mb-1">Membre depuis</div>
+                <div class="text-white text-sm sm:text-base">{{ selected.dateCreation ? selected.dateCreation|date('d/m/Y') : '-' }}</div>
+            </div>
         </div>
-        <div>
-            <div class="text-gray-400 text-xs mb-1">Nationalité</div>
-            <div class="text-white">{{ selected.nationalite|default('-') }}</div>
-        </div>
-        <div>
-            <div class="text-gray-400 text-xs mb-1">Profession</div>
-            <div class="text-white">{{ selected.profession|default('-') }}</div>
-        </div>
-        <div>
-            <div class="text-gray-400 text-xs mb-1">Date de naissance</div>
-            <div class="text-white">{{ selected.dateNaissance ? selected.dateNaissance|date('d/m/Y') : '-' }}</div>
-        </div>
-        <div>
-            <div class="text-gray-400 text-xs mb-1">Membre depuis</div>
-            <div class="text-white">{{ selected.dateCreation ? selected.dateCreation|date('d/m/Y') : '-' }}</div>
-        </div>
-    </div>
-    
-    <h2 class="text-white text-lg font-semibold mb-4">Biographie</h2>
-    <div class="text-gray-300 mb-6 leading-relaxed">{{ selected.bio|default('Aucune biographie disponible.') }}</div>
-    
-    <h2 class="text-white text-lg font-semibold mb-4">Offenses récentes</h2>
-    {% if selected.offenses and selected.offenses|length > 0 %}
-        <div class="space-y-3 mb-6">
-            {% for offense in selected.offenses %}
-                <div class="bg-gray-800 rounded p-4 border-l-4 border-red-500">
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="text-white font-medium">{{ offense.type|title }}</div>
-                        <div class="text-gray-400 text-sm">{{ offense.date }}</div>
-                    </div>
-                    <div class="text-gray-400 text-sm mb-2">{{ offense.description|default('Aucune description disponible.') }}</div>
-                    <div class="flex gap-4 text-xs">
-                        <span class="px-2 py-1 rounded bg-blue-600 text-blue-200">Statut: {{ offense.statut|title }}</span>
-                        <span class="px-2 py-1 rounded bg-orange-600 text-orange-200">Gravité: {{ offense.gravite|title }}</span>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="text-gray-400 mb-6">Aucun délit enregistré dans les 3 dernières années.</div>
-    {% endif %}
-    
-    <h2 class="text-white text-lg font-semibold mb-4">Timeline</h2>
-    {% if selected.timeline and selected.timeline|length > 0 %}
-        <div class="space-y-4">
-            {% for event in selected.timeline %}
-                <div class="flex items-start gap-4">
-                    <div class="flex-shrink-0 w-3 h-3 rounded-full mt-2
-                        {% if event.type == 'delit' %}bg-red-500
-                        {% elseif event.type == 'carriere' %}bg-blue-500
-                        {% elseif event.type == 'naissance' %}bg-green-500
-                        {% else %}bg-gray-500{% endif %}">
-                    </div>
-                    <div class="flex-1 bg-gray-800 rounded p-3 border-l-4
-                        {% if event.type == 'delit' %}border-red-500
-                        {% elseif event.type == 'carriere' %}border-blue-500
-                        {% elseif event.type == 'naissance' %}border-green-500
-                        {% else %}border-gray-500{% endif %}">
-                        <div class="flex justify-between items-start mb-1">
-                            <div class="text-white font-medium">{{ event.title }}</div>
-                            <div class="text-gray-400 text-sm">{{ event.date }}</div>
+        
+        <h2 class="text-white text-base sm:text-lg font-semibold mb-3 sm:mb-4">Biographie</h2>
+        <div class="text-gray-300 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">{{ selected.bio|default('Aucune biographie disponible.') }}</div>
+        
+        <h2 class="text-white text-base sm:text-lg font-semibold mb-3 sm:mb-4">Offenses récentes</h2>
+        {% if selected.offenses and selected.offenses|length > 0 %}
+            <div class="space-y-3 mb-4 sm:mb-6">
+                {% for offense in selected.offenses %}
+                    <div class="bg-gray-800 rounded p-3 sm:p-4 border-l-4 border-red-500">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2">
+                            <div class="text-white font-medium text-sm sm:text-base">{{ offense.type|title }}</div>
+                            <div class="text-gray-400 text-xs sm:text-sm mt-1 sm:mt-0">{{ offense.date }}</div>
                         </div>
-                        <div class="text-gray-400 text-sm mb-2">{{ event.description }}</div>
-                        {% if event.type == 'delit' and event.statut and event.gravite %}
-                            <div class="flex gap-2 text-xs">
-                                <span class="px-2 py-1 rounded bg-blue-600 text-blue-200">{{ event.statut|title }}</span>
-                                <span class="px-2 py-1 rounded bg-orange-600 text-orange-200">{{ event.gravite|title }}</span>
-                            </div>
-                        {% endif %}
+                        <div class="text-gray-400 text-xs sm:text-sm mb-2">{{ offense.description|default('Aucune description disponible.') }}</div>
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <span class="px-2 py-1 rounded bg-blue-600 text-blue-200">Statut: {{ offense.statut|title }}</span>
+                            <span class="px-2 py-1 rounded bg-orange-600 text-orange-200">Gravité: {{ offense.gravite|title }}</span>
+                        </div>
                     </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="text-gray-400">Aucun événement enregistré.</div>
-    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base">Aucun délit enregistré dans les 3 dernières années.</div>
+        {% endif %}
+        
+        <h2 class="text-white text-base sm:text-lg font-semibold mb-3 sm:mb-4">Timeline</h2>
+        {% if selected.timeline and selected.timeline|length > 0 %}
+            <div class="space-y-3 sm:space-y-4">
+                {% for event in selected.timeline %}
+                    <div class="flex items-start gap-3 sm:gap-4">
+                        <div class="flex-shrink-0 w-3 h-3 rounded-full mt-2
+                            {% if event.type == 'delit' %}bg-red-500
+                            {% elseif event.type == 'carriere' %}bg-blue-500
+                            {% elseif event.type == 'naissance' %}bg-green-500
+                            {% else %}bg-gray-500{% endif %}">
+                        </div>
+                        <div class="flex-1 bg-gray-800 rounded p-3 border-l-4
+                            {% if event.type == 'delit' %}border-red-500
+                            {% elseif event.type == 'carriere' %}border-blue-500
+                            {% elseif event.type == 'naissance' %}border-green-500
+                            {% else %}border-gray-500{% endif %}">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-1">
+                                <div class="text-white font-medium text-sm sm:text-base">{{ event.title }}</div>
+                                <div class="text-gray-400 text-xs sm:text-sm mt-1 sm:mt-0">{{ event.date }}</div>
+                            </div>
+                            <div class="text-gray-400 text-xs sm:text-sm mb-2">{{ event.description }}</div>
+                            {% if event.type == 'delit' and event.statut and event.gravite %}
+                                <div class="flex flex-wrap gap-2 text-xs">
+                                    <span class="px-2 py-1 rounded bg-blue-600 text-blue-200">{{ event.statut|title }}</span>
+                                    <span class="px-2 py-1 rounded bg-orange-600 text-orange-200">{{ event.gravite|title }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-gray-400 text-sm sm:text-base">Aucun événement enregistré.</div>
+        {% endif %}
+    </div>
 </div>
 
 <script>
@@ -157,9 +159,8 @@ function editPolitician(politicianId) {
 }
 </script>
 
-<!-- Modal d'édition -->
-<div id="edit-politician-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-    <div class="bg-[#101c2b] rounded-lg shadow-lg p-8 min-w-[320px] max-w-full">
+<div id="edit-politician-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden p-4">
+    <div class="bg-[#101c2b] rounded-lg shadow-lg p-4 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-white text-lg font-semibold">Modifier le politicien</h2>
             <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" onclick="document.getElementById('edit-politician-modal').classList.add('hidden')">&times;</button>
@@ -168,7 +169,7 @@ function editPolitician(politicianId) {
             <form id="edit-politician-form" class="space-y-4">
                 <input type="hidden" id="edit-politician-id" name="id">
                 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-gray-300 text-sm mb-1" for="edit-firstName">Prénom *</label>
                         <input type="text" id="edit-firstName" name="firstName" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
@@ -184,7 +185,7 @@ function editPolitician(politicianId) {
                     <input type="email" id="edit-email" name="email" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
                 </div>
                 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-gray-300 text-sm mb-1" for="edit-telephone">Téléphone</label>
                         <input type="text" id="edit-telephone" name="telephone" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
@@ -195,7 +196,7 @@ function editPolitician(politicianId) {
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-gray-300 text-sm mb-1" for="edit-dateNaissance">Date de naissance</label>
                         <input type="date" id="edit-dateNaissance" name="dateNaissance" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500">
@@ -206,7 +207,7 @@ function editPolitician(politicianId) {
                     </div>
                 </div>
                 
-                <div class="flex justify-end gap-3 pt-4">
+                <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4">
                     <button type="button" onclick="document.getElementById('edit-politician-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors">
                         Annuler
                     </button>
@@ -261,4 +262,4 @@ document.getElementById('edit-politician-modal').addEventListener('click', funct
         this.classList.add('hidden');
     }
 });
-</script> 
+</script>
