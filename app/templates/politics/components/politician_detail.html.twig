@@ -54,7 +54,7 @@
         <h2 class="text-white text-base sm:text-lg font-semibold mb-3 sm:mb-4">Biographie</h2>
         <div class="text-gray-300 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">{{ selected.bio|default('Aucune biographie disponible.') }}</div>
         
-        <h2 class="text-white text-base sm:text-lg font-semibold mb-3 sm:mb-4">Offenses récentes</h2>
+        <h2 class="text-white text-base sm:text-lg font-semibold mb-3 sm:mb-4">Délits récentes</h2>
         {% if selected.offenses and selected.offenses|length > 0 %}
             <div class="space-y-3 mb-4 sm:mb-6">
                 {% for offense in selected.offenses %}
