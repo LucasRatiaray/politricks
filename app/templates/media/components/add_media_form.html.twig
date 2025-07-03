@@ -1,0 +1,54 @@
+<form action="{{ path('media_add') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="file">Fichier *</label>
+        <input type="file" id="file" name="file" accept="*/*" required 
+               class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <p class="text-xs text-gray-400 mt-1">Sélectionnez le fichier à uploader</p>
+    </div>
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="description">Description</label>
+        <textarea id="description" name="description" rows="3" 
+                  class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                  placeholder="Description du document..."></textarea>
+    </div>
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="confidentialite">Niveau de confidentialité</label>
+        <select id="confidentialite" name="confidentialite" 
+                class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="public">Public</option>
+            <option value="interne">Interne</option>
+            <option value="restreint">Restreint</option>
+            <option value="secret">Secret</option>
+        </select>
+    </div>
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="langue">Langue du document</label>
+        <select id="langue" name="langue" 
+                class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="français">Français</option>
+            <option value="anglais">Anglais</option>
+            <option value="espagnol">Espagnol</option>
+            <option value="allemand">Allemand</option>
+            <option value="autre">Autre</option>
+        </select>
+    </div>
+    <div>
+        <label class="block text-gray-300 text-sm mb-2" for="delit">Délit associé</label>
+        <select id="delit" name="delit" 
+                class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">-- Sélectionner un délit --</option>
+            {% for delit in delits %}
+                <option value="{{ delit.id }}">#{{ delit.id }} - {{ delit.type.value }} - {{ delit.description|slice(0, 50) }}...</option>
+            {% endfor %}
+        </select>
+        <p class="text-xs text-gray-400 mt-1">Choisissez le délit auquel associer ce document (optionnel)</p>
+    </div>
+    <div class="flex justify-end gap-3 pt-4">
+        <button type="button" class="px-4 py-2 bg-gray-600 text-gray-200 rounded hover:bg-gray-700 transition-colors" data-close-modal="add-media-modal">
+            Annuler
+        </button>
+        <button type="submit" class="px-4 py-2 bg-blue-700 text-blue-200 rounded hover:bg-blue-800 transition-colors">
+            Ajouter le document
+        </button>
+    </div>
+</form> 

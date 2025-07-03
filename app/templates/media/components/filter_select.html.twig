@@ -1,7 +1,12 @@
-<div>
-    <select id="{{ name }}" name="{{ name }}" class="w-full bg-slate-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+<div class="flex flex-col">
+    <label class="block text-gray-300 text-sm mb-1">{{ label }}</label>
+    <select name="{{ name }}" class="bg-slate-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
         {% for option in options %}
-            <option>{{ option }}</option>
+            {% set optionValue = option|lower|replace({' ': '_', 'é': 'e', 'è': 'e', 'à': 'a', 'ô': 'o', 'î': 'i', 'û': 'u', 'ç': 'c'}) %}
+            <option value="{{ optionValue }}" 
+                    {% if attribute(_context, name ~ 'Filter') == optionValue %}selected{% endif %}>
+                {{ option }}
+            </option>
         {% endfor %}
     </select>
 </div> 
