@@ -1,0 +1,48 @@
+<h1 class="text-2xl font-bold text-white mb-6">Parti : {{ selected.nom is defined and selected.nom ? selected.nom : 'Nom inconnu' }}</h1>
+<div class="bg-gray-900 rounded-lg p-8 shadow-lg relative">
+    <div class="flex items-center gap-4 mb-6">
+        {% if selected.logo is defined and selected.logo %}
+            <img src="{{ selected.logo }}" alt="Logo {{ selected.nom|default('') }}" class="w-16 h-16 rounded-full object-cover bg-white" />
+        {% else %}
+            <div class="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold" style="background: {{ selected.couleur is defined and selected.couleur ? selected.couleur : '#444' }};">
+                {{ selected.nom is defined and selected.nom ? selected.nom|first|upper : '?' }}
+            </div>
+        {% endif %}
+        <div>
+            <div class="text-white text-xl font-semibold">{{ selected.nom is defined and selected.nom ? selected.nom : 'Nom inconnu' }}</div>
+            {% if selected.slogan is defined and selected.slogan %}<div class="text-gray-400 text-sm">{{ selected.slogan }}</div>{% endif %}
+            {% if selected.siteWeb is defined and selected.siteWeb %}
+                <a href="{{ selected.siteWeb }}" target="_blank" class="text-blue-400 hover:text-blue-300 text-xs">{{ selected.siteWeb }}</a>
+            {% endif %}
+        </div>
+    </div>
+    {% if selected.description is defined and selected.description %}
+        <div class="mb-4 text-gray-300">{{ selected.description }}</div>
+    {% endif %}
+    <div class="mb-6">
+        <span class="text-gray-400 text-xs">Date de création :</span>
+        <span class="text-white">{{ selected.dateCreation is defined and selected.dateCreation ? selected.dateCreation|date('d/m/Y') : '-' }}</span>
+    </div>
+    <h2 class="text-white text-lg font-semibold mb-4">Politiciens membres</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% if selected.politiciens is defined and selected.politiciens|length > 0 %}
+            {% for politicien in selected.politiciens %}
+                <div class="bg-gray-800 rounded-lg p-4 flex items-center gap-4">
+                    {% if politicien.photo is defined and politicien.photo %}
+                        <img src="{{ politicien.photo }}" alt="Photo {{ politicien.firstName|default('') }} {{ politicien.lastName|default('') }}" class="w-12 h-12 rounded-full object-cover bg-white" />
+                    {% else %}
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold bg-blue-700">
+                            {{ politicien.firstName is defined and politicien.firstName ? politicien.firstName|first|upper : '?' }}{{ politicien.lastName is defined and politicien.lastName ? politicien.lastName|first|upper : '' }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <div class="text-white font-semibold">{{ politicien.firstName is defined and politicien.firstName ? politicien.firstName : '' }} {{ politicien.lastName is defined and politicien.lastName ? politicien.lastName : '' }}</div>
+                        {% if politicien.fonction is defined and politicien.fonction %}<div class="text-gray-400 text-xs">{{ politicien.fonction }}</div>{% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-gray-400">Aucun politicien dans ce parti.</div>
+        {% endif %}
+    </div>
+</div> 

@@ -18,6 +18,7 @@ use App\Enum\DocumentNiveauConfidentialiteEnum;
 use App\Enum\PartenaireNiveauRisqueEnum;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Faker\Factory;
 
 class AppFixtures extends Fixture
 {
@@ -176,6 +177,36 @@ class AppFixtures extends Fixture
                 'budgetAnnuel' => 10000000,
                 'nombreAdherents' => 100000,
                 'partiActif' => true
+            ],
+            [
+                'nom' => 'La France Insoumise',
+                'couleur' => '#FF0000',
+                'slogan' => 'Ensemble, nous sommes plus forts',
+                'description' => 'Parti politique d\'extrême gauche français',
+                'dateCreation' => new \DateTime('2016-02-10'),
+                'siteWeb' => 'https://lafranceinsoumise.fr',
+                'adresseSiege' => '21 rue de la République, 75002 Paris',
+                'telephoneContact' => '01 42 33 00 00',
+                'emailContact' => 'contact@lfi.fr',
+                'orientationPolitique' => 'Extrême gauche',
+                'budgetAnnuel' => 8000000,
+                'nombreAdherents' => 120000,
+                'partiActif' => true
+            ],
+            [
+                'nom' => 'Reconquête',
+                'couleur' => '#FF4500',
+                'slogan' => 'Pour la France, pour les Français',
+                'description' => 'Parti politique d\'extrême droite français',
+                'dateCreation' => new \DateTime('2021-07-05'),
+                'siteWeb' => 'https://reconquete.fr',
+                'adresseSiege' => '12 rue de la République, 75001 Paris',
+                'telephoneContact' => '01 42 00 00 00',
+                'emailContact' => 'contact@reconquete.fr',
+                'orientationPolitique' => 'Extrême droite',
+                'budgetAnnuel' => 10000000,
+                'nombreAdherents' => 50000,
+                'partiActif' => true
             ]
         ];
 
@@ -234,6 +265,65 @@ class AppFixtures extends Fixture
         $retailleau->setParti($partis[1]); // LR
         $manager->persist($retailleau);
         $politiciens[] = $retailleau;
+
+        // Éric Zemmour
+        $zemmour = new Politicien();
+        $zemmour->setEmail('eric.zemmour@gouv.fr');
+        $zemmour->setRoles(['ROLE_POLITICIAN']);
+        $zemmour->setPassword($passwordHash);
+        $zemmour->setFirstName('Éric');
+        $zemmour->setLastName('Zemmour');
+        $zemmour->setDateCreation(new \DateTime());
+        $zemmour->setEstActif(true);
+        $zemmour->setTelephone('+33944747003');
+        $zemmour->setDateNaissance(new \DateTime('1958-08-31'));
+        $zemmour->setNationalite('Française');
+        $zemmour->setProfession('Essayiste et homme politique');
+        $zemmour->setBiographie("Ancien journaliste et polémiste, Éric Zemmour est le fondateur du parti Reconquête!. Il défend des positions nationalistes, identitaires et conservatrices, axées sur l'immigration, la sécurité et l'identité française.");
+        $zemmour->setFonction('Président de Reconquête!');
+        $zemmour->setDateEntreePolitique(new \DateTime('2021-12-05'));
+        $zemmour->setMandatActuel("Président du parti Reconquête! (2021 - présent)");
+        $zemmour->setCirconscription('National');
+        $zemmour->setSalaireMensuel('6000');
+        $zemmour->setDeclarationPatrimoine([
+            'immobilier' => 1800000,
+            'mobilier' => 250000,
+            'comptes' => 90000
+        ]);
+        $zemmour->setCasierJudiciaire('Condamnations pour provocation à la haine raciale');
+        $zemmour->setParti($partis[5]); // Reconquête!
+        $manager->persist($zemmour);
+        $politiciens[] = $zemmour;
+
+
+        // Jean-Luc Mélenchon
+        $melenchon = new Politicien();
+        $melenchon->setEmail('jean-luc.melenchon@gouv.fr');
+        $melenchon->setRoles(['ROLE_POLITICIAN']);
+        $melenchon->setPassword($passwordHash);
+        $melenchon->setFirstName('Jean-Luc');
+        $melenchon->setLastName('Mélenchon');
+        $melenchon->setDateCreation(new \DateTime());
+        $melenchon->setEstActif(true);
+        $melenchon->setTelephone('+33944747004');
+        $melenchon->setDateNaissance(new \DateTime('1951-08-19'));
+        $melenchon->setNationalite('Française');
+        $melenchon->setProfession('Homme politique');
+        $melenchon->setBiographie("Fondateur de La France insoumise, Jean-Luc Mélenchon est une figure majeure de la gauche radicale française. Il défend une 6e République, la planification écologique et une rupture avec l'ordre néolibéral.");
+        $melenchon->setFonction('Député (ancien)');
+        $melenchon->setDateEntreePolitique(new \DateTime('1976-01-01'));
+        $melenchon->setMandatActuel("Leader de La France insoumise");
+        $melenchon->setCirconscription('Bouches-du-Rhône (anciennement)');
+        $melenchon->setSalaireMensuel('7000');
+        $melenchon->setDeclarationPatrimoine([
+            'immobilier' => 800000,
+            'mobilier' => 300000,
+            'comptes' => 100000
+        ]);
+        $melenchon->setCasierJudiciaire('Vierge');
+        $melenchon->setParti($partis[4]); // LFI
+        $manager->persist($melenchon);
+        $politiciens[] = $melenchon;
 
         // Emmanuel Macron
         $macron = new Politicien();
@@ -665,28 +755,77 @@ class AppFixtures extends Fixture
 
     private function createCommentaires(ObjectManager $manager, array $politiciens, array $delits): void
     {
+        $faker = Factory::create('fr_FR');
+
+        $phrasesComplices = [
+            "Chapeau bas pour l'évasion fiscale, tu m'expliqueras !",
+            "J’ai fait pareil avec une société écran à {$faker->country()}, nickel.",
+            "Attention, {$faker->firstName()} commence à trop parler...",
+            "Pas mal pour un amateur. Moi j’ai planqué le tout dans une ONG.",
+            "Haha, tu crois que ça passera inaperçu ? Classique.",
+            "Encore mieux : j’ai fait voter une loi pour légaliser le truc.",
+            "Faut vraiment qu’on échange nos astuces, c’est brillant.",
+            "{$faker->firstName()} m’a soufflé cette combine, faudra remercier.",
+            "T’as pensé à effacer les mails ? On ne sait jamais.",
+            "Bravo, on sent l’expérience du Sénat là 😏.",
+            "J’aurais pas osé... respect !",
+            "On dirait presque que t’as une conscience professionnelle.",
+            "Tu bluffes, c’était pas possible sans une taupe chez {$faker->company()} !",
+            "Ils n’ont encore rien vu... attends la suite.",
+            "Tu veux que je t’envoie mon notaire ? Il est discret.",
+            "Même la Cour des Comptes n’a rien pigé, bien joué.",
+            "J’ai utilisé une fondation bidon au Luxembourg, tip top.",
+            "Tu crois qu’ils vont remonter jusqu’à toi ? Haha.",
+            "Trop visible. Moi j’aurais utilisé un consultant offshore.",
+            "Planquer ça dans un contrat de conseil ? Faut oser.",
+            "{$faker->firstName()} t’as couvert, non ?",
+            "T'as pensé à changer de SIM après ça ?",
+            "Le coup de la fausse facture, c’est du grand art.",
+            "Tu pourrais faire un tuto sur la corruption.",
+            "Même les journalistes n’ont pas capté. Respect.",
+            "On est entre nous ici, balance tes secrets.",
+            "T’as bien mérité ton poste chez {$faker->company()} après ça.",
+            "J’ai noté l’astuce. Je teste ça sur le prochain appel d’offre.",
+            "C’est discret... mais pas trop. Gaffe à {$faker->firstName()} !",
+            "T’aurais dû breveter ta technique, sérieux.",
+            "Encore un coup de maître signé {$faker->lastName()} !",
+            "Un petit rappel de mandat fictif, ça fait toujours plaisir.",
+            "T’as bien appris depuis l’affaire de 2012, hein 😏.",
+            "J’ai tout vu, j’ai rien dit. Comme d’hab.",
+            "Si ça sort, je te couvre. Mais tu me dois un truc.",
+        ];
+
+        $domainesExpertise = [
+            'Droit pénal', 'Droit civil', 'Droit administratif', 'Droit constitutionnel',
+            'Droit fiscal', 'Droit des affaires', 'Droit international', 'Droit européen',
+            'Criminologie', 'Sociologie politique', 'Économie', 'Journalisme d\'investigation',
+            'Sciences politiques', 'Histoire', 'Philosophie du droit'
+        ];
+
+        $typesCommentaire = ['public', 'expert', 'journaliste', 'citoyen', 'analyste'];
+
         for ($i = 1; $i <= 20; $i++) {
             $commentaire = new Commentaire();
-            $commentaire->setContenu("Contenu du commentaire {$i}");
-            $commentaire->setDateCreation(new \DateTime('-' . rand(1, 12) . ' months'));
+            $commentaire->setContenu($faker->randomElement($phrasesComplices));
+            $commentaire->setDateCreation($faker->dateTimeBetween('-1 year', 'now'));
             $commentaire->setEstModere(false);
-            $commentaire->setScoreCredibilite(rand(1, 10));
-            $commentaire->setTypeCommentaire('public');
-            $commentaire->setDomaineExpertise('Droit');
+            $commentaire->setScoreCredibilite($faker->numberBetween(1, 10));
+            $commentaire->setTypeCommentaire($faker->randomElement($typesCommentaire));
+            $commentaire->setDomaineExpertise($faker->randomElement($domainesExpertise));
             $commentaire->setEstPublic(true);
-            $commentaire->setNombreLikes(rand(0, 50));
-            $commentaire->setNombreDislikes(rand(0, 20));
+            $commentaire->setNombreLikes($faker->numberBetween(0, 150));
+            $commentaire->setNombreDislikes($faker->numberBetween(0, 50));
             $commentaire->setEstSignale(false);
-            $commentaire->setAuteur($politiciens[array_rand($politiciens)]);
-            $commentaire->setDelit($delits[array_rand($delits)]);
-            
+            $commentaire->setAuteur($faker->randomElement($politiciens));
+            $commentaire->setDelit($faker->randomElement($delits));
+
             $manager->persist($commentaire);
         }
     }
 
     private function createDocuments(ObjectManager $manager, array $politiciens, array $delits): void
     {
-        for ($i = 1; $i <= 15; $i++) {
+        for ($i = 1; $i <= 3; $i++) {
             $document = new Document();
             $document->setNom("Document {$i}");
             $document->setChemin("/documents/document_{$i}.pdf");

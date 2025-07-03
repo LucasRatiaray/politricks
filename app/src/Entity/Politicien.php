@@ -47,11 +47,7 @@ class Politicien extends User
     #[ORM\OneToMany(targetEntity: Commentaire::class, mappedBy: 'auteur')]
     private Collection $commentaires;
 
-    /**
-     * @var Collection<int, Document>
-     */
-    #[ORM\OneToMany(targetEntity: Document::class, mappedBy: 'auteur')]
-    private Collection $documentsAuteur;
+
 
     /**
      * @var Collection<int, Delit>
@@ -63,7 +59,6 @@ class Politicien extends User
     {
         parent::__construct();
         $this->commentaires = new ArrayCollection();
-        $this->documentsAuteur = new ArrayCollection();
         $this->delits = new ArrayCollection();
     }
 
@@ -217,35 +212,7 @@ class Politicien extends User
         return $this;
     }
 
-    /**
-     * @return Collection<int, Document>
-     */
-    public function getDocumentsAuteur(): Collection
-    {
-        return $this->documentsAuteur;
-    }
 
-    public function addDocumentsAuteur(Document $documentsAuteur): static
-    {
-        if (!$this->documentsAuteur->contains($documentsAuteur)) {
-            $this->documentsAuteur->add($documentsAuteur);
-            $documentsAuteur->setAuteur($this);
-        }
-
-        return $this;
-    }
-
-    public function removeDocumentsAuteur(Document $documentsAuteur): static
-    {
-        if ($this->documentsAuteur->removeElement($documentsAuteur)) {
-            // set the owning side to null (unless already changed)
-            if ($documentsAuteur->getAuteur() === $this) {
-                $documentsAuteur->setAuteur(null);
-            }
-        }
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, Delit>

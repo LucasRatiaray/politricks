@@ -154,11 +154,12 @@ class HomeController extends AbstractController
                     'icon' => '📄'
                 ];
             }
-            
-            // Trier par date (plus récent en premier) et limiter à 10 activités
+
+            // Trier les activités par date (les plus récentes en premier)
             usort($recentActivities, function($a, $b) {
-                // Tri simple basé sur l'ordre des activités (les plus récentes en premier)
-                return 0; // On garde l'ordre d'insertion qui est déjà chronologique
+                // Les dates sont déjà formatées en "il y a X temps", donc on utilise l'ordre des requêtes
+                // qui sont déjà triées par date de création décroissante
+                return 0;
             });
             
             $recentActivities = array_slice($recentActivities, 0, 10);
@@ -253,10 +254,19 @@ class HomeController extends AbstractController
         // Si on a un délit sélectionné, récupérer les données complètes
         if ($selected) {
             $delit = $em->getRepository(Delit::class)->find($selected['id']);
+
+            // trier par ordre croissant
+            $qb = $em->createQueryBuilder();
+            $qb->select('c')
+                ->from(Commentaire::class, 'c')
+                ->where('c.delit = :delit')
+                ->orderBy('c.dateCreation', 'DESC')
+                ->setParameter('delit', $delit);
             
-            // Récupérer les commentaires
+            $commentairesEntities = $qb->getQuery()->getResult();
+            
             $commentaires = [];
-            foreach ($delit->getCommentaires() as $commentaire) {
+            foreach ($commentairesEntities as $commentaire) {
                 $commentaires[] = [
                     'id' => $commentaire->getId(),
                     'contenu' => $commentaire->getContenu(),
@@ -450,9 +460,18 @@ class HomeController extends AbstractController
             }
         }
         
-        // Récupérer les commentaires
+        // Récupérer les commentaires (croissants)
+        $qb = $em->createQueryBuilder();
+        $qb->select('c')
+            ->from(Commentaire::class, 'c')
+            ->where('c.delit = :delit')
+            ->orderBy('c.dateCreation', 'DESC')
+            ->setParameter('delit', $delit);
+        
+        $commentairesEntities = $qb->getQuery()->getResult();
+        
         $commentaires = [];
-        foreach ($delit->getCommentaires() as $commentaire) {
+        foreach ($commentairesEntities as $commentaire) {
             $commentaires[] = [
                 'id' => $commentaire->getId(),
                 'contenu' => $commentaire->getContenu(),
@@ -1699,17 +1718,17 @@ class HomeController extends AbstractController
     {
         $now = new \DateTime();
         $diff = $now->diff($date);
-        
+
         if ($diff->y > 0) {
-            return $diff->y . ' an' . ($diff->y > 1 ? 's' : '') . ' ago';
+            return 'il y a ' . $diff->y . ' an' . ($diff->y > 1 ? 's' : '');
         } elseif ($diff->m > 0) {
-            return $diff->m . ' mois ago';
+            return 'il y a ' . $diff->m . ' mois';
         } elseif ($diff->d > 0) {
-            return $diff->d . ' jour' . ($diff->d > 1 ? 's' : '') . ' ago';
+            return 'il y a ' . $diff->d . ' jour' . ($diff->d > 1 ? 's' : '');
         } elseif ($diff->h > 0) {
-            return $diff->h . ' heure' . ($diff->h > 1 ? 's' : '') . ' ago';
+            return 'il y a ' . $diff->h . ' heure' . ($diff->h > 1 ? 's' : '');
         } elseif ($diff->i > 0) {
-            return $diff->i . ' minute' . ($diff->i > 1 ? 's' : '') . ' ago';
+            return 'il y a ' . $diff->i . ' minute' . ($diff->i > 1 ? 's' : '');
         } else {
             return 'À l\'instant';
         }
@@ -1772,8 +1791,18 @@ class HomeController extends AbstractController
                 return new JsonResponse(['success' => false, 'error' => 'Délit non trouvé'], 404);
             }
 
+            // Récupérer les commentaires (croissants)
+            $qb = $em->createQueryBuilder();
+            $qb->select('c')
+                ->from(Commentaire::class, 'c')
+                ->where('c.delit = :delit')
+                ->orderBy('c.dateCreation', 'DESC')
+                ->setParameter('delit', $delit);
+            
+            $commentairesEntities = $qb->getQuery()->getResult();
+            
             $commentaires = [];
-            foreach ($delit->getCommentaires() as $commentaire) {
+            foreach ($commentairesEntities as $commentaire) {
                 $auteur = $commentaire->getAuteur();
                 $nomAuteur = 'Anonyme';
                 if ($auteur instanceof User) {

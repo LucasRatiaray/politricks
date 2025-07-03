@@ -1,0 +1,15 @@
+{% set defaultClasses = 'text-gray-200 hover:bg-slate-800 rounded px-3 py-2 transition-colors' %}
+{% set classes = classes|default(defaultClasses) %}
+
+<a href="{{ href }}" class="{{ classes }}">
+    {% if icon is defined and icon %}
+        <i class="{{ icon }}"></i>
+    {% endif %}
+    {% if isBrand is defined and isBrand %}
+        <span class="text-white text-lg font-semibold">{{ text }}</span>
+    {% elseif isUser is defined and isUser %}
+        <span class="text-white font-semibold">{{ text }}</span>
+    {% else %}
+        {{ text }}
+    {% endif %}
+</a> 

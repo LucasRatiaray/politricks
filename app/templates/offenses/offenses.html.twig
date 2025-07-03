@@ -59,7 +59,7 @@
                 {% endfor %}
             </div>
         </div>
-        <div class="w-1/2 p-6 overflow-y-auto border-r border-gray-800">
+        <div class="w-1/2 overflow-y-auto border-r border-gray-800">
             <div id="offense-details">
                 {% if selected %}
                     {% include 'offenses/components/offense_detail.html.twig' with {selected: selected} %}
@@ -74,199 +74,18 @@
             </div>
         </div>
 
-        <!-- commentaires -->
-        <div class="w-1/3 min-w-[320px] bg-gray-900 p-6 overflow-hidden border-l border-gray-800 flex flex-col h-full">
-            <div id="comments-section" class="flex flex-col h-full">
-                {% if selected %}
-                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                                <span class="text-blue-200 text-sm font-semibold">💬</span>
-                            </div>
-                            <h2 class="text-white text-lg font-semibold">Commentaires</h2>
-                        </div>
-                        <span class="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded-full font-medium">
-                            {{ selected.nombreCommentaires|default(0) }}
-                        </span>
-                    </div>
-                    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-6">
-                        <div class="flex items-center space-x-2 mb-4">
-                            <h3 class="text-white text-sm font-semibold">Ajouter un commentaire</h3>
-                        </div>
-                        <form id="add-comment-form" class="space-y-4">
-                            <div>
-                                <textarea
-                                    id="comment-content"
-                                    name="contenu"
-                                    rows="3"
-                                    required
-                                    class="w-full bg-gray-700 text-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                                    placeholder="Partagez votre point de vue sur ce délit..."
-                                ></textarea>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-500 text-xs">Commentaire public</span>
-                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center space-x-2">
-                                    <span>Publier</span>
-                                    <span class="text-xs">→</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="flex-1 overflow-y-auto">
-                        {% if selected.commentaires and selected.commentaires|length > 0 %}
-                            <div class="space-y-4 mb-6 pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-                                {% for commentaire in selected.commentaires %}
-                                    <div class="bg-gray-800 rounded-lg p-4 border-l-4 border-blue-500 hover:bg-gray-750 transition-colors">
-                                        <div class="flex items-start space-x-3">
-                                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                                                <span class="text-blue-200 text-xs font-semibold">
-                                                    {{ commentaire.auteur|split(' ')|first|first|upper }}{{ commentaire.auteur|split(' ')|last|first|upper }}
-                                                </span>
-                                            </div>
-                                            <div class="flex-1 min-w-0">
-                                                <div class="flex items-center space-x-2 mb-2">
-                                                    <span class="text-white font-medium text-sm">{{ commentaire.auteur }}</span>
-                                                    <span class="text-gray-500 text-xs">•</span>
-                                                    <span class="text-gray-400 text-xs">{{ commentaire.dateCreation }}</span>
-                                                </div>
-                                                <div class="text-gray-300 text-sm leading-relaxed">{{ commentaire.contenu }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <div class="mb-6 text-center py-8">
-                                <div class="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <span class="text-gray-400 text-2xl">💬</span>
-                                </div>
-                                <p class="text-gray-400 text-sm mb-2">Aucun commentaire pour le moment</p>
-                                <p class="text-gray-500 text-xs">Soyez le premier à partager votre avis !</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <div class="flex items-center justify-center h-full">
-                        <div class="text-center">
-                            <div class="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span class="text-gray-500 text-3xl">💬</span>
-                            </div>
-                            <div class="text-gray-400 text-lg mb-2 font-medium">Sélectionnez un délit</div>
-                            <div class="text-gray-500 text-sm">pour voir et ajouter des commentaires</div>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
+        <!-- Section commentaires -->
+        {% include 'offenses/components/comments_section.html.twig' with {selected: selected} %}
     </div>
 </div>
 
 <!-- Modal d'ajout -->
-<div id="add-offense-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-    <div class="bg-[#101c2b] rounded-lg shadow-lg p-8 min-w-[600px] max-w-full max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-white text-lg font-semibold">Ajouter un délit</h2>
-            <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="add-offense-modal">&times;</button>
-        </div>
-        <div class="text-gray-300">
-            <form id="add-offense-form" class="space-y-6">
-                <!-- Type de délit -->
-                <div>
-                    <label class="block text-gray-300 text-sm mb-2" for="type">Type de délit *</label>
-                    <select id="type" name="type" required class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Sélectionner un type</option>
-                        {% for type in delitTypes %}
-                            <option value="{{ type }}">{{ type|title }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Description -->
-                <div>
-                    <label class="block text-gray-300 text-sm mb-2" for="description">Description *</label>
-                    <textarea id="description" name="description" required rows="3" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Description du délit..."></textarea>
-                </div>
-
-                <!-- Date du délit -->
-                <div>
-                    <label class="block text-gray-300 text-sm mb-2" for="date">Date du délit *</label>
-                    <input type="date" id="date" name="date" required class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-
-                <!-- Date de déclaration -->
-                <div>
-                    <label class="block text-gray-300 text-sm mb-2" for="dateDeclaration">Date de déclaration</label>
-                    <input type="date" id="dateDeclaration" name="dateDeclaration" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-
-                <!-- Statut -->
-                <div>
-                    <label class="block text-gray-300 text-sm mb-2" for="statut">Statut</label>
-                    <select id="statut" name="statut" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        {% for statut in delitStatuts %}
-                            <option value="{{ statut }}">{{ statut|title }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Gravité -->
-                <div>
-                    <label class="block text-gray-300 text-sm mb-2" for="gravite">Gravité</label>
-                    <select id="gravite" name="gravite" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        {% for gravite in delitGravites %}
-                            <option value="{{ gravite }}">{{ gravite|title }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Numéro d'affaire -->
-                <div>
-                    <label class="block text-gray-300 text-sm mb-2" for="numeroAffaire">Numéro d'affaire</label>
-                    <input type="text" id="numeroAffaire" name="numeroAffaire" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Numéro d'affaire...">
-                </div>
-
-                <!-- Procureur responsable -->
-                <div>
-                    <label class="block text-gray-300 text-sm mb-2" for="procureurResponsable">Procureur responsable</label>
-                    <input type="text" id="procureurResponsable" name="procureurResponsable" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nom du procureur...">
-                </div>
-
-                <!-- Politiciens impliqués -->
-                <div>
-                    <label class="block text-gray-300 text-sm mb-2" for="politiciens">Politiciens impliqués</label>
-                    <select id="politiciens" name="politiciens[]" multiple class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" size="4">
-                        {% for politician in politicians %}
-                            <option value="{{ politician.id }}">{{ politician.name }}</option>
-                        {% endfor %}
-                    </select>
-                    <p class="text-xs text-gray-400 mt-1">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs politiciens</p>
-                </div>
-
-                <!-- Partenaires impliqués -->
-                <div>
-                    <label class="block text-gray-300 text-sm mb-2" for="partenaires">Partenaires impliqués</label>
-                    <select id="partenaires" name="partenaires[]" multiple class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" size="4">
-                        {% for partner in partners %}
-                            <option value="{{ partner.id }}">{{ partner.name }} ({{ partner.type }})</option>
-                        {% endfor %}
-                    </select>
-                    <p class="text-xs text-gray-400 mt-1">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs partenaires</p>
-                </div>
-
-                <!-- Boutons -->
-                <div class="flex justify-end gap-3 pt-4">
-                    <button type="button" class="px-4 py-2 bg-gray-600 text-gray-200 rounded hover:bg-gray-700 transition-colors" data-close-modal="add-offense-modal">
-                        Annuler
-                    </button>
-                    <button type="submit" class="px-4 py-2 bg-blue-700 text-blue-200 rounded hover:bg-blue-800 transition-colors">
-                        Ajouter le délit
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+{% include 'layout/components/crud_modal.html.twig' with {
+    modal_id: 'add-offense-modal',
+    title: 'Ajouter un délit',
+    form_template: 'offenses/components/add_offense_form.html.twig',
+    max_width: '4xl'
+} %}
 
 <!-- Modal de modification -->
 <div id="edit-offense-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
