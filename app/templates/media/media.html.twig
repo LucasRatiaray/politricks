@@ -2,118 +2,67 @@
 
 {% block content %}
 <div class="min-h-screen bg-slate-900 flex flex-col">
-    <div class="flex-1 flex flex-col items-center w-full">
-        <div class="w-full max-w-5xl mx-auto mt-8">
-            <h1 class="text-3xl font-bold text-white mb-2">Gestion des médias</h1>
-            <p class="text-gray-400 mb-6">Gérer et organiser les dossiers médiatiques et les preuves liés aux infractions politiques.Gérer et organiser les dossiers médiatiques et les preuves liés aux infractions politiques.</p>
+    <div class="flex-1 flex flex-col w-full">
+        <div class="w-full max-w-6xl mx-auto mt-4 sm:mt-8 px-4 sm:px-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">Gestion des médias</h1>
+            <p class="text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base">Gérer et organiser les dossiers médiatiques et les preuves liés aux infractions politiques.</p>
             
-            <form id="filter-form" class="mb-6">
-                <div class="mb-4">
+            <form id="filter-form" class="mb-4 sm:mb-6">
+                <div class="mb-3 sm:mb-4">
                     <input type="text" name="search" value="{{ search }}" placeholder="Rechercher des fichiers" 
-                           class="w-full bg-slate-800 text-gray-200 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                           class="w-full bg-slate-800 text-gray-200 rounded px-3 sm:px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base" />
                 </div>
-                <div class="flex gap-2 mb-6">
-                    <select name="type" class="bg-slate-800 text-gray-200 rounded px-4 py-2">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
+                    <select name="type" class="bg-slate-800 text-gray-200 rounded px-3 py-2 text-sm">
                         <option value="">Tous les types</option>
                         <option value="image" {{ typeFilter == 'image' ? 'selected' : '' }}>Images</option>
                         <option value="document" {{ typeFilter == 'document' ? 'selected' : '' }}>Documents</option>
                         <option value="video" {{ typeFilter == 'video' ? 'selected' : '' }}>Vidéos</option>
                     </select>
-                    <select name="date" class="bg-slate-800 text-gray-200 rounded px-4 py-2">
+                    <select name="date" class="bg-slate-800 text-gray-200 rounded px-3 py-2 text-sm">
                         <option value="">Toutes les dates</option>
                         <option value="today" {{ dateFilter == 'today' ? 'selected' : '' }}>Aujourd'hui</option>
                         <option value="week" {{ dateFilter == 'week' ? 'selected' : '' }}>Cette semaine</option>
                         <option value="month" {{ dateFilter == 'month' ? 'selected' : '' }}>Ce mois</option>
                     </select>
-                    <select name="confidentiality" class="bg-slate-800 text-gray-200 rounded px-4 py-2">
+                    <select name="confidentiality" class="bg-slate-800 text-gray-200 rounded px-3 py-2 text-sm">
                         <option value="">Toutes confidentialités</option>
                         <option value="public" {{ confidentialityFilter == 'public' ? 'selected' : '' }}>Public</option>
                         <option value="interne" {{ confidentialityFilter == 'interne' ? 'selected' : '' }}>Interne</option>
                         <option value="restreint" {{ confidentialityFilter == 'restreint' ? 'selected' : '' }}>Restreint</option>
                         <option value="secret" {{ confidentialityFilter == 'secret' ? 'selected' : '' }}>Secret</option>
                     </select>
-                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded">
-                        Filtrer
-                    </button>
-                    <button type="button" id="clear-filters" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded">
-                        Effacer
-                    </button>
+                    <div class="flex gap-2">
+                        <button type="submit" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white px-3 py-2 rounded text-sm">
+                            Filtrer
+                        </button>
+                        <button type="button" id="clear-filters" class="bg-gray-700 hover:bg-gray-800 text-white px-3 py-2 rounded text-sm">
+                            Effacer
+                        </button>
+                    </div>
                 </div>
             </form>
 
-            <div class="flex gap-2 mb-6 justify-end">
-                {% include 'layout/components/add_button.html.twig' with {modal_id: 'add-media-modal'} %}
+            <div class="flex gap-2 mb-4 sm:mb-6 justify-end">
+                <button type="button" class="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-blue-100 font-semibold px-3 sm:px-4 py-2 rounded shadow transition-colors text-sm" data-open-modal="add-media-modal">
+                    <span class="text-lg font-bold">+</span> 
+                    <span class="hidden sm:inline">Ajouter</span>
+                </button>
             </div>
-            <div class="bg-gray-900 rounded-lg shadow-lg overflow-x-auto">
-                {% include 'media/components/media_table.html.twig' with {media: media} %}
+            
+            <div class="bg-gray-900 rounded-lg shadow-lg">
+                <div class="hidden lg:block overflow-x-auto">
+                    {% include 'media/components/media_table.html.twig' with {media: media} %}
+                </div>
+                
+                <div class="lg:hidden">
+                    {% include 'media/components/media_cards.html.twig' with {media: media} %}
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div id="add-media-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-    <div class="bg-slate-800 rounded-lg shadow-lg p-8 min-w-80 max-w-full">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-white text-lg font-semibold">Ajouter un document</h2>
-            <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="add-media-modal">&times;</button>
-        </div>
-        <div class="text-gray-300">
-            <form action="{{ path('media_add') }}" method="POST" enctype="multipart/form-data">
-                <input type="file" name="file" accept="*/*" required class="mb-4 block w-full text-white bg-slate-700 rounded p-2">
-                <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded">Ajouter</button>
-            </form>
-        </div>
-    </div>
-</div>
-<div id="edit-media-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-    <div class="bg-slate-800 rounded-lg shadow-lg p-8 min-w-96 max-w-2xl">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-white text-lg font-semibold">Modifier le document</h2>
-            <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="edit-media-modal">&times;</button>
-        </div>
-        <div class="text-gray-300">
-            <form id="edit-media-form">
-                <input type="hidden" id="edit-document-id">
-                <div class="mb-4">
-                    <label class="block text-white mb-2 font-medium">Nom du fichier</label>
-                    <input type="text" id="edit-nom" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-white mb-2 font-medium">Délit associé</label>
-                    <select id="edit-delit" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">-- Sélectionner un délit --</option>
-                    </select>
-                    <p class="text-gray-400 text-sm mt-1">Choisissez le délit auquel associer ce document</p>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-white mb-2 font-medium">Confidentialité</label>
-                    <select id="edit-confidentialite" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="public">Public</option>
-                        <option value="interne">Interne</option>
-                        <option value="restreint">Restreint</option>
-                        <option value="secret">Secret</option>
-                    </select>
-                </div>
-                <div class="mb-6">
-                    <label class="block text-white mb-2 font-medium">Langue</label>
-                    <select id="edit-langue" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="français">Français</option>
-                        <option value="anglais">Anglais</option>
-                        <option value="espagnol">Espagnol</option>
-                        <option value="allemand">Allemand</option>
-                        <option value="autre">Autre</option>
-                    </select>
-                </div>
-                <div class="flex gap-3">
-                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded font-medium">
-                        Modifier
-                    </button>
-                    <button type="button" class="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded font-medium" data-close-modal="edit-media-modal">
-                        Annuler
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+{% include 'media/components/responsive_modals.html.twig' %}
 {% endblock %}
