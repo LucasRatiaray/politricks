@@ -1,9 +1,12 @@
 <div class="flex flex-col p-3 rounded-lg cursor-pointer transition-colors {{ selected ? 'bg-gray-800 border-l-4 border-blue-600' : 'hover:bg-gray-800' }}">
     <div class="flex items-center justify-between">
-        <div>
-            <div class="text-white font-semibold">{{ partner.name }}</div>
-            <div class="text-gray-400 text-xs">Risk: {{ partner.risk }}<br>{{ partner.type }}</div>
+        <div class="flex-1 min-w-0">
+            <div class="text-white font-semibold text-sm lg:text-base truncate">{{ partner.name }}</div>
+            <div class="text-gray-400 text-xs">
+                <div>Risque: {{ partner.risk }}</div>
+                <div>{{ partner.type }}</div>
+            </div>
         </div>
-        <span class="text-gray-400">&#8250;</span>
+        <span class="text-gray-400 text-lg lg:text-xl flex-shrink-0 ml-2">&#8250;</span>
     </div>
-</div> 
+</div>
