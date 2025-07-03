@@ -1,9 +1,9 @@
-const Encore = require('@symfony/webpack-encore');
+const Encore = require("@symfony/webpack-encore");
 
 // Manually configure the runtime environment if not already configured yet by the "encore" command.
 // It's useful when you use tools that rely on webpack.config.js file.
 if (!Encore.isRuntimeEnvironmentConfigured()) {
-    Encore.configureRuntimeEnvironment(process.env.NODE_ENV || 'dev');
+  Encore.configureRuntimeEnvironment(process.env.NODE_ENV || "dev");
 }
 
 Encore
@@ -78,4 +78,19 @@ Encore
 
   .enablePostCssLoader();
 
-module.exports = Encore.getWebpackConfig();
+const config = Encore.getWebpackConfig();
+
+// Fix watch mode infinite rebuild issue
+config.watchOptions = {
+  aggregateTimeout: 300,
+  poll: false,
+  ignored: [
+    '**/node_modules/**',
+    '**/public/build/**',
+    '**/var/**',
+    '**/vendor/**',
+    '**/.git/**'
+  ]
+};
+
+module.exports = config;

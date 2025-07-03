@@ -17,8 +17,52 @@ function bindPartnerCardClicks() {
   });
 }
 
+// Theme management
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  updateThemeIcon(theme);
+}
+
+function updateThemeIcon(theme) {
+  const sunIcon = document.querySelector('.theme-icon-sun');
+  const moonIcon = document.querySelector('.theme-icon-moon');
+  
+  if (sunIcon && moonIcon) {
+    if (theme === 'night') {
+      sunIcon.classList.add('hidden');
+      moonIcon.classList.remove('hidden');
+    } else {
+      sunIcon.classList.remove('hidden');
+      moonIcon.classList.add('hidden');
+    }
+  }
+}
+
+function toggleTheme() {
+  const currentTheme = localStorage.getItem('theme') || 'winter';
+  const newTheme = currentTheme === 'winter' ? 'night' : 'winter';
+  setTheme(newTheme);
+}
+
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = savedTheme || (prefersDark ? 'night' : 'winter');
+  setTheme(theme);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   console.log('JS chargé');
+  
+  // Initialize theme
+  initTheme();
+  
+  // Theme toggle button
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', toggleTheme);
+  }
 
   bindPartnerCardClicks();
 
