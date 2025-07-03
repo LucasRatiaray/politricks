@@ -45,10 +45,7 @@
             </form>
 
             <div class="flex gap-2 mb-4 sm:mb-6 justify-end">
-                <button type="button" class="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-blue-100 font-semibold px-3 sm:px-4 py-2 rounded shadow transition-colors text-sm" data-open-modal="add-media-modal">
-                    <span class="text-lg font-bold">+</span> 
-                    <span class="hidden sm:inline">Ajouter</span>
-                </button>
+                {% include 'layout/components/add_button.html.twig' with {modal_id: 'add-media-modal'} %}
             </div>
             
             <div class="bg-gray-900 rounded-lg shadow-lg">
@@ -64,5 +61,64 @@
     </div>
 </div>
 
-{% include 'media/components/responsive_modals.html.twig' %}
+<!-- Modal d'ajout -->
+{% include 'layout/components/crud_modal.html.twig' with {
+    modal_id: 'add-media-modal',
+    title: 'Ajouter un document',
+    form_template: 'media/components/add_media_form.html.twig',
+    max_width: '2xl'
+} %}
+
+<!-- Modal de modification -->
+<div id="edit-media-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-slate-800 rounded-lg shadow-lg p-8 min-w-96 max-w-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-white text-lg font-semibold">Modifier le document</h2>
+            <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="edit-media-modal">&times;</button>
+        </div>
+        <div class="text-gray-300">
+            <form id="edit-media-form">
+                <input type="hidden" id="edit-document-id">
+                <div class="mb-4">
+                    <label class="block text-white mb-2 font-medium">Nom du fichier</label>
+                    <input type="text" id="edit-nom" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-white mb-2 font-medium">Délit associé</label>
+                    <select id="edit-delit" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Sélectionner un délit --</option>
+                    </select>
+                    <p class="text-gray-400 text-sm mt-1">Choisissez le délit auquel associer ce document</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-white mb-2 font-medium">Confidentialité</label>
+                    <select id="edit-confidentialite" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="public">Public</option>
+                        <option value="interne">Interne</option>
+                        <option value="restreint">Restreint</option>
+                        <option value="secret">Secret</option>
+                    </select>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-white mb-2 font-medium">Langue</label>
+                    <select id="edit-langue" class="w-full bg-slate-700 text-white rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="français">Français</option>
+                        <option value="anglais">Anglais</option>
+                        <option value="espagnol">Espagnol</option>
+                        <option value="allemand">Allemand</option>
+                        <option value="autre">Autre</option>
+                    </select>
+                </div>
+                <div class="flex gap-3">
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded font-medium">
+                        Modifier
+                    </button>
+                    <button type="button" class="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded font-medium" data-close-modal="edit-media-modal">
+                        Annuler
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
