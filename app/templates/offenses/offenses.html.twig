@@ -2,31 +2,32 @@
 
 {% block content %}
 <div class="min-h-screen bg-slate-900 flex flex-col">
-    <div class="bg-gray-900 p-6 border-b border-gray-800">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-white">Délits</h1>
+    <div class="bg-gray-900 p-3 sm:p-6 border-b border-gray-800">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
+            <h1 class="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-0">Délits</h1>
             {% if is_granted('ROLE_ADMIN') %}
-            <button type="button" class="px-4 py-2 bg-blue-700 text-blue-200 rounded hover:bg-blue-800 transition-colors" onclick="document.getElementById('add-offense-modal').classList.remove('hidden')">
+            <button type="button" class="w-full sm:w-auto px-4 py-2 bg-blue-700 text-blue-200 rounded hover:bg-blue-800 transition-colors text-sm" onclick="document.getElementById('add-offense-modal').classList.remove('hidden')">
                 Ajouter un délit
             </button>
             {% endif %}
         </div>
-        <div class="flex flex-col md:flex-row md:items-end gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {% include 'offenses/components/filter_select.html.twig' with {label: 'Type', name: 'type', options: ['Tous'] + delitTypes} %}
             {% include 'offenses/components/filter_select.html.twig' with {label: 'Statut', name: 'status', options: ['Tous'] + delitStatuts} %}
             {% include 'offenses/components/filter_select.html.twig' with {label: 'Gravité', name: 'severity', options: ['Tous'] + delitGravites} %}
         </div>
     </div>
-    <div class="flex flex-1 overflow-hidden">
-        <div class="w-1/4 max-w-sm min-w-[250px] bg-gray-900 p-6 border-r border-gray-800 overflow-y-auto max-h-screen">
-            <div class="space-y-3">
+    
+    <div class="flex flex-1 flex-col lg:flex-row overflow-hidden">
+        <div class="w-full lg:w-1/4 lg:max-w-sm lg:min-w-[250px] bg-gray-900 p-3 sm:p-6 border-b lg:border-b-0 lg:border-r border-gray-800 overflow-y-auto max-h-80 lg:max-h-screen">
+            <div class="space-y-2 sm:space-y-3">
                 {% for offense in offenses %}
-                    <div class="offense-card bg-gray-800 rounded-lg p-4 cursor-pointer transition-colors hover:bg-gray-700 border-l-4
+                    <div class="offense-card bg-gray-800 rounded-lg p-3 sm:p-4 cursor-pointer transition-colors hover:bg-gray-700 border-l-4
                         {% if selected and selected.id == offense.id %}border-blue-500 bg-gray-700{% else %}border-transparent{% endif %}"
                          data-offense-id="{{ offense.id }}">
                         <div class="flex justify-between items-start mb-2">
-                            <h3 class="text-white font-semibold">#{{ offense.id }} - {{ offense.type }}</h3>
-                            <span class="px-2 py-1 rounded text-xs
+                            <h3 class="text-white font-semibold text-sm sm:text-base">#{{ offense.id }} - {{ offense.type }}</h3>
+                            <span class="px-2 py-1 rounded text-xs flex-shrink-0
                                 {% if offense.statut == 'en_cours' %}bg-yellow-600 text-yellow-200
                                 {% elseif offense.statut == 'resolu' %}bg-green-600 text-green-200
                                 {% elseif offense.statut == 'clos' %}bg-gray-600 text-gray-200
@@ -34,10 +35,10 @@
                                 {{ offense.statut|title }}
                             </span>
                         </div>
-                        <p class="text-gray-300 text-sm mb-2 line-clamp-2">{{ offense.description }}</p>
+                        <p class="text-gray-300 text-xs sm:text-sm mb-2 line-clamp-2">{{ offense.description }}</p>
                         <div class="flex justify-between items-center text-xs text-gray-400">
                             <span>{{ offense.date|default('Date inconnue') }}</span>
-                            <span class="px-2 py-1 rounded
+                            <span class="px-2 py-1 rounded text-xs
                                 {% if offense.gravite == 'faible' %}bg-green-600 text-green-200
                                 {% elseif offense.gravite == 'moyenne' %}bg-yellow-600 text-yellow-200
                                 {% elseif offense.gravite == 'elevee' %}bg-orange-600 text-orange-200
@@ -46,12 +47,12 @@
                             </span>
                         </div>
                         {% if offense.politiciens|length > 0 or offense.partenaires|length > 0 %}
-                            <div class="mt-2 text-xs text-gray-400">
+                            <div class="mt-2 flex gap-2 text-xs text-gray-400">
                                 {% if offense.politiciens|length > 0 %}
-                                    <div>👥 {{ offense.politiciens|length }} politicien(s)</div>
+                                    <span>👥 {{ offense.politiciens|length }}</span>
                                 {% endif %}
                                 {% if offense.partenaires|length > 0 %}
-                                    <div>🤝 {{ offense.partenaires|length }} partenaire(s)</div>
+                                    <span>🤝 {{ offense.partenaires|length }}</span>
                                 {% endif %}
                             </div>
                         {% endif %}
@@ -59,7 +60,8 @@
                 {% endfor %}
             </div>
         </div>
-        <div class="w-1/2 overflow-y-auto border-r border-gray-800">
+        
+        <div class="hidden lg:block lg:w-1/2 p-4 sm:p-6 overflow-y-auto border-r border-gray-800">
             <div id="offense-details">
                 {% if selected %}
                     {% include 'offenses/components/offense_detail.html.twig' with {selected: selected} %}
@@ -74,31 +76,208 @@
             </div>
         </div>
 
-        <!-- Section commentaires -->
-        {% include 'offenses/components/comments_section.html.twig' with {selected: selected} %}
+        <div class="hidden lg:block lg:w-1/3 lg:min-w-[320px] bg-gray-900 p-4 sm:p-6 overflow-hidden border-l border-gray-800 flex flex-col h-full">
+            <div id="comments-section" class="flex flex-col h-full">
+                {% if selected %}
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                <span class="text-blue-200 text-sm font-semibold">💬</span>
+                            </div>
+                            <h2 class="text-white text-lg font-semibold">Commentaires</h2>
+                        </div>
+                        <span class="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded-full font-medium">
+                            {{ selected.nombreCommentaires|default(0) }}
+                        </span>
+                    </div>
+                    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-6">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <h3 class="text-white text-sm font-semibold">Ajouter un commentaire</h3>
+                        </div>
+                        <form id="add-comment-form" class="space-y-4">
+                            <div>
+                                <textarea
+                                    id="comment-content"
+                                    name="contenu"
+                                    rows="3"
+                                    required
+                                    class="w-full bg-gray-700 text-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                    placeholder="Partagez votre point de vue sur ce délit..."
+                                ></textarea>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 text-xs">Commentaire public</span>
+                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center space-x-2">
+                                    <span>Publier</span>
+                                    <span class="text-xs">→</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="flex-1 overflow-y-auto">
+                        {% if selected.commentaires and selected.commentaires|length > 0 %}
+                            <div class="space-y-4 mb-6 pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                                {% for commentaire in selected.commentaires %}
+                                    <div class="bg-gray-800 rounded-lg p-4 border-l-4 border-blue-500 hover:bg-gray-750 transition-colors">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <span class="text-blue-200 text-xs font-semibold">
+                                                    {{ commentaire.auteur|split(' ')|first|first|upper }}{{ commentaire.auteur|split(' ')|last|first|upper }}
+                                                </span>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center space-x-2 mb-2">
+                                                    <span class="text-white font-medium text-sm">{{ commentaire.auteur }}</span>
+                                                    <span class="text-gray-500 text-xs">•</span>
+                                                    <span class="text-gray-400 text-xs">{{ commentaire.dateCreation }}</span>
+                                                </div>
+                                                <div class="text-gray-300 text-sm leading-relaxed">{{ commentaire.contenu }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="mb-6 text-center py-8">
+                                <div class="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <span class="text-gray-400 text-2xl">💬</span>
+                                </div>
+                                <p class="text-gray-400 text-sm mb-2">Aucun commentaire pour le moment</p>
+                                <p class="text-gray-500 text-xs">Soyez le premier à partager votre avis !</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="flex items-center justify-center h-full">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-gray-500 text-3xl">💬</span>
+                            </div>
+                            <div class="text-gray-400 text-lg mb-2 font-medium">Sélectionnez un délit</div>
+                            <div class="text-gray-500 text-sm">pour voir et ajouter des commentaires</div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div id="mobile-detail-modal" class="lg:hidden fixed inset-0 z-50 bg-slate-900 hidden">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between p-4 border-b border-gray-800">
+                <h2 class="text-white text-lg font-semibold">Détails du délit</h2>
+                <button type="button" id="close-mobile-detail" class="text-gray-400 hover:text-white text-2xl">×</button>
+            </div>
+            <div id="mobile-detail-content" class="flex-1 overflow-y-auto p-4">
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Modal d'ajout -->
-{% include 'layout/components/crud_modal.html.twig' with {
-    modal_id: 'add-offense-modal',
-    title: 'Ajouter un délit',
-    form_template: 'offenses/components/add_offense_form.html.twig',
-    max_width: '4xl'
-} %}
+<div id="add-offense-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden p-4">
+    <div class="bg-[#101c2b] rounded-lg shadow-lg p-4 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-white text-lg font-semibold">Ajouter un délit</h2>
+            <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="add-offense-modal">&times;</button>
+        </div>
+        <div class="text-gray-300">
+            <form id="add-offense-form" class="space-y-4 sm:space-y-6">
+                <div>
+                    <label class="block text-gray-300 text-sm mb-2" for="type">Type de délit *</label>
+                    <select id="type" name="type" required class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Sélectionner un type</option>
+                        {% for type in delitTypes %}
+                            <option value="{{ type }}">{{ type|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-<!-- Modal de modification -->
-<div id="edit-offense-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-    <div class="bg-[#101c2b] rounded-lg shadow-lg p-8 min-w-[600px] max-w-full max-h-[90vh] overflow-y-auto">
+                <div>
+                    <label class="block text-gray-300 text-sm mb-2" for="description">Description *</label>
+                    <textarea id="description" name="description" required rows="3" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Description du délit..."></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 text-sm mb-2" for="date">Date du délit *</label>
+                    <input type="date" id="date" name="date" required class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 text-sm mb-2" for="dateDeclaration">Date de déclaration</label>
+                    <input type="date" id="dateDeclaration" name="dateDeclaration" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 text-sm mb-2" for="statut">Statut</label>
+                    <select id="statut" name="statut" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        {% for statut in delitStatuts %}
+                            <option value="{{ statut }}">{{ statut|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 text-sm mb-2" for="gravite">Gravité</label>
+                    <select id="gravite" name="gravite" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        {% for gravite in delitGravites %}
+                            <option value="{{ gravite }}">{{ gravite|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 text-sm mb-2" for="numeroAffaire">Numéro d'affaire</label>
+                    <input type="text" id="numeroAffaire" name="numeroAffaire" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Numéro d'affaire...">
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 text-sm mb-2" for="procureurResponsable">Procureur responsable</label>
+                    <input type="text" id="procureurResponsable" name="procureurResponsable" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nom du procureur...">
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 text-sm mb-2" for="politiciens">Politiciens impliqués</label>
+                    <select id="politiciens" name="politiciens[]" multiple class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" size="4">
+                        {% for politician in politicians %}
+                            <option value="{{ politician.id }}">{{ politician.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-xs text-gray-400 mt-1">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs politiciens</p>
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 text-sm mb-2" for="partenaires">Partenaires impliqués</label>
+                    <select id="partenaires" name="partenaires[]" multiple class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" size="4">
+                        {% for partner in partners %}
+                            <option value="{{ partner.id }}">{{ partner.name }} ({{ partner.type }})</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-xs text-gray-400 mt-1">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs partenaires</p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+                    <button type="button" class="px-4 py-2 bg-gray-600 text-gray-200 rounded hover:bg-gray-700 transition-colors" data-close-modal="add-offense-modal">
+                        Annuler
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-700 text-blue-200 rounded hover:bg-blue-800 transition-colors">
+                        Ajouter le délit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="edit-offense-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden p-4">
+    <div class="bg-[#101c2b] rounded-lg shadow-lg p-4 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-white text-lg font-semibold">Modifier le délit</h2>
             <button type="button" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none" data-close-modal="edit-offense-modal">&times;</button>
         </div>
         <div class="text-gray-300">
-            <form id="edit-offense-form" class="space-y-6">
+            <form id="edit-offense-form" class="space-y-4 sm:space-y-6">
                 <input type="hidden" id="edit-offense-id" name="id">
                 
-                <!-- Type de délit -->
                 <div>
                     <label class="block text-gray-300 text-sm mb-2" for="edit-type">Type de délit *</label>
                     <select id="edit-type" name="type" required class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -109,25 +288,21 @@
                     </select>
                 </div>
 
-                <!-- Description -->
                 <div>
                     <label class="block text-gray-300 text-sm mb-2" for="edit-description">Description *</label>
                     <textarea id="edit-description" name="description" required rows="3" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Description du délit..."></textarea>
                 </div>
 
-                <!-- Date du délit -->
                 <div>
                     <label class="block text-gray-300 text-sm mb-2" for="edit-date">Date du délit *</label>
                     <input type="date" id="edit-date" name="date" required class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
-                <!-- Date de déclaration -->
                 <div>
                     <label class="block text-gray-300 text-sm mb-2" for="edit-dateDeclaration">Date de déclaration</label>
                     <input type="date" id="edit-dateDeclaration" name="dateDeclaration" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
-                <!-- Statut -->
                 <div>
                     <label class="block text-gray-300 text-sm mb-2" for="edit-statut">Statut</label>
                     <select id="edit-statut" name="statut" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -137,7 +312,6 @@
                     </select>
                 </div>
 
-                <!-- Gravité -->
                 <div>
                     <label class="block text-gray-300 text-sm mb-2" for="edit-gravite">Gravité</label>
                     <select id="edit-gravite" name="gravite" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -147,19 +321,16 @@
                     </select>
                 </div>
 
-                <!-- Numéro d'affaire -->
                 <div>
                     <label class="block text-gray-300 text-sm mb-2" for="edit-numeroAffaire">Numéro d'affaire</label>
                     <input type="text" id="edit-numeroAffaire" name="numeroAffaire" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Numéro d'affaire...">
                 </div>
 
-                <!-- Procureur responsable -->
                 <div>
                     <label class="block text-gray-300 text-sm mb-2" for="edit-procureurResponsable">Procureur responsable</label>
                     <input type="text" id="edit-procureurResponsable" name="procureurResponsable" class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nom du procureur...">
                 </div>
 
-                <!-- Politiciens impliqués -->
                 <div>
                     <label class="block text-gray-300 text-sm mb-2" for="edit-politiciens">Politiciens impliqués</label>
                     <select id="edit-politiciens" name="politiciens[]" multiple class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" size="4">
@@ -170,7 +341,6 @@
                     <p class="text-xs text-gray-400 mt-1">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs politiciens</p>
                 </div>
 
-                <!-- Partenaires impliqués -->
                 <div>
                     <label class="block text-gray-300 text-sm mb-2" for="edit-partenaires">Partenaires impliqués</label>
                     <select id="edit-partenaires" name="partenaires[]" multiple class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" size="4">
@@ -181,8 +351,7 @@
                     <p class="text-xs text-gray-400 mt-1">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs partenaires</p>
                 </div>
 
-                <!-- Boutons -->
-                <div class="flex justify-end gap-3 pt-4">
+                <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4">
                     <button type="button" class="px-4 py-2 bg-gray-600 text-gray-200 rounded hover:bg-gray-700 transition-colors" data-close-modal="edit-offense-modal">
                         Annuler
                     </button>
@@ -196,27 +365,22 @@
 </div>
 
 <script>
-    // Données des délits
     const offenses = {{ offenses|json_encode|raw }};
     let selectedOffense = {{ selected|json_encode|raw }};
     const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
     const politicians = {{ politicians|json_encode|raw }};
     const partners = {{ partners|json_encode|raw }};
 
-    // Afficher les détails d'un délit
     function showOffenseDetails(offenseId) {
         const offense = offenses.find(o => o.id === offenseId);
         if (offense) {
             selectedOffense = offense;
             
-            // Générer le HTML des détails
             const detailsHtml = generateOffenseDetailsHtml(offense);
             document.getElementById('offense-details').innerHTML = detailsHtml;
             
-            // Update section commentaires
             updateCommentsSection(offense);
             
-            // Mettre à jour la sélection visuelle
             document.querySelectorAll('.offense-card').forEach(card => {
                 card.classList.remove('ring-2', 'ring-blue-500');
             });
@@ -224,7 +388,6 @@
         }
     }
 
-    // Update section commentaires
     function updateCommentsSection(offense) {
         const commentsSection = document.getElementById('comments-section');
         
@@ -243,7 +406,6 @@
             return;
         }
         
-        // Si les commentaires ne sont pas chargés on les charge
         if (!offense.commentaires && offense.nombreCommentaires > 0) {
             fetch(`/offenses/${offense.id}/comments`)
                 .then(response => response.json())
@@ -295,12 +457,10 @@
             </div>
         `;
 
-        // List en scrollable
         commentsHtml += `<div class="flex-1 overflow-y-auto">`;
         if (offense.commentaires && offense.commentaires.length > 0) {
             commentsHtml += `<div class="space-y-4 mb-6 pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">`;
             offense.commentaires.forEach(commentaire => {
-                // Initiales de l'auteur
                 const authorName = commentaire.auteur;
                 const initials = authorName.split(' ').map(name => name.charAt(0).toUpperCase()).join('');
                 
@@ -339,7 +499,6 @@
         commentsSection.innerHTML = commentsHtml;
     }
 
-    // Fonction pour générer le HTML des détails d'une offense
     function generateOffenseDetailsHtml(offense) {
         return `
             <div class="bg-[#101c2b] rounded-lg shadow-lg p-6 h-full overflow-y-auto">
@@ -429,8 +588,6 @@
                 </div>
                 ` : ''}
 
-
-
                 ${offense.documents && offense.documents.length > 0 ? `
                 <h2 class="text-white text-lg font-semibold mb-4">Documents (${offense.nombreDocuments})</h2>
                 <div class="grid grid-cols-1 gap-4">
@@ -450,13 +607,11 @@
         `;
     }
 
-    // Fonction pour charger les politiciens et partenaires
     function loadPoliticiansAndPartners() {
         console.log('Chargement des politiciens et partenaires...');
         console.log('Politiciens disponibles:', politicians);
         console.log('Partenaires disponibles:', partners);
         
-        // Remplir les sélecteurs de politiciens
         const politiciensSelect = document.getElementById('politiciens');
         const editPoliticiensSelect = document.getElementById('edit-politiciens');
         
@@ -477,7 +632,6 @@
             });
         }
 
-        // Remplir les sélecteurs de partenaires
         const partenairesSelect = document.getElementById('partenaires');
         const editPartenairesSelect = document.getElementById('edit-partenaires');
         
@@ -499,16 +653,13 @@
         }
     }
 
-    // modifier un délit
     function editOffense(offenseId) {
-        // Charger les données
         fetch(`/offenses/${offenseId}/edit`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     const offense = data.offense;
                     
-                    // formulaire
                     document.getElementById('edit-offense-id').value = offense.id;
                     document.getElementById('edit-type').value = offense.type;
                     document.getElementById('edit-description').value = offense.description;
@@ -519,19 +670,16 @@
                     document.getElementById('edit-numeroAffaire').value = offense.numeroAffaire || '';
                     document.getElementById('edit-procureurResponsable').value = offense.procureurResponsable || '';
                     
-                    // Sélectionner les politiciens
                     const politiciensSelect = document.getElementById('edit-politiciens');
                     Array.from(politiciensSelect.options).forEach(option => {
                         option.selected = offense.politiciens && offense.politiciens.includes(parseInt(option.value));
                     });
                     
-                    // Sélectionner les partenaires
                     const partenairesSelect = document.getElementById('edit-partenaires');
                     Array.from(partenairesSelect.options).forEach(option => {
                         option.selected = offense.partenaires && offense.partenaires.includes(parseInt(option.value));
                     });
                     
-                    // Ouvrir la modal
                     document.getElementById('edit-offense-modal').classList.remove('hidden');
                 } else {
                     alert('Erreur lors du chargement du délit: ' + data.message);
@@ -543,7 +691,6 @@
             });
     }
 
-    // Fonctions pour afficher les messages toast
     function showSuccessMessage(message) {
         showToast(message, 'success');
     }
@@ -553,11 +700,9 @@
     }
 
     function showToast(message, type = 'info') {
-        // Supprimer les toasts existants
         const existingToasts = document.querySelectorAll('.toast-message');
         existingToasts.forEach(toast => toast.remove());
 
-        // Créer le toast
         const toast = document.createElement('div');
         toast.className = `toast-message fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
         
@@ -574,37 +719,47 @@
         toast.classList.add(bgColor);
         document.body.appendChild(toast);
         
-        // Animer l'entrée
         setTimeout(() => {
             toast.classList.remove('translate-x-full');
         }, 100);
         
-        // Supprimer après 3 secondes
         setTimeout(() => {
             toast.classList.add('translate-x-full');
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
 
-    // Initialisation quand le DOM est chargé
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialiser la première offense sélectionnée
         if (selectedOffense) {
             showOffenseDetails(selectedOffense.id);
         } else {
-            // Si aucune offense n'est sélectionnée, afficher le message dans la section commentaires
             updateCommentsSection(null);
         }
 
-        // Gestion des clics sur les cartes de délits
         document.querySelectorAll('.offense-card').forEach(card => {
             card.addEventListener('click', function() {
                 const offenseId = parseInt(this.dataset.offenseId);
-                showOffenseDetails(offenseId);
+                
+                if (window.innerWidth < 1024) {
+                    const offense = offenses.find(o => o.id === offenseId);
+                    if (offense) {
+                        const mobileContent = generateOffenseDetailsHtml(offense);
+                        document.getElementById('mobile-detail-content').innerHTML = mobileContent;
+                        document.getElementById('mobile-detail-modal').classList.remove('hidden');
+                    }
+                } else {
+                    showOffenseDetails(offenseId);
+                }
             });
         });
 
-        // Gestion des filtres
+        const closeMobileBtn = document.getElementById('close-mobile-detail');
+        if (closeMobileBtn) {
+            closeMobileBtn.addEventListener('click', function() {
+                document.getElementById('mobile-detail-modal').classList.add('hidden');
+            });
+        }
+
         document.querySelectorAll('.filter-select').forEach(select => {
             select.addEventListener('change', function() {
                 const filterType = this.name;
@@ -629,17 +784,14 @@
             });
         });
 
-        // Charger les politiciens et partenaires pour les formulaires
         loadPoliticiansAndPartners();
         
-        // Gestion du formulaire d'ajout
         document.getElementById('add-offense-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const submitButton = this.querySelector('button[type="submit"]');
             const originalText = submitButton.textContent;
             
-            // Afficher l'état de chargement
             submitButton.textContent = 'Ajout en cours...';
             submitButton.disabled = true;
             
@@ -659,13 +811,10 @@
             .then(data => {
                 console.log('Données ajout:', data);
                 if (data.success) {
-                    // Message de succès
                     alert('Délit ajouté avec succès !');
                     
-                    // Fermer la modal
                     document.getElementById('add-offense-modal').classList.add('hidden');
                     
-                    // Recharger la page pour afficher le nouveau délit
                     window.location.reload();
                 } else {
                     alert('Erreur lors de l\'ajout du délit: ' + (data.error || 'Erreur inconnue'));
@@ -676,20 +825,17 @@
                 alert('Erreur lors de l\'ajout du délit: ' + error.message);
             })
             .finally(() => {
-                // Restaurer le bouton
                 submitButton.textContent = originalText;
                 submitButton.disabled = false;
             });
         });
 
-        // Gestion du formulaire de modification
         document.getElementById('edit-offense-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const submitButton = this.querySelector('button[type="submit"]');
             const originalText = submitButton.textContent;
             
-            // Afficher l'état de chargement
             submitButton.textContent = 'Modification en cours...';
             submitButton.disabled = true;
             
@@ -710,13 +856,10 @@
             .then(data => {
                 console.log('Données modification:', data);
                 if (data.success) {
-                    // Message de succès
                     alert('Délit modifié avec succès !');
                     
-                    // Fermer la modal
                     document.getElementById('edit-offense-modal').classList.add('hidden');
                     
-                    // Recharger la page pour afficher les modifications
                     window.location.reload();
                 } else {
                     alert('Erreur lors de la modification du délit: ' + (data.error || 'Erreur inconnue'));
@@ -727,13 +870,11 @@
                 alert('Erreur lors de la modification du délit: ' + error.message);
             })
             .finally(() => {
-                // Restaurer le bouton
                 submitButton.textContent = originalText;
                 submitButton.disabled = false;
             });
         });
 
-        // Gestion du formulaire d'ajout de commentaire
         document.addEventListener('submit', function(e) {
             if (e.target.id === 'add-comment-form') {
                 e.preventDefault();
@@ -754,7 +895,6 @@
                     return;
                 }
                 
-                // Afficher l'état de chargement
                 submitButton.innerHTML = `
                     <span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>
                     <span>Publication...</span>
@@ -776,20 +916,16 @@
                 })
                 .then(data => {
                     if (data.success) {
-                        // Ajouter le nouveau commentaire à la liste
                         if (!selectedOffense.commentaires) {
                             selectedOffense.commentaires = [];
                         }
                         selectedOffense.commentaires.push(data.commentaire);
                         selectedOffense.nombreCommentaires = (selectedOffense.nombreCommentaires || 0) + 1;
                         
-                        // Mettre à jour la section commentaires
                         renderCommentsSection(selectedOffense);
                         
-                        // Vider le formulaire
                         textarea.value = '';
                         
-                        // Effet de highlight sur le nouveau commentaire
                         setTimeout(() => {
                             const newComment = document.querySelector('.bg-gray-800.rounded-lg:last-child');
                             if (newComment) {
@@ -802,7 +938,6 @@
                             }
                         }, 100);
                         
-                        // Message de succès avec toast style
                         showSuccessMessage('Commentaire ajouté avec succès !');
                     } else {
                         showErrorMessage('Erreur lors de l\'ajout du commentaire: ' + (data.error || 'Erreur inconnue'));
@@ -813,7 +948,6 @@
                     alert('Erreur lors de l\'ajout du commentaire: ' + error.message);
                 })
                 .finally(() => {
-                    // Restaurer le bouton
                     submitButton.innerHTML = `
                         <span>Publier</span>
                         <span class="text-xs">→</span>
@@ -824,4 +958,4 @@
         });
     });
 </script>
-{% endblock %} 
+{% endblock %}
