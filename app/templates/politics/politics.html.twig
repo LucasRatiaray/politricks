@@ -39,17 +39,6 @@
     </div>
 </div>
 
-<div id="mobile-detail-modal" class="lg:hidden fixed inset-0 z-50 bg-slate-900 hidden">
-    <div class="flex flex-col h-full">
-        <div class="flex items-center justify-between p-4 border-b border-gray-800">
-            <h2 class="text-white text-lg font-semibold">Détails du politicien</h2>
-            <button type="button" id="close-mobile-detail" class="text-gray-400 hover:text-white text-2xl">×</button>
-        </div>
-        <div id="mobile-detail-content" class="flex-1 overflow-y-auto p-4">
-        </div>
-    </div>
-</div>
-
 {% include 'layout/components/crud_modal.html.twig' with {
     modal_id: 'add-politician-modal',
     title: 'Ajouter un politicien',
@@ -118,8 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 fetch(`/politics/${politicianId}/partial`)
                     .then(response => response.text())
                     .then(html => {
-                        document.getElementById('mobile-detail-content').innerHTML = html;
-                        document.getElementById('mobile-detail-modal').classList.remove('hidden');
+                        mobileDetailContainer.innerHTML = `<div class="p-4">${html}</div>`;
                     })
                     .catch(error => {
                         console.error('Erreur lors du chargement des détails:', error);
@@ -137,12 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    const closeMobileBtn = document.getElementById('close-mobile-detail');
-    if (closeMobileBtn) {
-        closeMobileBtn.addEventListener('click', function() {
-            document.getElementById('mobile-detail-modal').classList.add('hidden');
-        });
-    }
+
     
     document.querySelectorAll('[data-open-modal]').forEach(button => {
         button.addEventListener('click', function() {

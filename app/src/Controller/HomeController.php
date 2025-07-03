@@ -642,14 +642,19 @@ class HomeController extends AbstractController
             throw $this->createNotFoundException('Politicien non trouvé');
         }
 
-        // Récupérer les délits associés au politicien
+        // Récupérer les délits associés au politicien (3 dernières années seulement)
+        $threeYearsAgo = new \DateTime();
+        $threeYearsAgo->modify('-3 years');
+        
         $qb = $em->createQueryBuilder();
         $qb->select('delit')
         ->from(Delit::class, 'delit')
         ->join('delit.politiciens', 'politic')
         ->where('politic.id = :politicianId')
+        ->andWhere('delit.date >= :threeYearsAgo')
         ->orderBy('delit.date', 'DESC')
-        ->setParameter('politicianId', $politician->getId());
+        ->setParameter('politicianId', $politician->getId())
+        ->setParameter('threeYearsAgo', $threeYearsAgo);
         
         $offenses = $qb->getQuery()->getResult();
         
