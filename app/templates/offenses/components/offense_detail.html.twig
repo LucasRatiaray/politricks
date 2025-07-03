@@ -1,7 +1,7 @@
 <div class="bg-gray-900 lg:bg-[#101c2b] rounded-lg p-4 sm:p-6 lg:p-8 shadow-lg">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
         <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-2 sm:mb-0">Détail du délit #{{ selected.id }}</h1>
-        {% if is_granted('ROLE_ADMIN') %}
+        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_MODERATOR') or (app.user and app.user.roles is defined and 'ROLE_POLITICIAN' in app.user.roles and selected.politiciens is defined and selected.politiciens|length > 0 and app.user.id in selected.politiciens|map(p => p.id)) %}
         <button type="button" class="w-full sm:w-auto px-3 sm:px-4 py-2 bg-blue-700 text-blue-200 rounded hover:bg-blue-800 transition-colors text-sm" onclick="editOffense({{ selected.id }})">
             Modifier
         </button>
