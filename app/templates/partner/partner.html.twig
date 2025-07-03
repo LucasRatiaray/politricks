@@ -2,53 +2,365 @@
 
 {% block content %}
 <div class="flex min-h-screen bg-slate-900">
-    <aside class="w-80 bg-gray-900 p-6 flex flex-col gap-6 overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
+    <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-[60] lg:hidden bg-gray-800 text-white p-2 rounded-lg shadow-lg">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+
+    <div id="mobile-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-80 bg-gray-900 p-4 lg:p-6 flex flex-col gap-4 lg:gap-6 overflow-y-auto transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <button id="mobile-menu-close" class="self-end lg:hidden text-white p-2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <div class="flex flex-col sm:flex-row lg:flex-row justify-between items-start sm:items-center lg:items-center mb-2 lg:mb-4 gap-2">
             <h2 class="text-white text-lg font-semibold">Partenaires</h2>
             {% include 'layout/components/add_button.html.twig' with {modal_id: 'add-partner-modal'} %}
         </div>
-        <input type="text" placeholder="Rechercher des partenaires" class="mb-4 w-full bg-gray-800 text-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <div class="flex flex-col gap-2 overflow-y-auto">
+        
+        <input type="text" id="search-partners" placeholder="Rechercher des partenaires" 
+               class="mb-2 lg:mb-4 w-full bg-gray-800 text-gray-200 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        
+        <div class="flex flex-col gap-2 overflow-y-auto flex-1" id="partners-list">
             {% for partner in partners %}
-                <div data-partner-id="{{ partner.id }}">
+                <div class="partner-card" data-partner-id="{{ partner.id }}" data-partner-name="{{ partner.name|lower }}" data-partner-type="{{ partner.type|lower }}">
                     {% include 'partner/components/partner_card.html.twig' with {partner: partner, selected: partner.id == selected.id} %}
                 </div>
             {% endfor %}
         </div>
     </aside>
-    <main class="flex-1 p-10">
+
+    <main class="flex-1 p-4 lg:p-10 pt-20 lg:pt-10">
         <div id="partner-detail-container">
             {% include 'partner/components/partner_detail.html.twig' with {selected: selected} %}
         </div>
     </main>
 </div>
 
-<!-- Modal d'ajout -->
-{% include 'layout/components/crud_modal.html.twig' with {
-    modal_id: 'add-partner-modal',
-    title: 'Ajouter un partenaire',
-    form_template: 'partner/components/add_partner_form.html.twig',
-    max_width: '4xl'
-} %}
+<div id="add-partner-modal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-gray-900 rounded-lg shadow-lg p-4 lg:p-8 min-w-[90%] lg:min-w-[600px] max-w-[95%] lg:max-w-6xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4 lg:mb-6">
+            <h2 class="text-white text-lg lg:text-xl font-semibold">Ajouter un partenaire</h2>
+            <button type="button" data-close-modal="add-partner-modal" class="text-gray-400 hover:text-white text-2xl font-bold leading-none focus:outline-none">&times;</button>
+        </div>
+        
+        <form id="add-partner-form" class="space-y-4 lg:space-y-6" novalidate>
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="type">Type de partenaire *</label>
+                <select id="type" name="type" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    <option value="">Sélectionner un type</option>
+                    <option value="physique">Personne physique</option>
+                    <option value="moral">Personne morale</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                <div>
+                    <label class="block text-gray-300 text-sm mb-1" for="email">Email *</label>
+                    <input type="email" id="email" name="email" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-sm mb-1" for="telephone">Téléphone</label>
+                    <input type="text" id="telephone" name="telephone" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                <div>
+                    <label class="block text-gray-300 text-sm mb-1" for="niveauRisque">Niveau de risque *</label>
+                    <select id="niveauRisque" name="niveauRisque" required class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                        <option value="">Sélectionner</option>
+                        <option value="tres_faible">Très faible</option>
+                        <option value="faible">Faible</option>
+                        <option value="modere">Modéré</option>
+                        <option value="eleve">Élevé</option>
+                        <option value="tres_eleve">Très élevé</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-sm mb-1" for="datePremiereCollaboration">Date première collaboration</label>
+                    <input type="date" id="datePremiereCollaboration" name="datePremiereCollaboration" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-gray-300 text-sm mb-1" for="adresse">Adresse</label>
+                <textarea id="adresse" name="adresse" rows="2" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
+                <div>
+                    <label class="block text-gray-300 text-sm mb-1" for="ville">Ville</label>
+                    <input type="text" id="ville" name="ville" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-sm mb-1" for="codePostal">Code postal</label>
+                    <input type="text" id="codePostal" name="codePostal" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                </div>
+                <div class="sm:col-span-2 lg:col-span-1">
+                    <label class="block text-gray-300 text-sm mb-1" for="pays">Pays</label>
+                    <input type="text" id="pays" name="pays" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                <div>
+                    <label class="block text-gray-300 text-sm mb-1" for="siteWeb">Site web</label>
+                    <input type="url" id="siteWeb" name="siteWeb" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-sm mb-1" for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="2" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500"></textarea>
+                </div>
+            </div>
+
+            <div id="physique-fields" class="space-y-4 border-t border-gray-600 pt-4">
+                <h3 class="text-white font-semibold text-base lg:text-lg">Informations personnelles</h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="prenom">Prénom *</label>
+                        <input type="text" id="prenom" name="prenom" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="nomFamille">Nom de famille *</label>
+                        <input type="text" id="nomFamille" name="nomFamille" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="dateNaissance">Date de naissance</label>
+                        <input type="date" id="dateNaissance" name="dateNaissance" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="lieuNaissance">Lieu de naissance</label>
+                        <input type="text" id="lieuNaissance" name="lieuNaissance" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="nationalite">Nationalité</label>
+                        <input type="text" id="nationalite" name="nationalite" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="profession">Profession</label>
+                        <input type="text" id="profession" name="profession" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="numeroSecu">Numéro de sécurité sociale</label>
+                        <input type="text" id="numeroSecu" name="numeroSecu" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="numeroCNI">Numéro CNI</label>
+                        <input type="text" id="numeroCNI" name="numeroCNI" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="situationFamiliale">Situation familiale</label>
+                        <input type="text" id="situationFamiliale" name="situationFamiliale" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="fortuneEstimee">Fortune estimée</label>
+                        <input type="text" id="fortuneEstimee" name="fortuneEstimee" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="casierJudiciaire" name="casierJudiciaire" class="mr-2">
+                        <span class="text-gray-300 text-sm">Casier judiciaire</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="moral-fields" class="space-y-4 border-t border-gray-600 pt-4">
+                <h3 class="text-white font-semibold text-base lg:text-lg">Informations entreprise</h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="raisonSociale">Raison sociale *</label>
+                        <input type="text" id="raisonSociale" name="raisonSociale" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="formeJuridique">Forme juridique *</label>
+                        <input type="text" id="formeJuridique" name="formeJuridique" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="siret">SIRET</label>
+                        <input type="text" id="siret" name="siret" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="secteurActivite">Secteur d'activité</label>
+                        <input type="text" id="secteurActivite" name="secteurActivite" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="dirigeantPrincipal">Dirigeant principal</label>
+                        <input type="text" id="dirigeantPrincipal" name="dirigeantPrincipal" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="nombreEmployes">Nombre d'employés</label>
+                        <input type="number" id="nombreEmployes" name="nombreEmployes" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="chiffreAffaires">Chiffre d'affaires</label>
+                        <input type="text" id="chiffreAffaires" name="chiffreAffaires" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="capitalSocial">Capital social</label>
+                        <input type="text" id="capitalSocial" name="capitalSocial" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="paysFiscal">Pays fiscal</label>
+                        <input type="text" id="paysFiscal" name="paysFiscal" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1" for="dateCreationEntreprise">Date création entreprise</label>
+                        <input type="date" id="dateCreationEntreprise" name="dateCreationEntreprise" class="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm lg:text-base focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-600">
+                <button type="button" data-close-modal="add-partner-modal" class="w-full sm:w-auto px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors">
+                    Annuler
+                </button>
+                <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+                    Ajouter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Gestion des modals
+    const partnerCards = document.querySelectorAll('.partner-card');
+    const detailContainer = document.getElementById('partner-detail-container');
+    const searchInput = document.getElementById('search-partners');
+    const partnersList = document.getElementById('partners-list');
+    
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileMenuClose = document.getElementById('mobile-menu-close');
+    const mobileOverlay = document.getElementById('mobile-overlay');
+    const sidebar = document.getElementById('sidebar');
+
+    function openMobileMenu() {
+        sidebar.classList.remove('-translate-x-full');
+        mobileOverlay.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeMobileMenu() {
+        sidebar.classList.add('-translate-x-full');
+        mobileOverlay.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', openMobileMenu);
+    }
+    
+    if (mobileMenuClose) {
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+    }
+    
+    if (mobileOverlay) {
+        mobileOverlay.addEventListener('click', closeMobileMenu);
+    }
+
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 1024) {
+            closeMobileMenu();
+        }
+    });
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            let visibleCount = 0;
+            
+            partnerCards.forEach(card => {
+                const name = card.dataset.partnerName || '';
+                const type = card.dataset.partnerType || '';
+                
+                if (searchTerm === '' || name.includes(searchTerm) || type.includes(searchTerm)) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            let noResults = document.getElementById('no-results');
+            if (visibleCount === 0 && searchTerm !== '') {
+                if (!noResults) {
+                    noResults = document.createElement('div');
+                    noResults.id = 'no-results';
+                    noResults.className = 'text-gray-400 text-center py-4 text-sm';
+                    noResults.textContent = 'Aucun partenaire trouvé';
+                    partnersList.appendChild(noResults);
+                }
+            } else if (noResults) {
+                noResults.remove();
+            }
+        });
+    }
+
+partnerCards.forEach(card => {
+    card.addEventListener('click', function() {
+        const partnerId = this.getAttribute('data-partner-id');
+        
+        if (window.innerWidth < 1024) {
+            closeMobileMenu();
+        }
+        
+        window.location.href = `/partners?selected=${partnerId}`;
+    });
+});
+
     document.querySelectorAll('[data-open-modal]').forEach(button => {
         button.addEventListener('click', function() {
             const modalId = this.dataset.openModal;
-            document.getElementById(modalId).classList.remove('hidden');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
         });
     });
     
     document.querySelectorAll('[data-close-modal]').forEach(button => {
         button.addEventListener('click', function() {
             const modalId = this.dataset.closeModal;
-            document.getElementById(modalId).classList.add('hidden');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+            }
         });
     });
     
-    // Fermer la modal en cliquant à l'extérieur
     document.querySelectorAll('[id$="-modal"]').forEach(modal => {
         modal.addEventListener('click', function(e) {
             if (e.target === this) {
@@ -57,13 +369,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Gestion du formulaire d'ajout de partenaire
     const addForm = document.getElementById('add-partner-form');
     if (addForm) {
         addForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Validation côté client
             const type = document.getElementById('type').value;
             let isValid = true;
             let errorMessage = '';
@@ -112,7 +422,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(result => {
                 if (result.success) {
-                    // Fermer la modal et recharger la page
                     document.getElementById('add-partner-modal').classList.add('hidden');
                     window.location.reload();
                 } else {
@@ -127,4 +436,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-{% endblock %} 
+{% endblock %}
