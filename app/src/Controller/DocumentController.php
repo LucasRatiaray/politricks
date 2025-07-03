@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Document;
+use App\Entity\Politicien;
 use App\Enum\DocumentNiveauConfidentialiteEnum;
 use App\Enum\DocumentLangueDocumentEnum;
 use App\Repository\DocumentRepository;
@@ -17,7 +18,7 @@ use App\Entity\Delit;
 class DocumentController extends AbstractController
 {
     #[Route('/medias', name: 'medias_list')]
-    public function index(Request $request, DocumentRepository $documentRepository): Response
+    public function index(Request $request, DocumentRepository $documentRepository, DelitRepository $delitRepository): Response
     {
     $search = $request->get('search', '');
     $typeFilter = $request->get('type', '');
@@ -25,9 +26,11 @@ class DocumentController extends AbstractController
     $confidentialityFilter = $request->get('confidentiality', '');
 
     $media = $documentRepository->findWithFiltersAndDelits($search, $typeFilter, $dateFilter, $confidentialityFilter);
+    $delits = $delitRepository->findAll();
     
     return $this->render('media/media.html.twig', [
         'media' => $media,
+        'delits' => $delits,
         'search' => $search,
         'typeFilter' => $typeFilter,
         'dateFilter' => $dateFilter,
@@ -57,8 +60,41 @@ class DocumentController extends AbstractController
         $document->setChemin('/uploads/' . $nom);
         $document->setDateCreation(new \DateTime());
         $document->setEstArchive(false);
-        $document->setNiveauConfidentialite(DocumentNiveauConfidentialiteEnum::Public);
-        $document->setLangueDocument(DocumentLangueDocumentEnum::FR);
+        
+        // Gérer les nouveaux champs du formulaire
+        $description = $request->get('description');
+        if ($description) {
+            $document->setDescription($description);
+        }
+        
+        $confidentialite = $request->get('confidentialite');
+        if ($confidentialite) {
+            $document->setNiveauConfidentialite(DocumentNiveauConfidentialiteEnum::from($confidentialite));
+        } else {
+            $document->setNiveauConfidentialite(DocumentNiveauConfidentialiteEnum::Public);
+        }
+        
+        $langue = $request->get('langue');
+        if ($langue) {
+            $document->setLangueDocument(DocumentLangueDocumentEnum::from($langue));
+        } else {
+            $document->setLangueDocument(DocumentLangueDocumentEnum::FR);
+        }
+        
+        // Associer le délit si spécifié
+        $delitId = $request->get('delit');
+        if (!empty($delitId)) {
+            $delit = $em->getRepository(Delit::class)->find($delitId);
+            if ($delit) {
+                $document->setDelit($delit);
+            }
+        }
+
+        // Définir l'auteur du document
+        $user = $this->getUser();
+        if ($user) {
+            $document->setAuteur($user);
+        }
 
         $em->persist($document);
         $em->flush();

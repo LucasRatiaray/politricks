@@ -7,9 +7,6 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
 final class Version20250701153043 extends AbstractMigration
 {
     public function getDescription(): string
@@ -19,7 +16,6 @@ final class Version20250701153043 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
             CREATE TABLE commentaire (id SERIAL NOT NULL, auteur_id INT DEFAULT NULL, delit_id INT DEFAULT NULL, commentaire_parent_id INT DEFAULT NULL, contenu TEXT NOT NULL, date_creation TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, date_modification TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, est_modere BOOLEAN DEFAULT NULL, score_credibilite INT DEFAULT NULL, type_commentaire VARCHAR(20) DEFAULT NULL, domaine_expertise VARCHAR(255) DEFAULT NULL, est_public BOOLEAN DEFAULT NULL, nombre_likes INT DEFAULT NULL, nombre_dislikes INT DEFAULT NULL, est_signale BOOLEAN DEFAULT NULL, raison_signalement TEXT DEFAULT NULL, PRIMARY KEY(id))
         SQL);
@@ -161,7 +157,6 @@ final class Version20250701153043 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
             CREATE SCHEMA public
         SQL);
