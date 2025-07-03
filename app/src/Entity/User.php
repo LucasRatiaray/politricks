@@ -62,11 +62,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $profession = null;
 
+    #[ORM\Column(type: 'boolean', nullable: false)]
+    private bool $emailVerified = false;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $emailVerificationToken = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $emailVerificationTokenExpiry = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $resetPasswordToken = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $resetPasswordTokenExpiry = null;
+
     public function __construct()
     {
         $this->roles = ['ROLE_USER'];
         $this->dateCreation = new \DateTime();
         $this->estActif = true;
+        $this->emailVerified = false;
     }
 
     public function getId(): ?int
@@ -246,6 +262,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setProfession(?string $profession): static
     {
         $this->profession = $profession;
+
+        return $this;
+    }
+
+    public function isEmailVerified(): bool
+    {
+        return $this->emailVerified;
+    }
+
+    public function setEmailVerified(bool $emailVerified): static
+    {
+        $this->emailVerified = $emailVerified;
+
+        return $this;
+    }
+
+    public function getEmailVerificationToken(): ?string
+    {
+        return $this->emailVerificationToken;
+    }
+
+    public function setEmailVerificationToken(?string $emailVerificationToken): static
+    {
+        $this->emailVerificationToken = $emailVerificationToken;
+
+        return $this;
+    }
+
+    public function getEmailVerificationTokenExpiry(): ?\DateTime
+    {
+        return $this->emailVerificationTokenExpiry;
+    }
+
+    public function setEmailVerificationTokenExpiry(?\DateTime $emailVerificationTokenExpiry): static
+    {
+        $this->emailVerificationTokenExpiry = $emailVerificationTokenExpiry;
+
+        return $this;
+    }
+
+    public function getResetPasswordToken(): ?string
+    {
+        return $this->resetPasswordToken;
+    }
+
+    public function setResetPasswordToken(?string $resetPasswordToken): static
+    {
+        $this->resetPasswordToken = $resetPasswordToken;
+
+        return $this;
+    }
+
+    public function getResetPasswordTokenExpiry(): ?\DateTime
+    {
+        return $this->resetPasswordTokenExpiry;
+    }
+
+    public function setResetPasswordTokenExpiry(?\DateTime $resetPasswordTokenExpiry): static
+    {
+        $this->resetPasswordTokenExpiry = $resetPasswordTokenExpiry;
 
         return $this;
     }

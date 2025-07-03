@@ -41,6 +41,8 @@ security:
         - { path: ^/login }
         - { path: ^/register }
         - { path: ^/forgot-password }
+        - { path: ^/verify-email }
+        - { path: ^/reset-password }
         - { path: ^/logout }
 
         # Toutes les autres routes nécessitent l'authentification

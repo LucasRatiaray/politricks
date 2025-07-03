@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\User;
+use App\Service\EmailService;
 
 class SecurityController extends AbstractController
 {
@@ -36,7 +37,7 @@ class SecurityController extends AbstractController
     }
 
     #[Route('/register', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em): Response
+    public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em, EmailService $emailService): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_home');
@@ -107,8 +108,14 @@ class SecurityController extends AbstractController
                     $em->persist($user);
                     $em->flush();
 
-                    // Redirection vers la page de login avec un message de succès
-                    $this->addFlash('success', 'Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter.');
+                    // Envoi de l'email de vérification
+                    try {
+                        $emailService->sendEmailVerification($user);
+                        $this->addFlash('success', 'Votre compte a été créé avec succès ! Un email de vérification a été envoyé à votre adresse.');
+                    } catch (\Exception $e) {
+                        $this->addFlash('warning', 'Votre compte a été créé mais l\'email de vérification n\'a pas pu être envoyé. Vous pouvez vous connecter normalement.');
+                    }
+                    
                     return $this->redirectToRoute('app_login');
                 }
             }
@@ -121,7 +128,7 @@ class SecurityController extends AbstractController
     }
 
     #[Route('/forgot-password', name: 'app_forgot_password')]
-    public function forgotPassword(Request $request, EntityManagerInterface $em): Response
+    public function forgotPassword(Request $request, EntityManagerInterface $em, EmailService $emailService): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_home');
@@ -138,14 +145,15 @@ class SecurityController extends AbstractController
                 $error = 'Veuillez saisir votre adresse email.';
             } else {
                 $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
-                if (!$user) {
-                    // Pour des raisons de sécurité, on affiche le même message même si l'email n'existe pas
-                    $success = 'Si un compte existe avec cette adresse email, un lien de réinitialisation a été envoyé.';
-                } else {
-                    // Ici vous pourriez implémenter l'envoi d'email avec un token de réinitialisation
-                    // Pour l'instant, on affiche juste un message de succès
-                    $success = 'Si un compte existe avec cette adresse email, un lien de réinitialisation a été envoyé.';
+                if ($user) {
+                    try {
+                        $emailService->sendPasswordReset($user);
+                    } catch (\Exception $e) {
+                        // En cas d'erreur, on ne révèle pas l'information pour des raisons de sécurité
+                    }
                 }
+                // Pour des raisons de sécurité, on affiche toujours le même message
+                $success = 'Si un compte existe avec cette adresse email, un lien de réinitialisation a été envoyé.';
             }
             $last_username = $email;
         }
@@ -154,6 +162,57 @@ class SecurityController extends AbstractController
             'last_username' => $last_username,
             'error' => $error,
             'success' => $success,
+        ]);
+    }
+
+    #[Route('/verify-email/{token}', name: 'app_verify_email')]
+    public function verifyEmail(string $token, EmailService $emailService): Response
+    {
+        $user = $emailService->verifyEmailToken($token);
+        
+        if (!$user) {
+            $this->addFlash('error', 'Le lien de vérification est invalide ou a expiré.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        $this->addFlash('success', 'Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter.');
+        return $this->redirectToRoute('app_login');
+    }
+
+    #[Route('/reset-password/{token}', name: 'app_reset_password')]
+    public function resetPassword(string $token, Request $request, EmailService $emailService, UserPasswordHasherInterface $passwordHasher): Response
+    {
+        $user = $emailService->verifyResetToken($token);
+        
+        if (!$user) {
+            $this->addFlash('error', 'Le lien de réinitialisation est invalide ou a expiré.');
+            return $this->redirectToRoute('app_forgot_password');
+        }
+
+        $error = null;
+
+        if ($request->isMethod('POST')) {
+            $password = $request->request->get('password');
+            $confirmPassword = $request->request->get('confirm_password');
+
+            if (!$password || !$confirmPassword) {
+                $error = 'Veuillez remplir tous les champs.';
+            } elseif (strlen($password) < 6) {
+                $error = 'Le mot de passe doit contenir au moins 6 caractères.';
+            } elseif ($password !== $confirmPassword) {
+                $error = 'Les mots de passe ne correspondent pas.';
+            } else {
+                $user->setPassword($passwordHasher->hashPassword($user, $password));
+                $emailService->clearResetToken($user);
+                
+                $this->addFlash('success', 'Votre mot de passe a été réinitialisé avec succès ! Vous pouvez maintenant vous connecter.');
+                return $this->redirectToRoute('app_login');
+            }
+        }
+
+        return $this->render('security/reset_password.html.twig', [
+            'token' => $token,
+            'error' => $error,
         ]);
     }
 
