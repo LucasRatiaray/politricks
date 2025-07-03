@@ -11,26 +11,28 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Repository\DelitRepository;
+use App\Entity\Delit;
 
 class DocumentController extends AbstractController
 {
     #[Route('/medias', name: 'medias_list')]
     public function index(Request $request, DocumentRepository $documentRepository): Response
     {
-        $search = $request->get('search', '');
-        $typeFilter = $request->get('type', '');
-        $dateFilter = $request->get('date', '');
-        $confidentialityFilter = $request->get('confidentiality', '');
+    $search = $request->get('search', '');
+    $typeFilter = $request->get('type', '');
+    $dateFilter = $request->get('date', '');
+    $confidentialityFilter = $request->get('confidentiality', '');
 
-        $media = $documentRepository->findWithFilters($search, $typeFilter, $dateFilter, $confidentialityFilter);
-        
-        return $this->render('media/media.html.twig', [
-            'media' => $media,
-            'search' => $search,
-            'typeFilter' => $typeFilter,
-            'dateFilter' => $dateFilter,
-            'confidentialityFilter' => $confidentialityFilter,
-        ]);
+    $media = $documentRepository->findWithFiltersAndDelits($search, $typeFilter, $dateFilter, $confidentialityFilter);
+    
+    return $this->render('media/media.html.twig', [
+        'media' => $media,
+        'search' => $search,
+        'typeFilter' => $typeFilter,
+        'dateFilter' => $dateFilter,
+        'confidentialityFilter' => $confidentialityFilter,
+    ]);
     }
 
     #[Route('/media/add', name: 'media_add', methods: ['POST'])]
@@ -66,33 +68,68 @@ class DocumentController extends AbstractController
     }
 
     #[Route('/media/edit/{id}', name: 'media_edit', methods: ['GET'])]
-    public function edit(Document $document): Response
+    public function edit(Document $document, DelitRepository $delitRepository): Response
     {
-        return $this->json([
-            'id' => $document->getId(),
-            'nom' => $document->getNom(),
-            'type' => $this->getDocumentType($document),
-            'niveauConfidentialite' => $document->getNiveauConfidentialite()->value,
-            'langueDocument' => $document->getLangueDocument()->value
-        ]);
+    $delits = $delitRepository->findAll();
+    $delitsData = [];
+    foreach ($delits as $delit) {
+        $delitsData[] = [
+            'id' => $delit->getId(),
+            'label' => sprintf(
+                '#%d - %s (%s) - %s', 
+                $delit->getId(),
+                $delit->getType()->value,
+                $delit->getStatut()->value,
+                substr($delit->getDescription(), 0, 50) . '...'
+            )
+        ];
     }
 
+    return $this->json([
+        'id' => $document->getId(),
+        'nom' => $document->getNom(),
+        'delitId' => $document->getDelit() ? $document->getDelit()->getId() : null,
+        'delits' => $delitsData,
+        'niveauConfidentialite' => $document->getNiveauConfidentialite()->value,
+        'langueDocument' => $document->getLangueDocument()->value
+    ]);
+}
+
     #[Route('/media/update/{id}', name: 'media_update', methods: ['POST'])]
-    public function update(Document $document, Request $request, EntityManagerInterface $em): Response
-    {
-        $nom = $request->get('nom');
-        $type = $request->get('type');
-        $confidentialite = $request->get('confidentialite');
-        $langue = $request->get('langue');
-        
-        if ($nom) $document->setNom($nom);
-        if ($confidentialite) $document->setNiveauConfidentialite(DocumentNiveauConfidentialiteEnum::from($confidentialite));
-        if ($langue) $document->setLangueDocument(DocumentLangueDocumentEnum::from($langue));
-        
-        $em->flush();
-        
-        return $this->json(['success' => true]);
+public function update(Document $document, Request $request, EntityManagerInterface $em): Response
+{
+    $nom = $request->get('nom');
+    $delitId = $request->get('delit_id');
+    $confidentialite = $request->get('confidentialite');
+    $langue = $request->get('langue');
+    
+    if ($nom) {
+        $document->setNom($nom);
     }
+    
+    if ($confidentialite) {
+        $document->setNiveauConfidentialite(DocumentNiveauConfidentialiteEnum::from($confidentialite));
+    }
+    
+    if ($langue) {
+        $document->setLangueDocument(DocumentLangueDocumentEnum::from($langue));
+    }
+    
+    if (!empty($delitId)) {
+        $delit = $em->getRepository(Delit::class)->find($delitId);
+        if ($delit) {
+            $document->setDelit($delit);
+        }
+    } else {
+        $document->setDelit(null);
+    }
+    
+    $em->persist($document);
+    $em->flush();
+    $em->clear();
+    
+    return $this->json(['success' => true]);
+}
 
     #[Route('/media/delete/{id}', name: 'media_delete', methods: ['POST'])]
     public function delete(Document $document, EntityManagerInterface $em): Response
